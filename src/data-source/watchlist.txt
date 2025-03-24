@@ -1,0 +1,9 @@
+# WSB Trading - Credit Spread Watchlist
+# Last updated: 2025-03-24
+# High IV Stocks good for credit spreads
+!IMPORTANT - TODAYS-LIST SHOULD BE UPDATED DAILY BASE ON options-screener-high-ivr-credit-spread-scanner.csv
+
+#TODAYS-LIST
+
+TSLA
+META

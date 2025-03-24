@@ -1,0 +1,31 @@
+{
+  "ticker": "META",
+  "price": 596.25,
+  "expiration": "2025-03-28",
+  "time_to_expiry_years": 0.00821917808219178,
+  "risk_free_rate": 0.05,
+  "atm_call": {
+    "strike": 595.0,
+    "implied_volatility": 1.0000000000000003e-05,
+    "greeks": {
+      "delta": 1.0,
+      "gamma": 0.0,
+      "theta": -29.73777648445605,
+      "vega": 0.0,
+      "rho": 0.04888401613883186
+    }
+  },
+  "atm_put": {
+    "strike": 595.0,
+    "implied_volatility": 0.0039162109375,
+    "greeks": {
+      "delta": -7.824340269700552e-13,
+      "gamma": 2.6629817069688264e-11,
+      "theta": -4.927096907941736e-11,
+      "vega": 3.0473296232634045e-12,
+      "rho": -3.834648217873979e-14
+    }
+  },
+  "calls_filepath": "output/META_calls_greeks_2025-03-28.csv",
+  "puts_filepath": "output/META_puts_greeks_2025-03-28.csv"
+}

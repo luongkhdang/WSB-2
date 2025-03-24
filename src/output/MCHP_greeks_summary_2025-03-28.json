@@ -1,0 +1,31 @@
+{
+  "ticker": "MCHP",
+  "price": 51.720001220703125,
+  "expiration": "2025-03-28",
+  "time_to_expiry_years": 0.00821917808219178,
+  "risk_free_rate": 0.05,
+  "atm_call": {
+    "strike": 52.0,
+    "implied_volatility": 0.015634843750000002,
+    "greeks": {
+      "delta": 0.00021706623940788512,
+      "gamma": 0.011158985983701387,
+      "theta": -0.00420950421930626,
+      "vega": 3.835868590477688e-05,
+      "rho": 9.224123574780278e-07
+    }
+  },
+  "atm_put": {
+    "strike": 52.0,
+    "implied_volatility": 1.0000000000000003e-05,
+    "greeks": {
+      "delta": -1.0,
+      "gamma": 0.0,
+      "theta": 2.5989317263726295,
+      "vega": 0.0,
+      "rho": -0.004272216536502952
+    }
+  },
+  "calls_filepath": "output/MCHP_calls_greeks_2025-03-28.csv",
+  "puts_filepath": "output/MCHP_puts_greeks_2025-03-28.csv"
+}

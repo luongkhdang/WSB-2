@@ -1,0 +1,31 @@
+{
+  "ticker": "TSLA",
+  "price": 248.7100067138672,
+  "expiration": "2025-03-28",
+  "time_to_expiry_years": 0.00821917808219178,
+  "risk_free_rate": 0.05,
+  "atm_call": {
+    "strike": 247.5,
+    "implied_volatility": 1.0000000000000003e-05,
+    "greeks": {
+      "delta": 1.0,
+      "gamma": 0.0,
+      "theta": -12.36991542840819,
+      "vega": 0.0,
+      "rho": 0.020334107553547708
+    }
+  },
+  "atm_put": {
+    "strike": 247.5,
+    "implied_volatility": 0.015634843750000002,
+    "greeks": {
+      "delta": -9.523737657792952e-05,
+      "gamma": 0.0010725394185918877,
+      "theta": -0.006924079888152463,
+      "vega": 8.525536473238361e-05,
+      "rho": -1.947493933191259e-06
+    }
+  },
+  "calls_filepath": "output/TSLA_calls_greeks_2025-03-28.csv",
+  "puts_filepath": "output/TSLA_puts_greeks_2025-03-28.csv"
+}
