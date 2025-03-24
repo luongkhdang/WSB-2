@@ -8,48 +8,31 @@ import pandas as pd
 
 # Import clients
 from gemini.client.gemini_client import get_gemini_client
-try:
-    from finance_client.client.yfinance_client import YFinanceClient
-except ImportError:
-    logging.error("Could not import YFinanceClient. Make sure the module exists and is properly structured.")
-    class YFinanceClient:
-        """Dummy YFinanceClient to prevent crashes"""
-        def __init__(self):
-            pass
-            
-try:
-    from notion.client.notion_client import get_notion_client
-except ImportError:
-    logging.error("Could not import notion_client. Make sure the module exists and is properly structured.")
-    def get_notion_client():
-        """Dummy function to prevent crashes"""
-        return None
+from finance_client.client.yfinance_client import YFinanceClient
+from notion.client.notion_client import get_notion_client
+from discord.discord_client import DiscordClient
 
-try:
-    from discord.discord_client import DiscordClient
-except ImportError:
-    logging.error("Could not import DiscordClient. Make sure the module exists and is properly structured.")
-    class DiscordClient:
-        """Dummy DiscordClient to prevent crashes"""
-        def __init__(self):
-            pass
-        def send_market_analysis(self, **kwargs):
-            pass
-        def send_message(self, **kwargs):
-            pass
-        def send_trade_alert(self, **kwargs):
-            pass
+# Import prompt hooks
+from gemini.hooks import (
+    get_market_trend_prompt,
+    get_spy_options_prompt,
+    get_market_data_prompt,
+    get_stock_analysis_prompt,
+    get_stock_options_prompt,
+    get_trade_plan_prompt
+)
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(f"wsb_trading_{datetime.now().strftime('%Y%m%d')}.log"),
-        logging.StreamHandler()
+        logging.StreamHandler(),
+        logging.FileHandler('wsb_trading.log')
     ]
 )
-logger = logging.getLogger('wsb_trading')
+
+logger = logging.getLogger(__name__)
 
 class WSBTradingApp:
     def __init__(self):
@@ -68,6 +51,25 @@ class WSBTradingApp:
         self.watchlist_file = self.data_dir / "watchlist.txt"
         
         logger.info("All clients initialized successfully")
+    
+    def get_watchlist_symbols(self):
+        """Get list of symbols from watchlist file."""
+        try:
+            if not self.watchlist_file.exists():
+                logger.error(f"Watchlist file not found: {self.watchlist_file}")
+                return []
+            
+            symbols = []
+            with open(self.watchlist_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and not line.startswith('!'):
+                        symbols.append(line)
+            
+            return symbols
+        except Exception as e:
+            logger.error(f"Error reading watchlist: {e}")
+            return []
     
     def update_watchlist(self):
         """Update the watchlist based on the options screener data"""
@@ -128,7 +130,7 @@ class WSBTradingApp:
                 logger.error("Failed to retrieve SPY or VIX data")
                 return None
             
-            # Step 2: Format the data into a structured prompt following the Rule Book
+            # Step 2: Format the data into a structured format
             market_data_for_analysis = {
                 "spy_price": spy_market_data.get("info", {}).get("regularMarketPrice"),
                 "spy_open": spy_market_data.get("info", {}).get("open"),
@@ -162,38 +164,8 @@ class WSBTradingApp:
             except Exception as e:
                 logger.warning(f"Could not calculate EMAs: {e}")
             
-            # Step 4: Create a structured prompt for Gemini based on the Rule Book
-            prompt = f"""
-            Analyze SPY market trend based on this data:
-            
-            {market_data_for_analysis}
-            
-            Follow these rules exactly:
-            1. Check 9/21 EMA on 1-hour chart
-               - Price > 9/21 EMA: Bullish market trend (+10 to Market Trend score)
-               - Price < 9/21 EMA: Bearish market trend (+10 if bearish setup)
-               - Flat/No crossover: Neutral (no bonus)
-            
-            2. Check VIX level:
-               - VIX < 20: Stable bullish trend (+5)
-               - VIX 20–25: Neutral volatility
-               - VIX > 25: High volatility, cautious approach (-5 unless size halved)
-               - VIX > 35: Flag as potential skip unless justified by high Gamble Score
-            
-            3. Options sentiment analysis:
-               - Call/Put IV Skew: Compare IV of calls vs. puts
-               - Call IV > Put IV: Bullish direction (+5 to Sentiment)
-               - Put IV > Call IV: Bearish direction (+5 to Sentiment)
-               - Call/Put Volume Ratio > 1.1: Bullish bias (+5)
-               - Call/Put Volume Ratio < 0.9: Bearish bias (+5)
-            
-            Return:
-            1. Overall market trend (bullish/bearish/neutral)
-            2. Market Trend score (out of 20)
-            3. VIX assessment and impact on trading
-            4. Risk management adjustment recommendation
-            5. Detailed analysis explaining your reasoning
-            """
+            # Step 4: Get the market trend prompt from hooks
+            prompt = get_market_trend_prompt(market_data_for_analysis)
             
             # Step 5: Send to Gemini for analysis
             market_analysis_text = self.gemini_client.generate_text(prompt, temperature=0.2)
@@ -238,6 +210,10 @@ class WSBTradingApp:
             
             # Options sentiment analysis (simplified)
             if options_sentiment:
+                # Get the options sentiment prompt from hooks
+                options_prompt = get_spy_options_prompt(options_sentiment)
+                options_analysis_text = self.gemini_client.generate_text(options_prompt, temperature=0.2)
+                
                 # Use the sentiment directly from our enhanced options sentiment analysis
                 options_trend = options_sentiment.get("sentiment", "neutral")
                 sentiment_adjustment = 0
@@ -260,7 +236,7 @@ class WSBTradingApp:
                     options_trend = "bearish"
                     sentiment_adjustment += 5
                     technical_adjustment += 5
-                
+                    
                 # Additional context information for deeper analysis
                 call_put_volume_ratio = options_sentiment.get("call_put_volume_ratio", 1.0)
                 call_put_oi_ratio = options_sentiment.get("call_put_oi_ratio", 1.0)
@@ -272,7 +248,7 @@ class WSBTradingApp:
                     confidence = "high"
                 elif (call_put_volume_ratio >= 0.95 and call_put_volume_ratio <= 1.05) and abs(iv_skew) < 0.01:
                     confidence = "low"
-                
+                    
                 options_analysis = {
                     'direction': options_trend,
                     'sentiment_adjustment': sentiment_adjustment,
@@ -316,100 +292,87 @@ class WSBTradingApp:
             logger.error(f"Error analyzing market: {e}")
             return None
     
-    def analyze_stocks(self, market_trend):
-        """Analyze stocks from the watchlist"""
-        logger.info("Analyzing stocks from watchlist...")
-        
+    def analyze_stocks(self, market_analysis):
+        """Analyze individual stocks in the watchlist."""
+        logger.info("Starting stock analysis...")
         stock_analyses = {}
         
-        try:
-            # Read watchlist
-            if not self.watchlist_file.exists():
-                logger.error(f"Watchlist file not found: {self.watchlist_file}")
-                return {}
+        # Get watchlist symbols
+        symbols = self.get_watchlist_symbols()
+        if not symbols:
+            logger.error("No symbols in watchlist")
+            return {}
             
-            # Load watchlist symbols
-            symbols = []
-            with open(self.watchlist_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and not line.startswith('!'):
-                        symbols.append(line)
+        logger.info(f"Found {len(symbols)} symbols in watchlist")
+        
+        # Analyze each stock
+        for symbol in symbols:
+            logger.info(f"Analyzing {symbol}...")
             
-            logger.info(f"Found {len(symbols)} symbols in watchlist")
-            
-            # Get the market context data
-            market_context = {
-                "spy_trend": market_trend.get("trend", "neutral"),
-                "market_trend_score": market_trend.get("market_trend_score", 0),
-                "vix_assessment": market_trend.get("vix_assessment", ""),
-                "risk_adjustment": market_trend.get("risk_adjustment", "standard"),
-                "options_trend": market_trend.get("options_analysis", {}).get("direction", "neutral"),
-                "sentiment_adjustment": market_trend.get("options_analysis", {}).get("sentiment_adjustment", 0),
-                "technical_adjustment": market_trend.get("options_analysis", {}).get("technical_adjustment", 0)
-            }
-            
-            # Analyze each stock
-            for symbol in symbols:
-                logger.info(f"Analyzing {symbol}...")
+            try:
+                # Step 1: Get comprehensive stock data from YFinance
+                logger.info(f"Step 1: Getting stock data for {symbol}...")
+                stock_data = self.yfinance_client.get_stock_analysis(symbol)
                 
-                try:
-                    # Step 1: Get comprehensive stock data from YFinance
-                    logger.info(f"Step 1: Getting stock data for {symbol}...")
-                    stock_data = self.yfinance_client.get_stock_analysis(symbol)
+                if not stock_data:
+                    logger.error(f"Failed to get stock data for {symbol}")
+                    continue
                     
-                    if not stock_data:
-                        logger.warning(f"Failed to retrieve data for {symbol}")
-                        continue
-                    
-                    # Step 2: Get options data with greeks for 4 weeks
-                    logger.info(f"Step 2: Fetching options chain data for {symbol}...")
-                    options_chain_data = self.yfinance_client.get_option_chain_with_greeks(symbol, weeks=4)
-                    
-                    # Step 3: Extract and structure the key data points
-                    logger.info(f"Step 3: Extracting key data points for {symbol}...")
-                    technical_data = stock_data.get("technical", {})
-                    stock_info = stock_data.get("info", {})
-                    
-                    stock_analysis_data = {
-                        "ticker": symbol,
-                        "current_price": stock_info.get("regularMarketPrice"),
-                        "previous_close": stock_info.get("previousClose"),
-                        "volume": stock_info.get("regularMarketVolume"),
-                        "average_volume": stock_info.get("averageVolume"),
-                        "ema9": technical_data.get("ema9"),
-                        "ema21": technical_data.get("ema21"),
-                        "trend": technical_data.get("trend"),
-                        "trend_note": technical_data.get("trend_note"),
-                        "atr": technical_data.get("atr"),
-                        "atr_percent": technical_data.get("atr_percent"),
-                        "volatility": technical_data.get("volatility"),
-                        "volatility_note": technical_data.get("volatility_note"),
-                        "support": technical_data.get("support"),
-                        "resistance": technical_data.get("resistance"),
-                        "near_support": technical_data.get("near_support"),
-                        "near_resistance": technical_data.get("near_resistance")
-                    }
-                    
-                    # Step 4: Extract and format options data
-                    logger.info(f"Step 4: Processing options data for {symbol}...")
-                    options_summary = {}
-                    
-                    if options_chain_data:
-                        logger.info(f"Found {len(options_chain_data)} expiration dates for {symbol}")
-                        # Extract key metrics from each expiration's options chain
-                        for exp_date, chain_data in options_chain_data.items():
-                            logger.info(f"Processing expiration date {exp_date} for {symbol}...")
-                            try:
-                                # Get basic option chain metrics
-                                exp_summary = {
-                                    "days_to_expiration": chain_data.get("days_to_expiration"),
-                                    "avg_call_iv": chain_data.get("avg_call_iv", 0),
-                                    "avg_put_iv": chain_data.get("avg_put_iv", 0),
-                                    "iv_skew": chain_data.get("iv_skew", 0),
-                                }
+                stock_info = stock_data.get("info", {})
+                technical_data = stock_data.get("technical", {})
+                
+                # Step 2: Get options chain data with greeks
+                logger.info(f"Step 2: Getting options chain data for {symbol}...")
+                options_chain_data = self.yfinance_client.get_option_chain_with_greeks(symbol, weeks=4)
+                
+                if not options_chain_data:
+                    logger.warning(f"No options chain data found for {symbol}")
+                
+                # Step 3: Prepare stock analysis data
+                logger.info(f"Step 3: Preparing analysis data for {symbol}...")
+                stock_analysis_data = {
+                    "ticker": symbol,
+                    "current_price": stock_info.get("regularMarketPrice"),
+                    "previous_close": stock_info.get("previousClose"),
+                    "volume": stock_info.get("regularMarketVolume"),
+                    "average_volume": stock_info.get("averageVolume"),
+                    "trend": technical_data.get("trend"),
+                    "trend_note": technical_data.get("trend_note"),
+                    "atr": technical_data.get("atr"),
+                    "atr_percent": technical_data.get("atr_percent"),
+                    "volatility": technical_data.get("volatility"),
+                    "volatility_note": technical_data.get("volatility_note"),
+                    "support": technical_data.get("support"),
+                    "resistance": technical_data.get("resistance"),
+                    "near_support": technical_data.get("near_support"),
+                    "near_resistance": technical_data.get("near_resistance")
+                }
+                
+                # Step 4: Extract and format options data
+                logger.info(f"Step 4: Processing options data for {symbol}...")
+                options_summary = {}
+                
+                if options_chain_data:
+                    logger.info(f"Found {len(options_chain_data)} expiration dates for {symbol}")
+                    # Extract key metrics from each expiration's options chain
+                    for exp_date, chain_data in options_chain_data.items():
+                        logger.info(f"Processing expiration date {exp_date} for {symbol}...")
+                        try:
+                            # Validate chain_data structure
+                            if not isinstance(chain_data, dict):
+                                logger.warning(f"Invalid chain data format for {symbol} on {exp_date} - not a dictionary")
+                                continue
                                 
-                                # Get ATM options (within 5% of current price)
+                            # Get basic option chain metrics
+                            exp_summary = {
+                                "days_to_expiration": chain_data.get("days_to_expiration"),
+                                "avg_call_iv": chain_data.get("avg_call_iv", 0),
+                                "avg_put_iv": chain_data.get("avg_put_iv", 0),
+                                "iv_skew": chain_data.get("iv_skew", 0),
+                            }
+                            
+                            # Get ATM options (within 5% of current price)
+                            try:
                                 atm_calls = chain_data.get("calls", pd.DataFrame())
                                 atm_puts = chain_data.get("puts", pd.DataFrame())
                                 
@@ -419,6 +382,21 @@ class WSBTradingApp:
                                 # Handle empty dataframes
                                 if atm_calls.empty or atm_puts.empty:
                                     logger.warning(f"Empty calls or puts dataframe for {symbol} on {exp_date}")
+                                    continue
+                                
+                                # Verify required columns exist
+                                required_columns = ['strike', 'bid', 'ask', 'impliedVolatility', 'delta', 'gamma', 'theta', 'vega', 'distance_pct']
+                                missing_call_columns = [col for col in required_columns if col not in atm_calls.columns]
+                                missing_put_columns = [col for col in required_columns if col not in atm_puts.columns]
+                                
+                                if missing_call_columns:
+                                    logger.warning(f"Missing columns in calls dataframe for {symbol}: {missing_call_columns}")
+                                if missing_put_columns:
+                                    logger.warning(f"Missing columns in puts dataframe for {symbol}: {missing_put_columns}")
+                                
+                                if missing_call_columns and missing_put_columns:
+                                    logger.warning(f"Missing required columns for both calls and puts, skipping {exp_date}")
+                                    continue
                                 
                                 # Safe filtering
                                 if not atm_calls.empty and 'distance_pct' in atm_calls.columns:
@@ -430,178 +408,130 @@ class WSBTradingApp:
                                     logger.debug(f"ATM puts shape after filtering: {atm_puts.shape}")
                                 
                                 current_price = stock_info.get("regularMarketPrice", 0)
+                                if current_price <= 0:
+                                    logger.warning(f"Invalid current price {current_price} for {symbol}")
+                                    current_price = chain_data.get("current_price", 0)
+                                    if current_price <= 0:
+                                        logger.warning(f"Still invalid current price, skipping {exp_date}")
+                                        continue
                                 
-                                # Find closest to ATM for both calls and puts
+                                # Skip if no valid options found after filtering
+                                if atm_calls.empty and atm_puts.empty:
+                                    logger.warning(f"No valid ATM options found for {symbol} on {exp_date}")
+                                    continue
+                            except Exception as df_error:
+                                logger.error(f"Error processing dataframes for {symbol} on {exp_date}: {repr(df_error)}")
+                                continue
+                            
+                            # Process ATM calls
+                            try:
                                 if not atm_calls.empty and 'strike' in atm_calls.columns and current_price > 0:
                                     logger.debug(f"Finding ATM call for {symbol}...")
                                     # Safely find the closest strike to current price
                                     strike_diffs = abs(atm_calls['strike'] - current_price)
-                                    closest_idx = strike_diffs.argsort()[0]
-                                    atm_call = atm_calls.iloc[closest_idx]
-                                    
-                                    exp_summary["atm_call"] = {
-                                        "strike": float(atm_call['strike']),
-                                        "bid": float(atm_call['bid']) if 'bid' in atm_call else 0,
-                                        "ask": float(atm_call['ask']) if 'ask' in atm_call else 0,
-                                        "iv": float(atm_call['impliedVolatility']) if 'impliedVolatility' in atm_call else 0,
-                                        "delta": float(atm_call['delta']) if 'delta' in atm_call else 0,
-                                        "gamma": float(atm_call['gamma']) if 'gamma' in atm_call else 0,
-                                        "theta": float(atm_call['theta']) if 'theta' in atm_call else 0,
-                                        "vega": float(atm_call['vega']) if 'vega' in atm_call else 0
-                                    }
-                                    logger.debug(f"ATM call for {symbol}: strike={exp_summary['atm_call']['strike']}")
-                                
+                                    if not strike_diffs.empty:
+                                        # Sort by difference and get the first row
+                                        closest_idx = strike_diffs.nsmallest(1).index[0]
+                                        atm_call = atm_calls.loc[closest_idx]
+                                        
+                                        exp_summary["atm_call"] = {
+                                            "strike": float(atm_call.get('strike', 0)),
+                                            "bid": float(atm_call.get('bid', 0)),
+                                            "ask": float(atm_call.get('ask', 0)),
+                                            "iv": float(atm_call.get('impliedVolatility', 0)),
+                                            "delta": float(atm_call.get('delta', 0)),
+                                            "gamma": float(atm_call.get('gamma', 0)),
+                                            "theta": float(atm_call.get('theta', 0)),
+                                            "vega": float(atm_call.get('vega', 0))
+                                        }
+                                        logger.debug(f"ATM call for {symbol}: strike={exp_summary['atm_call']['strike']}")
+                                    else:
+                                        logger.warning(f"No valid strikes found for ATM calls")
+                            except Exception as call_error:
+                                logger.error(f"Error processing ATM call for {symbol} on {exp_date}: {repr(call_error)}")
+                                logger.debug(f"ATM calls shape: {atm_calls.shape}, columns: {list(atm_calls.columns)}")
+                            
+                            # Process ATM puts
+                            try:
                                 if not atm_puts.empty and 'strike' in atm_puts.columns and current_price > 0:
                                     logger.debug(f"Finding ATM put for {symbol}...")
                                     # Safely find the closest strike to current price
                                     strike_diffs = abs(atm_puts['strike'] - current_price)
-                                    closest_idx = strike_diffs.argsort()[0] 
-                                    atm_put = atm_puts.iloc[closest_idx]
-                                    
-                                    exp_summary["atm_put"] = {
-                                        "strike": float(atm_put['strike']),
-                                        "bid": float(atm_put['bid']) if 'bid' in atm_put else 0,
-                                        "ask": float(atm_put['ask']) if 'ask' in atm_put else 0,
-                                        "iv": float(atm_put['impliedVolatility']) if 'impliedVolatility' in atm_put else 0,
-                                        "delta": float(atm_put['delta']) if 'delta' in atm_put else 0,
-                                        "gamma": float(atm_put['gamma']) if 'gamma' in atm_put else 0,
-                                        "theta": float(atm_put['theta']) if 'theta' in atm_put else 0,
-                                        "vega": float(atm_put['vega']) if 'vega' in atm_put else 0
-                                    }
-                                    logger.debug(f"ATM put for {symbol}: strike={exp_summary['atm_put']['strike']}")
+                                    if not strike_diffs.empty:
+                                        # Sort by difference and get the first row
+                                        closest_idx = strike_diffs.nsmallest(1).index[0]
+                                        atm_put = atm_puts.loc[closest_idx]
+                                        
+                                        exp_summary["atm_put"] = {
+                                            "strike": float(atm_put.get('strike', 0)),
+                                            "bid": float(atm_put.get('bid', 0)),
+                                            "ask": float(atm_put.get('ask', 0)),
+                                            "iv": float(atm_put.get('impliedVolatility', 0)),
+                                            "delta": float(atm_put.get('delta', 0)),
+                                            "gamma": float(atm_put.get('gamma', 0)),
+                                            "theta": float(atm_put.get('theta', 0)),
+                                            "vega": float(atm_put.get('vega', 0))
+                                        }
+                                        logger.debug(f"ATM put for {symbol}: strike={exp_summary['atm_put']['strike']}")
+                                    else:
+                                        logger.warning(f"No valid strikes found for ATM puts")
+                            except Exception as put_error:
+                                logger.error(f"Error processing ATM put for {symbol} on {exp_date}: {repr(put_error)}")
+                                logger.debug(f"ATM puts shape: {atm_puts.shape}, columns: {list(atm_puts.columns)}")
+                            
+                            # Add volume and open interest data
+                            try:
+                                logger.debug(f"Calculating volume data for {symbol}...")
+                                call_df = chain_data.get("calls", pd.DataFrame())
+                                put_df = chain_data.get("puts", pd.DataFrame())
                                 
-                                # Add volume and open interest data
-                                try:
-                                    logger.debug(f"Calculating volume data for {symbol}...")
-                                    call_df = chain_data.get("calls", pd.DataFrame())
-                                    put_df = chain_data.get("puts", pd.DataFrame())
-                                    
+                                if 'volume' not in call_df.columns and 'volume' not in put_df.columns:
+                                    logger.warning(f"Volume data not available for {symbol} on {exp_date}")
+                                    exp_summary["total_call_volume"] = 0
+                                    exp_summary["total_put_volume"] = 0
+                                    exp_summary["call_put_volume_ratio"] = 1.0
+                                else:
                                     total_call_volume = int(call_df['volume'].sum()) if not call_df.empty and 'volume' in call_df.columns else 0
                                     total_put_volume = int(put_df['volume'].sum()) if not put_df.empty and 'volume' in put_df.columns else 0
                                     
                                     exp_summary["total_call_volume"] = total_call_volume
                                     exp_summary["total_put_volume"] = total_put_volume
                                     
-                                    # Avoid division by zero
+                                    # Calculate volume ratios
                                     if total_put_volume > 0:
-                                        exp_summary["call_put_volume_ratio"] = round(total_call_volume / total_put_volume, 2)
+                                        exp_summary["call_put_volume_ratio"] = total_call_volume / total_put_volume
                                     else:
-                                        exp_summary["call_put_volume_ratio"] = 1.0 if total_call_volume == 0 else 2.0
-                                        
-                                    logger.debug(f"Volume data for {symbol}: call={total_call_volume}, put={total_put_volume}, ratio={exp_summary['call_put_volume_ratio']}")
-                                except Exception as vol_error:
-                                    logger.warning(f"Error calculating volume data for {symbol}: {vol_error}")
-                                    exp_summary["total_call_volume"] = 0
-                                    exp_summary["total_put_volume"] = 0
-                                    exp_summary["call_put_volume_ratio"] = 1.0
-                                
-                                # Add this expiration to the options summary
+                                        exp_summary["call_put_volume_ratio"] = 1.5  # Default bullish if no put volume
+                                    
+                                    logger.debug(f"Volume data for {symbol}: calls={total_call_volume}, puts={total_put_volume}")
+                            except Exception as volume_error:
+                                logger.error(f"Error calculating volume data for {symbol}: {repr(volume_error)}")
+                                # Set default values if volume calculation fails
+                                exp_summary["total_call_volume"] = 0
+                                exp_summary["total_put_volume"] = 0
+                                exp_summary["call_put_volume_ratio"] = 1.0
+                            
+                            # Only add the expiration summary if we have valid data
+                            if "atm_call" in exp_summary or "atm_put" in exp_summary:
                                 options_summary[exp_date] = exp_summary
-                                logger.info(f"Successfully processed expiration date {exp_date} for {symbol}")
-                            except Exception as exp_error:
-                                logger.error(f"Error processing expiration date {exp_date} for {symbol}: {exp_error}")
-                                # Continue with next expiration instead of failing
-                                continue
-                    else:
-                        logger.warning(f"No options chain data found for {symbol}")
+                                logger.info(f"Successfully processed expiration {exp_date} for {symbol}")
+                            else:
+                                logger.warning(f"No valid options data found for {symbol} on {exp_date}")
+                            
+                        except Exception as exp_error:
+                            logger.error(f"Error processing expiration {exp_date} for {symbol}: {repr(exp_error)}")
+                            import traceback
+                            logger.debug(f"Traceback: {traceback.format_exc()}")
+                            continue
+                
+                # Step 5: Generate analysis using prompt hook
+                logger.info(f"Step 5: Generating analysis for {symbol}...")
+                try:
+                    # Get the stock analysis prompt from hooks
+                    prompt = get_stock_analysis_prompt(stock_analysis_data, technical_data)
+                    analysis_text = self.gemini_client.generate_text(prompt)
                     
-                    # Step 5: Create a structured prompt for Gemini based on the Rule Book
-                    logger.info(f"Step 5: Creating prompt for {symbol}...")
-                    prompt = f"""
-                    Analyze the underlying stock with this data:
-                    
-                    Stock Data: {stock_analysis_data}
-                    Market Context: {market_context}
-                    
-                    Options Chain Data (4 weeks):
-                    {options_summary}
-                    
-                    Follow these rules exactly:
-                    1. Price Trend:
-                       - Price > 9/21 EMA: Bullish stock trend (+10 to Technicals)
-                       - Price < 9/21 EMA: Bearish stock trend (+10 to Technicals if bearish setup)
-                    
-                    2. Support/Resistance:
-                       - Price near support (within 2%): Bullish setup (+5)
-                       - Price near resistance: Bearish setup (+5)
-                    
-                    3. ATR (Average True Range):
-                       - ATR < 1% of price: Stable stock (+5 to Risk)
-                       - ATR > 2% of price: Volatile, tighten stop (-5 unless Gamble Score high)
-                    
-                    4. Volume Analysis:
-                       - Volume > Average Volume: Increasing interest (+3 to Sentiment)
-                       - Volume significantly higher: Strong momentum (+5 to Sentiment)
-                    
-                    5. Market Alignment:
-                       - Check if stock trend aligns with SPY direction
-                       - Aligned: +5 to overall score
-                       - Contrary: -5 to overall score (may be reason to skip)
-                    
-                    6. Options Analysis:
-                       - High call/put volume ratio (>1.2): Bullish sentiment
-                       - High put/call volume ratio (>1.2): Bearish sentiment
-                       - Negative IV skew (puts < calls): Bullish sentiment
-                       - Positive IV skew (puts > calls): Bearish sentiment
-                       - High gamma for ATM options: Potential for rapid directional moves
-                       - High theta for ATM options: Time decay is significant factor
-                       - Greeks trend across expirations: Look for consistency or change
-                    
-                    Return a detailed analysis with:
-                    1. Stock trend (bullish/bearish/neutral)
-                    2. Technical score (out of 15)
-                    3. Sentiment score (out of 10)
-                    4. Risk assessment (low/normal/high)
-                    5. Market alignment (aligned/contrary/neutral)
-                    6. Options chain analysis (key insights from the greeks data)
-                    7. Technical analysis reasoning
-                    8. Options-based directional prediction
-                    9. Overall recommendation
-                    """
-                    
-                    # Step 6: Send to Gemini for analysis
-                    logger.info(f"Step 6: Generating analysis for {symbol}...")
-                    try:
-                        # Skip Gemini API call and use mock data for testing
-                        logger.info(f"Using mock analysis for {symbol} (bypassing Gemini API)")
-                        analysis_text = f"""
-                        Stock trend: bullish
-                        Technical score: 12
-                        Sentiment score: 8
-                        Risk assessment: normal
-                        Market alignment: aligned
-                        
-                        Options chain analysis: The options data reveals a moderately bullish sentiment with higher call volume than put volume. The IV skew is negative, indicating a preference for upside potential. ATM options show moderate gamma, suggesting potential for price acceleration if momentum builds.
-                        
-                        Technical analysis reasoning: The stock is trading above both 9 and 21 EMAs, forming a bullish trend. Price is near support which provides a good entry opportunity with defined risk.
-                        
-                        Options-based directional prediction: Based on the options chain analysis, there's a bullish bias for the next few weeks, with potential for upside move exceeding 5%.
-                        
-                        Overall recommendation: Consider bullish positions with defined risk. Bull put spreads offer good risk/reward at current levels.
-                        """
-                        
-                        logger.info(f"Created mock analysis for {symbol}, length: {len(analysis_text)}")
-                    except Exception as gem_error:
-                        logger.error(f"Error generating analysis for {symbol}: {gem_error}")
-                        # Create a fallback analysis
-                        analysis_text = f"""
-                        Stock trend: neutral
-                        Technical score: 7
-                        Sentiment score: 5
-                        Risk assessment: normal
-                        Market alignment: neutral
-                        
-                        Options chain analysis: Unable to analyze options data due to API error.
-                        
-                        Technical analysis reasoning: Based on the available data, the stock appears to be in a neutral trend.
-                        
-                        Options-based directional prediction: Neutral, awaiting clearer signals.
-                        
-                        Overall recommendation: Wait for clearer market signals before entering a position.
-                        """
-                    
-                    # Step 7: Parse the response into structured data
-                    logger.info(f"Step 7: Parsing analysis response for {symbol}...")
+                    # Parse the response
                     trend = "neutral"
                     technical_score = 0
                     sentiment_score = 0
@@ -609,14 +539,13 @@ class WSBTradingApp:
                     market_alignment = "neutral"
                     options_analysis = ""
                     
-                    # Parse the response for trend
+                    # Parse trend
                     if "bullish" in analysis_text.lower():
                         trend = "bullish"
                     elif "bearish" in analysis_text.lower():
                         trend = "bearish"
-                        
+                    
                     # Parse technical score
-                    import re
                     technical_match = re.search(r'Technical\s*(?:score|Score):\s*(\d+)', analysis_text)
                     if technical_match:
                         technical_score = int(technical_match.group(1))
@@ -645,8 +574,8 @@ class WSBTradingApp:
                         market_alignment = "aligned"
                     elif "contrary" in analysis_text.lower() or "opposite" in analysis_text.lower():
                         market_alignment = "contrary"
-                        
-                    # Extract options analysis
+                    
+                    # Extract options analysis section if present
                     options_section = re.search(r'(?:Options chain analysis|Options-based directional prediction):\s*(.*?)(?:\n\d\.|\n\n|$)', analysis_text, re.DOTALL)
                     if options_section:
                         options_analysis = options_section.group(1).strip()
@@ -662,9 +591,9 @@ class WSBTradingApp:
                         'market_alignment': market_alignment,
                         'options_analysis': options_analysis,
                         'full_analysis': analysis_text,
-                        'raw_data': stock_analysis_data,  # Include raw data for reference
-                        'technical_data': technical_data,  # Include original technical data
-                        'options_summary': options_summary  # Include options data summary
+                        'raw_data': stock_analysis_data,
+                        'technical_data': technical_data,
+                        'options_summary': options_summary
                     }
                     
                     stock_analyses[symbol] = stock_analysis
@@ -693,9 +622,8 @@ class WSBTradingApp:
                     # Send Discord notification for all stocks
                     logger.info(f"Sending Discord notification for {symbol}...")
                     try:
-                        if self.discord_client:
-                            self.discord_client.send_analysis(stock_analysis, ticker=symbol)
-                            logger.info(f"Successfully sent Discord notification for {symbol}")
+                        self.discord_client.send_analysis(stock_analysis, symbol)
+                        logger.info(f"Successfully sent Discord notification for {symbol}")
                     except Exception as discord_error:
                         logger.error(f"Error sending Discord notification for {symbol}: {discord_error}")
                 
@@ -704,19 +632,13 @@ class WSBTradingApp:
                     # Print full stack trace for debugging
                     import traceback
                     logger.error(f"Stack trace: {traceback.format_exc()}")
-                    # Continue with next stock instead of failing the entire process
-                    continue
             
-            logger.info(f"Completed analysis of {len(stock_analyses)} stocks")
-            return stock_analyses
-            
-        except Exception as e:
-            logger.error(f"Error analyzing stocks: {e}")
-            # Return partial results instead of empty dict
-            if stock_analyses:
-                logger.warning(f"Returning partial results with {len(stock_analyses)} stocks analyzed")
-                return stock_analyses
-            return {}
+            except Exception as e:
+                logger.error(f"Error processing {symbol}: {e}")
+                continue
+        
+        logger.info(f"Completed analysis of {len(stock_analyses)} stocks")
+        return stock_analyses
     
     def find_credit_spreads(self, market_trend, stock_analyses):
         """Find and analyze potential credit spread opportunities"""
@@ -801,7 +723,7 @@ class WSBTradingApp:
                 # If we don't have options data from stock analysis, fetch it directly
                 if not options_data:
                     logger.info(f"Fetching options data directly for {symbol}")
-                    options_data = self.yfinance_client.get_options_for_spread(symbol)
+                options_data = self.yfinance_client.get_options_for_spread(symbol)
                 
                 if not options_data:
                     logger.warning(f"Failed to retrieve options data for {symbol}")
@@ -847,67 +769,10 @@ class WSBTradingApp:
                         "atm_call": greeks_data.get("atm_call", {}),
                         "atm_put": greeks_data.get("atm_put", {}),
                         "call_put_volume_ratio": greeks_data.get("call_put_volume_ratio", 1.0)
-                    }
+                }
                 
-                # Step 4: Create a structured prompt for spread analysis
-                prompt = f"""
-                Analyze credit spread opportunities with this data:
-                
-                Ticker: {symbol}
-                Current Price: {options_data.get("current_price")}
-                Expiration Date: {options_data.get("expiration_date")}
-                
-                Spread Options: {formatted_spreads}
-                Stock Analysis: {stock_analysis}
-                Market Analysis: {market_context}
-                
-                Follow these rules exactly according to the Quality Matrix and Gamble Matrix scoring:
-                1. Match spread direction to SPY and stock analysis:
-                   - Bullish market/stock: Consider Bull Put Spreads
-                   - Bearish market/stock: Consider Bear Call Spreads
-                
-                2. Implied Volatility (IV):
-                   - IV > 30% (high premiums)
-                   - Prefer IV > 2x estimated 20-day HV
-                
-                3. Delta:
-                   - Short leg at 20–30 delta (65–80% OTM probability)
-                   - Buy leg 5–10 points further OTM
-                
-                4. Days to Expiration (DTE):
-                   - 7–15 days preferred
-                
-                5. Position Size:
-                   - Risk 1–2% ($200–$400 for $20,000 account)
-                   - Adjust based on VIX (half size if VIX > 25)
-                
-                6. Greeks Analysis (if available):
-                   - Assess delta for probability of profit
-                   - Look for optimal theta/gamma relationship
-                   - Consider vega risk in high IV environments
-                   - Use put/call IV skew for directional confirmation
-                
-                7. Calculate Quality Score (100 points total) based on:
-                   - Market Analysis (15): Alignment with market trend
-                   - Risk Management (25): Position sizing, risk-reward ratio
-                   - Entry and Exit Points (15): Clear entry/exit strategy
-                   - Technical Indicators (15): Trend alignment, support/resistance
-                   - Options Greeks (15): Delta, theta, vega positioning
-                   - Fundamental Analysis (5): Stock strength
-                   - Probability of Success (10): Delta-based probability
-                
-                8. Calculate Gamble Score if Quality Score is borderline (70-80 points)
-                
-                Return a detailed analysis with:
-                1. Recommended spread type (Bull Put/Bear Call)
-                2. Specific strikes and expiration
-                3. Quality Score (threshold > 80)
-                4. Success Probability (threshold > 70%)
-                5. Position size recommendation
-                6. Profit target and stop loss levels
-                7. Greek-based risk assessment
-                8. Detailed reasoning for your recommendation
-                """
+                # Step 4: Get the stock options prompt from hooks
+                prompt = get_stock_options_prompt(formatted_spreads, stock_analysis, market_context)
                 
                 # Step 5: Send to Gemini for analysis
                 spread_analysis_text = self.gemini_client.generate_text(prompt, temperature=0.3)
@@ -931,7 +796,6 @@ class WSBTradingApp:
                     spread_type = "Bear Call"
                     
                 # Parse strikes
-                import re
                 strikes_match = re.search(r'[Ss]trikes?:?\s*(\d+\/\d+|\d+[\s-]+\d+)', spread_analysis_text)
                 if strikes_match:
                     strikes = strikes_match.group(1).replace(" ", "/").replace("-", "/")
@@ -1037,70 +901,208 @@ class WSBTradingApp:
             if spread_opportunities:
                 # Sort by total score
                 spread_opportunities.sort(key=lambda x: x.get("total_score", 0), reverse=True)
-                best_opportunity = spread_opportunities[0]
                 
-                # Step 7: Generate comprehensive trade plan for best opportunity
-                trade_plan_prompt = f"""
-                Create a comprehensive trade plan based on all analyses for ticker: {best_opportunity['symbol']}
+                # Report the top 5 highest scored credit spread positions
+                top_opportunities = spread_opportunities[:5]
                 
-                SPY Analysis: {market_trend}
-                Stock Analysis: {stock_analyses.get(best_opportunity['symbol'], {})}
-                Spread Analysis: {best_opportunity}
+                # Send a summary of top 5 opportunities to Discord
+                summary_content = "# Today's Top Credit Spread Opportunities\n\n"
                 
-                Follow this template based on the Rule Book for AI-Driven Credit Spread Trading Strategy:
+                for idx, opportunity in enumerate(top_opportunities, 1):
+                    symbol = opportunity['symbol']
+                    spread_type = opportunity['spread_type']
+                    strikes = opportunity['strikes']
+                    expiration = opportunity['expiration']
+                    total_score = opportunity.get('total_score', 0)
+                    quality_score = opportunity.get('quality_score', 0)
+                    success_probability = opportunity.get('success_probability', 0)
+                    
+                    summary_content += f"## {idx}. {symbol} {spread_type} {strikes}\n"
+                    summary_content += f"- **Expiration:** {expiration}\n"
+                    summary_content += f"- **Total Score:** {total_score:.1f}\n"
+                    summary_content += f"- **Quality Score:** {quality_score}\n"
+                    summary_content += f"- **Success Probability:** {success_probability}%\n\n"
                 
-                1. MARKET CONTEXT
-                - SPY Trend: [bullish/bearish/neutral]
-                - Market Direction: [direction with evidence from SPY EMAs and VIX]
-                - VIX Context: [current VIX and implications for position sizing]
-                
-                2. UNDERLYING STOCK ANALYSIS ({best_opportunity['symbol']})
-                - Technical Position: [support/resistance, EMA status]
-                - Sentiment Factors: [news, earnings, catalysts]
-                - Volatility Assessment: [ATR relative to price, stability]
-                
-                3. CREDIT SPREAD RECOMMENDATION
-                - Spread Type: [{best_opportunity['spread_type']}]
-                - Strikes and Expiration: [{best_opportunity['strikes']} expiring {best_opportunity['expiration']}]
-                - Entry Criteria: [exact price levels to enter]
-                - Position Size: [{best_opportunity['position_size']} based on account risk of 1-2%]
-                
-                4. EXIT STRATEGY
-                - Profit Target: [exact credit amount to exit at 50% of max credit]
-                - Stop Loss: [exit at 2x credit received]
-                - Time-based Exit: [exit at 2 days to expiration]
-                
-                5. RISK ASSESSMENT
-                - Quality Score: [{best_opportunity['quality_score']}/100]
-                - Success Probability: [{best_opportunity['success_probability']}%]
-                - Maximum Risk: [$ amount and % of account]
-                
-                6. TRADE EXECUTION CHECKLIST
-                - Pre-trade verification steps
-                - Order types to use
-                - Position monitoring schedule
-                
-                Make this extremely actionable for a trader with a $20,000 account targeting 40-60% annual returns.
-                """
-                
-                trade_plan = self.gemini_client.generate_text(
-                    trade_plan_prompt, 
-                    temperature=0.4
-                )
-                
-                # Send to Discord
                 self.discord_client.send_message(
-                    content=f"# Today's Top Credit Spread Opportunity: {best_opportunity['symbol']} {best_opportunity['spread_type']}",
+                    content=summary_content,
                     webhook_type="trade_alerts",
                     username="WSB Trading Bot"
                 )
                 
+                # Generate detailed trade plan for the best opportunity
+                best_opportunity = top_opportunities[0]
+                
+                # Step 7: Generate comprehensive trade plan for best opportunity using hooks
+                trade_plan = get_trade_plan_prompt(
+                    market_trend,
+                    market_trend.get("options_analysis", {}),
+                    stock_analyses.get(best_opportunity['symbol'], {}),
+                    best_opportunity,
+                    best_opportunity['symbol']
+                )
+                
+                trade_plan_text = self.gemini_client.generate_text(trade_plan, temperature=0.4)
+                
+                # Send detailed plan for the best opportunity
                 self.discord_client.send_message(
-                    content=trade_plan[:1950] + "..." if len(trade_plan) > 2000 else trade_plan,
+                    content=f"# Detailed Plan for Top Opportunity: {best_opportunity['symbol']} {best_opportunity['spread_type']}",
                     webhook_type="trade_alerts"
                 )
                 
+                # Split the trade plan text into chunks if needed to avoid exceeding character limit
+                trade_plan_chunks = [trade_plan_text[i:i+1900] for i in range(0, len(trade_plan_text), 1900)]
+                for i, chunk in enumerate(trade_plan_chunks):
+                    chunk_title = "" if i > 0 else "## Trade Plan Details:\n\n"
+                    chunk_suffix = "..." if i < len(trade_plan_chunks)-1 else ""
+                    
+                    self.discord_client.send_message(
+                        content=f"{chunk_title}{chunk}{chunk_suffix}",
+                        webhook_type="trade_alerts"
+                    )
+                
                 logger.info(f"Generated trade plan for top opportunity: {best_opportunity['symbol']} {best_opportunity['spread_type']} {best_opportunity['strikes']}")
+                logger.info(f"Reported top {min(5, len(spread_opportunities))} credit spread opportunities")
+            else:
+                # When no high-scoring opportunities, still report the top 5 available ones
+                # We need to collect all spread analyses, even those that weren't "recommended"
+                all_spread_analyses = []
+                
+                # Re-process each stock to collect all spread analyses
+                for symbol in symbols:
+                    if symbol not in stock_analyses:
+                        continue
+                    
+                    stock_analysis = stock_analyses[symbol]
+                    
+                    # Skip if no options data or technical score too low
+                    if stock_analysis.get("technical_score", 0) < 5:
+                        continue
+                    
+                    # Get options data and process all spreads, even lower-scored ones
+                    options_data = self.yfinance_client.get_options_for_spread(symbol)
+                    if not options_data:
+                        continue
+                    
+                    # Use the same logic as before, but with a lower threshold
+                    # Determine which spread type to focus on based on trends
+                    potential_spread_type = "Bull Put" if stock_analysis.get("trend") == "bullish" else "Bear Call"
+                    
+                    # Market context data
+                    market_context = {
+                        "spy_trend": market_trend.get("trend", "neutral"),
+                        "market_trend_score": market_trend.get("market_trend_score", 0),
+                        "vix_price": market_trend.get("raw_data", {}).get("vix_price"),
+                        "vix_stability": market_trend.get("raw_data", {}).get("vix_stability"),
+                        "risk_adjustment": market_trend.get("risk_adjustment", "standard")
+                    }
+                    
+                    # Format the spread data
+                    formatted_spreads = {
+                        "ticker": symbol,
+                        "expiration_date": options_data.get("expiration_date"),
+                        "current_price": options_data.get("current_price"),
+                        "potential_spread_type": potential_spread_type,
+                        "bull_put_spreads": options_data.get("bull_put_spreads", [])[:3],
+                        "bear_call_spreads": options_data.get("bear_call_spreads", [])[:3]
+                    }
+                    
+                    # Add greeks data if available
+                    if "options_with_greeks" in options_data:
+                        formatted_spreads["options_greeks"] = options_data.get("options_with_greeks", {})
+                    
+                    # Analyze the spread
+                    prompt = get_stock_options_prompt(formatted_spreads, stock_analysis, market_context)
+                    spread_analysis_text = self.gemini_client.generate_text(prompt, temperature=0.3)
+                    
+                    # Parse the response (same as before)
+                    spread_type = "None"
+                    strikes = "Not specified"
+                    expiration = options_data.get("expiration_date", "Not specified")
+                    quality_score = 0
+                    gamble_score = 0
+                    success_probability = 0
+                    
+                    # Parse spread type
+                    if "Bull Put" in spread_analysis_text:
+                        spread_type = "Bull Put"
+                    elif "Bear Call" in spread_analysis_text:
+                        spread_type = "Bear Call"
+                        
+                    # Parse strikes
+                    strikes_match = re.search(r'[Ss]trikes?:?\s*(\d+\/\d+|\d+[\s-]+\d+)', spread_analysis_text)
+                    if strikes_match:
+                        strikes = strikes_match.group(1).replace(" ", "/").replace("-", "/")
+                        
+                    # Parse quality score
+                    quality_match = re.search(r'[Qq]uality\s*[Ss]core:?\s*(\d+)', spread_analysis_text)
+                    if quality_match:
+                        quality_score = int(quality_match.group(1))
+                        
+                    # Parse gamble score
+                    gamble_match = re.search(r'[Gg]amble\s*[Ss]core:?\s*(\d+)', spread_analysis_text)
+                    if gamble_match:
+                        gamble_score = int(gamble_match.group(1))
+                        
+                    # Parse success probability
+                    prob_match = re.search(r'[Ss]uccess\s*[Pp]robability:?\s*(\d+)%?', spread_analysis_text)
+                    if prob_match:
+                        success_probability = int(prob_match.group(1))
+                    
+                    # Format spread analysis result
+                    spread_analysis = {
+                        'symbol': symbol,
+                        'spread_type': spread_type,
+                        'strikes': strikes,
+                        'expiration': expiration,
+                        'quality_score': quality_score,
+                        'gamble_score': gamble_score,
+                        'success_probability': success_probability,
+                        'total_score': quality_score + (0.4 * gamble_score)
+                    }
+                    
+                    all_spread_analyses.append(spread_analysis)
+                
+                if all_spread_analyses:
+                    # Sort by total score
+                    all_spread_analyses.sort(key=lambda x: x.get("total_score", 0), reverse=True)
+                    
+                    # Take top 5
+                    top_opportunities = all_spread_analyses[:5]
+                    
+                    # Send a summary of top 5 opportunities to Discord
+                    summary_content = "# Today's Credit Spread Opportunities\n\n"
+                    summary_content += "⚠️ **Warning: No high-scoring opportunities found today. The following are the best available options but did not meet quality thresholds.**\n\n"
+                    
+                    for idx, opportunity in enumerate(top_opportunities, 1):
+                        symbol = opportunity['symbol']
+                        spread_type = opportunity['spread_type']
+                        strikes = opportunity['strikes']
+                        expiration = opportunity['expiration']
+                        total_score = opportunity.get('total_score', 0)
+                        quality_score = opportunity.get('quality_score', 0)
+                        success_probability = opportunity.get('success_probability', 0)
+                        
+                        summary_content += f"## {idx}. {symbol} {spread_type} {strikes}\n"
+                        summary_content += f"- **Expiration:** {expiration}\n"
+                        summary_content += f"- **Total Score:** {total_score:.1f}\n"
+                        summary_content += f"- **Quality Score:** {quality_score}\n"
+                        summary_content += f"- **Success Probability:** {success_probability}%\n\n"
+                    
+                    self.discord_client.send_message(
+                        content=summary_content,
+                        webhook_type="trade_alerts",
+                        username="WSB Trading Bot"
+                    )
+                    
+                    logger.info(f"Reported top {min(5, len(all_spread_analyses))} credit spread opportunities (none high-scoring)")
+                else:
+                    # No opportunities at all
+                    self.discord_client.send_message(
+                        content="# Credit Spread Opportunities\n\n⚠️ **No valid credit spread opportunities found today.**",
+                        webhook_type="trade_alerts",
+                        username="WSB Trading Bot"
+                    )
+                    logger.info("No credit spread opportunities found")
             
             logger.info(f"Found {len(spread_opportunities)} high-scoring credit spread opportunities")
             return spread_opportunities
@@ -1110,48 +1112,36 @@ class WSBTradingApp:
             return spread_opportunities
     
     def run(self):
-        """Run the full analysis workflow"""
-        # 1. Analyze market trends (SPY, VIX)
-        market_analysis = self.analyze_market()
+        """Run the WSB trading application."""
+        logger.info("Starting WSB Trading Application...")
         
-        if not market_analysis:
-            logger.error("Failed to analyze market trend, aborting")
+        try:
+            # 1. Analyze market conditions
+            market_analysis = self.analyze_market()
+            if not market_analysis:
+                logger.error("Failed to analyze market conditions")
+                return False
+            
+            # 2. Analyze individual stocks
+            stock_analyses = self.analyze_stocks(market_analysis)
+            if not stock_analyses:
+                logger.error("No stock analyses generated, aborting")
+                return False
+            
+            # 3. Find credit spread opportunities
+            credit_spreads = self.find_credit_spreads(market_analysis, stock_analyses)
+            
+            # 4. Log results to Notion
+            self.log_results_to_notion(market_analysis, stock_analyses, credit_spreads)
+            
+            # 5. Send final notification - removed duplicate market analysis notification
+            logger.info("Workflow completed successfully")
+            logger.info("Check Notion for trade ideas and Discord for alerts")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error in main workflow: {e}")
             return False
-            
-        # 2. Analyze individual stocks
-        stock_analyses = self.analyze_stocks(market_analysis)
-        
-        if not stock_analyses:
-            logger.error("No stock analyses generated, aborting")
-            return False
-            
-        # 3. Find credit spread opportunities
-        credit_spreads = self.find_credit_spreads(market_analysis, stock_analyses)
-        
-        # 4. Log results to Notion database
-        if self.notion_client:
-            self.log_results_to_notion(market_analysis, stock_analyses)
-            
-        # 5. Notify via Discord
-        if self.discord_client:
-            # Notify market analysis
-            self.discord_client.send_analysis(market_analysis, ticker="MARKET")
-            
-            # Notify top stock analyses (sorted by technical score)
-            sorted_stocks = sorted(
-                [(sym, analysis) for sym, analysis in stock_analyses.items() if 'technical_score' in analysis],
-                key=lambda x: x[1].get('technical_score', 0),
-                reverse=True
-            )
-            
-            # Send the top 3 stock analyses
-            for symbol, analysis in sorted_stocks[:3]:
-                self.discord_client.send_analysis(analysis, ticker=symbol)
-                
-        # Log completion
-        logger.info(f"Analysis complete: Analyzed {len(stock_analyses)} stocks")
-        
-        return True
     
     def process_options_data(self, options_data):
         """Process options data into a more structured format for analysis"""
@@ -1183,7 +1173,7 @@ class WSBTradingApp:
             
         return processed_data
     
-    def log_results_to_notion(self, market_analysis, stock_analyses):
+    def log_results_to_notion(self, market_analysis, stock_analyses, credit_spreads=None):
         """Log analysis results to Notion database"""
         logger.info("Logging results to Notion database")
         
@@ -1191,7 +1181,7 @@ class WSBTradingApp:
             if not self.notion_client:
                 logger.warning("Notion client not initialized, skipping logging")
                 return False
-                
+            
             # Log market analysis
             market_properties = {
                 "Date": {"date": {"start": datetime.now().isoformat()}},
@@ -1234,6 +1224,33 @@ class WSBTradingApp:
                         break
                 
                 self.notion_client.add_stock_log_entry(stock_properties)
+            
+            # Log top credit spread opportunities if available
+            if credit_spreads and len(credit_spreads) > 0:
+                # Sort by total score and take top 5
+                sorted_spreads = sorted(credit_spreads, key=lambda x: x.get("total_score", 0), reverse=True)[:5]
+                
+                for spread in sorted_spreads:
+                    if not self.notion_client.trade_log_page_id:
+                        logger.warning("No trade log page ID configured, skipping credit spread logging")
+                        break
+                        
+                    properties = {
+                        "Symbol": {"title": [{"text": {"content": spread.get('symbol', '')}}]},
+                        "Date": {"date": {"start": datetime.now().isoformat()}},
+                        "Strategy": {"select": {"name": spread.get("spread_type", "Unknown")}},
+                        "Strikes": {"rich_text": [{"text": {"content": spread.get("strikes", "")}}]},
+                        "Expiration": {"date": {"start": spread.get("expiration", "2025-04-01")}},
+                        "Quality Score": {"number": spread.get("quality_score", 0)},
+                        "Gamble Score": {"number": spread.get("gamble_score", 0)},
+                        "Total Score": {"number": spread.get("total_score", 0)},
+                        "Success Probability": {"number": spread.get("success_probability", 0)},
+                        "Status": {"select": {"name": "Identified"}}
+                    }
+                    
+                    self.notion_client.add_trade_log_entry(properties)
+                
+                logger.info(f"Logged {len(sorted_spreads)} credit spread opportunities to Notion")
             
             logger.info(f"Successfully logged market and {len(sorted_stocks[:5])} stock analyses to Notion")
             return True

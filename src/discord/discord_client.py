@@ -4,6 +4,7 @@ import logging
 import requests
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional, Union
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -202,5 +203,68 @@ class DiscordClient:
         return self.send_message(
             content=f"New backtest results for {strategy_name}",
             webhook_type="backtest",
+            embed_data=embed
+        )
+    
+    def send_analysis(self, analysis: Dict[str, Any], ticker: str = 'UNKNOWN') -> bool:
+        """
+        Send stock analysis to Discord channel
+        
+        Args:
+            analysis: Dictionary containing analysis data
+            ticker: Stock ticker symbol
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        # Prepare the embed content with analysis details
+        trend = analysis.get('trend', 'neutral').upper()
+        technical_score = analysis.get('technical_score', 0)
+        sentiment_score = analysis.get('sentiment_score', 0)
+        risk_assessment = analysis.get('risk_assessment', 'normal').upper()
+        market_alignment = analysis.get('market_alignment', 'neutral').upper()
+        
+        # Set color based on trend
+        color = 0x00FF00 if trend == "BULLISH" else 0xFF0000 if trend == "BEARISH" else 0xFFAA00
+        
+        # Create description from full analysis if available
+        description = analysis.get('full_analysis', '')
+        if len(description) > 1500:  # Discord embed description limit is 2048, leave room for fields
+            description = description[:1500] + "..."
+            
+        # Create fields list
+        fields = [
+            {"name": "Trend", "value": trend, "inline": True},
+            {"name": "Technical Score", "value": str(technical_score), "inline": True},
+            {"name": "Sentiment Score", "value": str(sentiment_score), "inline": True},
+            {"name": "Risk", "value": risk_assessment, "inline": True},
+            {"name": "Market Alignment", "value": market_alignment, "inline": True}
+        ]
+        
+        # Add options analysis if available
+        options_analysis = analysis.get('options_analysis', '')
+        if options_analysis:
+            if len(options_analysis) > 500:
+                options_analysis = options_analysis[:500] + "..."
+            fields.append({"name": "Options Analysis", "value": options_analysis, "inline": False})
+            
+        # Create the embed
+        embed = {
+            "title": f"{ticker} Stock Analysis",
+            "description": description,
+            "color": color,
+            "fields": fields,
+            "footer": {"text": f"WSB-2 Stock Analysis • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+        }
+        
+        # Add price information if available
+        if 'raw_data' in analysis and 'current_price' in analysis['raw_data']:
+            price = analysis['raw_data']['current_price']
+            if price:
+                embed["title"] = f"{ticker} Stock Analysis - ${price:.2f}"
+        
+        return self.send_message(
+            content=f"Stock Analysis for {ticker}",
+            webhook_type="market_analysis",
             embed_data=embed
         )

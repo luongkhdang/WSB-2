@@ -1,3 +1,7 @@
+"""
+Gemini API client for market analysis.
+"""
+
 import os
 import logging
 import time
@@ -7,111 +11,49 @@ from typing import Dict, List, Any, Optional, Union
 from dotenv import load_dotenv
 import google.generativeai as genai
 
+from ..hooks import (
+    get_market_trend_prompt,
+    get_spy_options_prompt,
+    get_market_data_prompt,
+    get_stock_analysis_prompt,
+    get_stock_options_prompt,
+    get_trade_plan_prompt
+)
+
+# Load environment variables
+load_dotenv()
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('gemini_client')
 
 class GeminiClient:
     def __init__(self):
-        # Load environment variables
-        # Try different potential paths for the .env file
-        base_dir = Path(__file__).resolve().parents[3]  # Go up to the root directory
-        env_paths = [
-            base_dir / '.env',
-            Path(os.getcwd()) / '.env',
-            Path(os.getcwd()).parent / '.env'
-        ]
-        
-        env_loaded = False
-        for env_path in env_paths:
-            if env_path.exists():
-                logger.info(f"Loading .env file from: {env_path}")
-                load_dotenv(dotenv_path=str(env_path))
-                env_loaded = True
-                break
-        
-        if not env_loaded:
-            logger.warning("No .env file found. Trying to use environment variables directly.")
-        
-        # Get Gemini API key
-        self.api_key = os.getenv("GEMINI_API_KEY")
-        logger.info(f"API Key present: {bool(self.api_key)}")
-        if not self.api_key:
-            # Hardcode the API key from the .env file as a fallback
-            self.api_key = "AIzaSyDjH72V5CiHuI84EfC6GDj5DvWMaCAPdoE"
-            logger.info("Using hardcoded API key as fallback")
-        
-        # Configure the Gemini API
-        genai.configure(api_key=self.api_key)
-        
-        # Set the model to Gemma 3
-        self.model_name = "gemma-3-27b-it"
-        self.model = genai.GenerativeModel(self.model_name)
-        logger.info(f"Initialized Gemini client with model: {self.model_name}")
-        
-        # Rate limiting parameters
-        self.requests_per_minute = 30
-        self.request_times = []
-    
-    def _wait_for_rate_limit(self):
-        """Wait if we're exceeding our rate limit of requests per minute"""
-        current_time = time.time()
-        
-        # Remove timestamps older than 1 minute
-        self.request_times = [t for t in self.request_times if current_time - t < 60]
-        
-        # If we're at capacity, wait until we can make another request
-        if len(self.request_times) >= self.requests_per_minute:
-            oldest_request = min(self.request_times)
-            sleep_time = 60 - (current_time - oldest_request) + 1  # +1 for safety margin
-            logger.info(f"Rate limit reached. Sleeping for {sleep_time:.2f} seconds")
-            time.sleep(max(0, sleep_time))
-        
-        # Add current request time
-        self.request_times.append(time.time())
+        """Initialize the Gemini client with API key."""
+        try:
+            api_key = os.getenv('GEMINI_API_KEY')
+            if not api_key:
+                raise ValueError("GEMINI_API_KEY environment variable not found")
+            
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel('gemma-3-27b-it')
+            logger.info("Gemini client initialized successfully")
+            
+        except Exception as e:
+            logger.error(f"Error initializing Gemini client: {e}")
+            raise
     
     def generate_text(self, prompt: str, temperature: float = 0.7) -> str:
-        """Generate text response using the Gemma 3 model with rate limit handling"""
+        """Generate text using the Gemini model."""
         try:
-            # Wait if needed to respect rate limits
-            self._wait_for_rate_limit()
-            
-            generation_config = {
-                "temperature": temperature,
-                # Removed max_output_tokens to allow unrestricted responses
-            }
-            
-            response = self.model.generate_content(
-                prompt,
-                generation_config=generation_config
-            )
-            
+            response = self.model.generate_content(prompt)
             return response.text
         except Exception as e:
-            # If rate limited, wait 30 seconds and try once more
-            if "429" in str(e):
-                logger.warning(f"Rate limit exceeded. Waiting 30 seconds: {e}")
-                time.sleep(30)
-                
-                try:
-                    # Try one more time after waiting
-                    response = self.model.generate_content(
-                        prompt,
-                        generation_config=generation_config
-                    )
-                    return response.text
-                except Exception as retry_e:
-                    logger.error(f"Error generating text with Gemini after waiting: {retry_e}")
-                    # Return fallback response
-                    return self._generate_fallback_response(prompt)
-            else:
-                # For other errors
-                logger.error(f"Error generating text with Gemini: {e}")
-                # Return fallback response
-                return self._generate_fallback_response(prompt)
+            logger.error(f"Error generating text: {e}")
+            return self._generate_fallback_response(prompt)
     
     def _generate_fallback_response(self, prompt: str) -> str:
-        """Generate a simple fallback response when API fails"""
+        """Generate a simple fallback response when API fails."""
         logger.info("Generating fallback response")
         
         # Detect what kind of analysis we're doing based on the prompt content
@@ -121,7 +63,7 @@ class GeminiClient:
         return self._get_fallback_for_type(analysis_type, prompt)
     
     def _detect_analysis_type(self, prompt: str) -> str:
-        """Detect the type of analysis based on prompt content"""
+        """Detect the type of analysis based on prompt content."""
         prompt_lower = prompt.lower()
         
         if "spy market trend" in prompt_lower or "spy_trend" in prompt_lower:
@@ -140,7 +82,7 @@ class GeminiClient:
             return "general"
     
     def _get_fallback_for_type(self, analysis_type: str, prompt: str) -> str:
-        """Return sophisticated fallback response based on analysis type"""
+        """Return sophisticated fallback response based on analysis type."""
         # Extract ticker if available in the prompt
         ticker = self._extract_ticker_from_prompt(prompt)
         
@@ -223,7 +165,7 @@ class GeminiClient:
             Always verify with your own analysis before trading."""
     
     def _extract_ticker_from_prompt(self, prompt: str) -> Optional[str]:
-        """Extract ticker symbol from prompt if present"""
+        """Extract ticker symbol from prompt if present."""
         import re
         
         # Common stock tickers are 1-5 uppercase letters
@@ -243,72 +185,17 @@ class GeminiClient:
         return potential_tickers[0] if potential_tickers else None
     
     def analyze_market_data(self, market_data: Dict[str, Any]) -> str:
-        """Analyze market data using the Gemma 3 model"""
+        """Analyze market data using the Gemini model."""
         try:
-            prompt = f"""
-            Analyze the following market data and provide insights:
-            
-            {market_data}
-            
-            Please include:
-            1. Key market trends
-            2. Potential trading opportunities
-            3. Risk factors to consider
-            """
-            
+            prompt = get_market_data_prompt(market_data)
             return self.generate_text(prompt, temperature=0.3)
         except Exception as e:
             logger.error(f"Error analyzing market data: {e}")
             return f"Error analyzing market data: {str(e)}"
     
-    def get_trading_advice(self, ticker: str, price_data: Dict[str, Any], user_strategy: Optional[str] = None) -> str:
-        """Get trading advice for a specific ticker"""
-        try:
-            strategy_context = f"Consider this trading strategy: {user_strategy}" if user_strategy else ""
-            
-            prompt = f"""
-            Provide trading advice for {ticker} based on the following price data:
-            
-            {price_data}
-            
-            {strategy_context}
-            
-            Please include:
-            1. Support and resistance levels
-            2. Entry and exit points
-            3. Risk management suggestions
-            """
-            
-            return self.generate_text(prompt, temperature=0.4)
-        except Exception as e:
-            logger.error(f"Error getting trading advice: {e}")
-            return f"Error getting trading advice: {str(e)}"
-    
-    def journal_analysis(self, trade_journal_entries: List[Dict[str, Any]]) -> str:
-        """Analyze trading journal entries to provide performance insights"""
-        try:
-            prompt = f"""
-            Analyze the following trading journal entries and provide feedback:
-            
-            {trade_journal_entries}
-            
-            Please include:
-            1. Pattern recognition in successful/unsuccessful trades
-            2. Emotional biases that might be affecting trading decisions
-            3. Specific improvement suggestions
-            4. Areas where the trader is showing strength
-            """
-            
-            return self.generate_text(prompt, temperature=0.2)
-        except Exception as e:
-            logger.error(f"Error analyzing journal entries: {e}")
-            return f"Error analyzing journal entries: {str(e)}"
-    
-    # Credit Spread Strategy Analysis Methods
-    
     def analyze_spy_trend(self, spy_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analyze SPY market trend based on EMA and VIX data
+        Analyze SPY market trend based on EMA and VIX data.
         
         Parameters:
         - spy_data: Dict containing SPY price, EMA data and VIX values
@@ -317,30 +204,7 @@ class GeminiClient:
         - Dict with market trend analysis, score and recommendations
         """
         try:
-            prompt = f"""
-            Analyze SPY market trend based on this data:
-            
-            {spy_data}
-            
-            Follow these rules exactly:
-            1. Check 9/21 EMA on 1-hour chart
-               - Price > 9/21 EMA: Bullish market trend (+10 to Market Trend score)
-               - Price < 9/21 EMA: Bearish market trend (+10 if bearish setup)
-               - Flat/No crossover: Neutral (no bonus)
-            
-            2. Check VIX level:
-               - VIX < 20: Stable bullish trend (+5)
-               - VIX 20–25: Neutral volatility
-               - VIX > 25: High volatility, cautious approach (-5 unless size halved)
-               - VIX > 35: Flag as potential skip unless justified by high Gamble Score
-            
-            Return:
-            1. Overall market trend (bullish/bearish/neutral)
-            2. Market Trend score (out of 20)
-            3. VIX assessment and impact on trading
-            4. Risk management adjustment recommendation
-            """
-            
+            prompt = get_market_trend_prompt(spy_data)
             response = self.generate_text(prompt, temperature=0.2)
             
             # Extract structured data from the response
@@ -409,7 +273,7 @@ class GeminiClient:
     
     def analyze_spy_options(self, options_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analyze SPY options data to determine market direction
+        Analyze SPY options data to determine market direction.
         
         Parameters:
         - options_data: Dict containing SPY options chain data
@@ -418,29 +282,7 @@ class GeminiClient:
         - Dict with market direction analysis and score adjustments
         """
         try:
-            prompt = f"""
-            Analyze SPY options data to determine market direction:
-            
-            {options_data}
-            
-            Follow these rules exactly:
-            1. Call/Put IV Skew: Compare IV of 20–30 delta calls vs. puts
-               - Call IV > Put IV: Bullish direction (+5 to Sentiment)
-               - Put IV > Call IV: Bearish direction (+5 to Sentiment)
-            
-            2. Volume/Open Interest:
-               - Call Volume > Put Volume: Bullish bias (+5)
-               - Put Volume > Call Volume: Bearish bias (+5)
-            
-            3. Delta Trend: Rising call delta or falling put delta signals direction
-            
-            Return:
-            1. Overall market direction prediction (bullish/bearish/neutral)
-            2. Sentiment score adjustment
-            3. Technical score adjustment
-            4. Confidence level (high/medium/low)
-            """
-            
+            prompt = get_spy_options_prompt(options_data)
             response = self.generate_text(prompt, temperature=0.2)
             
             # Extract structured information
@@ -467,17 +309,19 @@ class GeminiClient:
             if "Put Volume > Call Volume" in response and direction == "bearish":
                 sentiment_adjustment += 5
                 
-            # Extract technical adjustment based on delta trend
-            if "delta trend" in response.lower() or "rising call" in response.lower() or "falling put" in response.lower():
+            # Extract technical adjustment
+            if "rising call delta" in response.lower() and direction == "bullish":
+                technical_adjustment += 5
+            if "falling put delta" in response.lower() and direction == "bearish":
                 technical_adjustment += 5
                 
             # Extract confidence level
-            if "high confidence" in response.lower() or "strong signal" in response.lower():
+            if "high" in response.lower():
                 confidence = "high"
-            elif "low confidence" in response.lower() or "weak signal" in response.lower():
+            elif "low" in response.lower():
                 confidence = "low"
             
-            direction_analysis = {
+            options_analysis = {
                 'direction': direction,
                 'sentiment_adjustment': sentiment_adjustment,
                 'technical_adjustment': technical_adjustment,
@@ -485,14 +329,14 @@ class GeminiClient:
                 'full_analysis': response
             }
             
-            return direction_analysis
+            return options_analysis
         except Exception as e:
             logger.error(f"Error analyzing SPY options: {e}")
-            return {'error': str(e), 'direction': 'neutral', 'sentiment_adjustment': 0}
+            return {'error': str(e), 'direction': 'neutral', 'confidence': 'low'}
     
     def analyze_underlying_stock(self, stock_data: Dict[str, Any], market_context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analyze underlying stock fundamentals and technical data
+        Analyze underlying stock fundamentals and technical data.
         
         Parameters:
         - stock_data: Dict containing stock price, EMA, ATR, news/sentiment
@@ -502,40 +346,7 @@ class GeminiClient:
         - Dict with stock analysis, scores and alignment with market
         """
         try:
-            prompt = f"""
-            Analyze the underlying stock with this data:
-            
-            Stock Data: {stock_data}
-            Market Context: {market_context}
-            
-            Follow these rules exactly:
-            1. Price Trend:
-               - Price > 9/21 EMA: Bullish stock trend (+10 to Technicals)
-               - Price < 9/21 EMA: Bearish stock trend (+10 to Technicals if bearish setup)
-            
-            2. Support/Resistance:
-               - Price near support (within 2%): Bullish setup (+5)
-               - Price near resistance: Bearish setup (+5)
-            
-            3. ATR (Average True Range):
-               - ATR < 1% of price: Stable stock (+5 to Risk)
-               - ATR > 2% of price: Volatile, tighten stop (-5 unless Gamble Score high)
-            
-            4. Fundamental Context:
-               - Positive earnings/news: +5 to Sentiment
-               - Negative news: -5 unless bearish setup aligns
-            
-            5. Market Alignment:
-               - Check if stock trend aligns with SPY direction
-            
-            Return:
-            1. Stock trend (bullish/bearish/neutral)
-            2. Technical score (out of 15)
-            3. Sentiment score (out of 10)
-            4. Risk assessment
-            5. Market alignment (aligned/contrary/neutral)
-            """
-            
+            prompt = get_stock_analysis_prompt(stock_data, market_context)
             response = self.generate_text(prompt, temperature=0.2)
             
             # Extract structured information from response
@@ -606,7 +417,7 @@ class GeminiClient:
     
     def analyze_credit_spreads(self, spread_data: Dict[str, Any], stock_analysis: Dict[str, Any], market_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analyze credit spread opportunities based on market and stock analysis
+        Analyze credit spread opportunities based on market and stock analysis.
         
         Parameters:
         - spread_data: Dict with available spread data (IV, delta, DTE, etc.)
@@ -617,59 +428,7 @@ class GeminiClient:
         - Dict with spread recommendations, quality scores and risk assessment
         """
         try:
-            prompt = f"""
-            Analyze credit spread opportunities with this data:
-            
-            Spread Options: {spread_data}
-            Stock Analysis: {stock_analysis}
-            Market Analysis: {market_analysis}
-            
-            Follow these rules exactly according to the Quality Matrix and Gamble Matrix scoring:
-            1. Match spread direction to SPY and stock analysis:
-               - Bullish market/stock: Consider Bull Put Spreads
-               - Bearish market/stock: Consider Bear Call Spreads
-            
-            2. Implied Volatility (IV):
-               - IV > 30% (high premiums)
-               - Prefer IV > 2x estimated 20-day HV
-            
-            3. Delta:
-               - Short leg at 20–30 delta (65–80% OTM probability)
-               - Buy leg 5–10 points further OTM
-            
-            4. Days to Expiration (DTE):
-               - 7–15 days preferred
-            
-            5. Position Size:
-               - Risk 1–2% ($200–$400 for $20,000 account)
-               - Adjust based on VIX (half size if VIX > 25)
-            
-            6. Calculate scores based on the Quality Matrix (100 points total):
-               - Market Analysis (15): Alignment with overall market trend, sector trends, impact of news
-               - Risk Management (25): Clear stop-loss, position sizing, risk-reward ratio, contingency plans
-               - Entry and Exit Points (15): Data-driven entry, clear exit strategy
-               - Technical Indicators (15): Trend indicators, momentum indicators, volatility indicators
-               - Fundamental Analysis (10): Company-specific drivers, macro environment
-               - Probability of Success (10): Historical win rate, model prediction
-               - Uniqueness and Edge (10): Novel insight, market inefficiency
-            
-            7. Calculate the Gamble Score if Quality Score is borderline (70-80 points):
-               - Hype and Momentum (30): Social media, retail volume, price action
-               - Volatility Explosion (25): IV spike, catalyst proximity
-               - Risk-Reward Potential (20): Upside vs. downside ratio
-               - Timing Edge (15): Freshness of play, entry precision
-               - Basic Survival Instinct (10): Max loss cap, quick exit trigger
-            
-            Return:
-            1. Recommended spread type (Bull Put/Bear Call)
-            2. Specific strikes and expiration
-            3. Quality Score (threshold > 80)
-            4. Gamble Score (threshold > 70 with reduced size)
-            5. Success Probability (threshold > 70%)
-            6. Position size recommendation
-            7. Profit target and stop loss levels
-            """
-            
+            prompt = get_stock_options_prompt(spread_data, stock_analysis, market_analysis)
             response = self.generate_text(prompt, temperature=0.3)
             
             # Extract key data from the response
@@ -762,7 +521,7 @@ class GeminiClient:
                            stock_analysis: Dict[str, Any],
                            spread_analysis: Dict[str, Any]) -> str:
         """
-        Generate a complete trade plan based on all analyses
+        Generate a complete trade plan based on all analyses.
         
         Parameters:
         - spy_analysis: SPY market trend analysis
@@ -775,51 +534,7 @@ class GeminiClient:
         """
         try:
             ticker = stock_analysis.get('ticker', 'the underlying')
-            
-            prompt = f"""
-            Create a comprehensive trade plan based on all analyses for ticker: {ticker}
-            
-            SPY Analysis: {spy_analysis}
-            SPY Options Analysis: {options_analysis}
-            Stock Analysis: {stock_analysis}
-            Spread Analysis: {spread_analysis}
-            
-            Follow this template based on the Rule Book for AI-Driven Credit Spread Trading Strategy:
-            
-            1. MARKET CONTEXT
-            - SPY Trend: [bullish/bearish/neutral]
-            - Market Direction: [direction with evidence from SPY EMAs and VIX]
-            - VIX Context: [current VIX and implications for position sizing]
-            
-            2. UNDERLYING STOCK ANALYSIS ({ticker})
-            - Technical Position: [support/resistance, EMA status]
-            - Sentiment Factors: [news, earnings, catalysts]
-            - Volatility Assessment: [ATR relative to price, stability]
-            
-            3. CREDIT SPREAD RECOMMENDATION
-            - Spread Type: [Bull Put/Bear Call]
-            - Strikes and Expiration: [specific strikes and date]
-            - Entry Criteria: [exact price levels to enter]
-            - Position Size: [$amount based on account risk of 1-2% ($200-$400)]
-            
-            4. EXIT STRATEGY
-            - Profit Target: [exact credit amount to exit at 50% of max credit]
-            - Stop Loss: [exit at 2x credit received]
-            - Time-based Exit: [exit at 2 days to expiration]
-            
-            5. RISK ASSESSMENT
-            - Quality Score: [score/100 from Quality Matrix]
-            - Success Probability: [probability %]
-            - Maximum Risk: [$amount and % of account]
-            
-            6. TRADE EXECUTION CHECKLIST
-            - Pre-trade verification steps
-            - Order types to use
-            - Position monitoring schedule
-            
-            Make this extremely actionable for a trader with a $20,000 account targeting 40-60% annual returns.
-            """
-            
+            prompt = get_trade_plan_prompt(spy_analysis, options_analysis, stock_analysis, spread_analysis, ticker)
             return self.generate_text(prompt, temperature=0.4)
         except Exception as e:
             logger.error(f"Error generating trade plan: {e}")

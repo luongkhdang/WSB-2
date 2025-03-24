@@ -10,36 +10,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger('notion_client')
 
 class NotionClient:
-    def __init__(self):
-        # Load environment variables
-        # Try different potential paths for the .env file
-        base_dir = Path(__file__).resolve().parents[3]  # Go up to the root directory
-        env_paths = [
-            base_dir / '.env',
-            Path(os.getcwd()) / '.env',
-            Path(os.getcwd()).parent / '.env'
-        ]
-        
-        env_loaded = False
-        for env_path in env_paths:
-            if env_path.exists():
-                logger.info(f"Loading .env file from: {env_path}")
-                load_dotenv(dotenv_path=str(env_path))
-                env_loaded = True
-                break
-        
-        if not env_loaded:
-            logger.warning("No .env file found. Trying to use environment variables directly.")
-        
-        # Get Notion API key
-        self.api_key = os.getenv("NOTION_API_KEY")
-        logger.info(f"API Key present: {bool(self.api_key)}")
-        if not self.api_key:
-            # Hardcode the API key from the .env file as a fallback
-            self.api_key = "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"
-            logger.info("Using hardcoded API key as fallback")
-        
-        # Initialize Notion client
+    def __init__(self, api_key=None):
+        self.api_key = api_key or os.getenv('NOTION_API_KEY')
+        self.market_scan_page_id = os.getenv('NOTION_MARKET_SCAN_PAGE_ID')
+        self.trade_log_page_id = os.getenv('NOTION_TRADE_LOG_PAGE_ID')
         self.client = Client(auth=self.api_key)
         
         # Page IDs
@@ -269,6 +243,54 @@ class NotionClient:
         except Exception as e:
             logger.error(f"Error calculating weekly performance stats: {e}")
             return {}
+
+    def add_market_log_entry(self, properties):
+        """Add a market analysis entry to the market scan database."""
+        try:
+            if not self.market_scan_page_id:
+                logger.warning("No market scan page ID configured")
+                return None
+            
+            response = self.client.pages.create(
+                parent={"database_id": self.market_scan_page_id},
+                properties=properties
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Error adding market log entry: {e}")
+            return None
+
+    def add_stock_log_entry(self, properties):
+        """Add a stock analysis entry to the market scan database."""
+        try:
+            if not self.market_scan_page_id:
+                logger.warning("No market scan page ID configured")
+                return None
+            
+            response = self.client.pages.create(
+                parent={"database_id": self.market_scan_page_id},
+                properties=properties
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Error adding stock log entry: {e}")
+            return None
+
+    def add_trade_log_entry(self, properties):
+        """Add a trade entry to the trade log database."""
+        try:
+            if not self.trade_log_page_id:
+                logger.warning("No trade log page ID configured")
+                return None
+            
+            response = self.client.pages.create(
+                parent={"database_id": self.trade_log_page_id},
+                properties=properties
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Error adding trade log entry: {e}")
+            return None
 
 
 # Singleton instance

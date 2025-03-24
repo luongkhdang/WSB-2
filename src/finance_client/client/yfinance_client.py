@@ -83,131 +83,69 @@ class YFinanceClient:
             logger.error(f"Error fetching SPY market data: {e}")
             return None
     
-    def get_options_sentiment(self, expiration_date=None):
-        """Get options sentiment analysis data based on SPY options"""
-        logger.info("Fetching options sentiment data from SPY options")
+    def get_options_sentiment(self, symbol="SPY", expiration_date=None):
+        """Get options sentiment data for a given symbol."""
         try:
-            # Use yfinance Ticker directly for options data
-            from yfinance import Ticker
-            ticker = Ticker("SPY")
+            # Get options data
+            ticker = yf.Ticker(symbol)
             
-            # Get current price for reference
-            current_price = ticker.history(period='1d')['Close'].iloc[-1].item()
-            logger.info(f"Current SPY price: {current_price}")
-            
-            # Get available expiration dates if none provided
+            # Get all expiration dates if none specified
             if not expiration_date:
-                try:
-                    expirations = ticker.options
-                    if not expirations:
-                        logger.warning("No options expiration dates found for SPY")
-                        return self._get_fallback_sentiment_data(expiration_date)
-                    
-                    # Find nearest expiration date (ideally 7-14 days out for highest liquidity)
-                    from datetime import datetime, timedelta
-                    now = datetime.now()
-                    target_date = now + timedelta(days=14)
-                    
-                    # Convert expirations to datetime objects for comparison
-                    exp_dates = []
-                    for exp in expirations:
-                        try:
-                            exp_date = datetime.strptime(exp, '%Y-%m-%d')
-                            exp_dates.append((exp_date, exp))
-                        except ValueError:
-                            continue
-                    
-                    # Sort by absolute difference from target date
-                    exp_dates.sort(key=lambda x: abs((x[0] - target_date).days))
-                    
-                    # Select closest date
-                    if exp_dates:
-                        expiration_date = exp_dates[0][1]
-                    else:
-                        logger.warning("Could not determine optimal expiration date")
-                        return self._get_fallback_sentiment_data(expiration_date)
-                        
-                except Exception as e:
-                    logger.error(f"Error getting options expiration dates: {e}")
-                    return self._get_fallback_sentiment_data(expiration_date)
+                expiration_dates = ticker.options
+                if not expiration_dates:
+                    logger.warning(f"No options data available for {symbol}")
+                    return None
+                expiration_date = expiration_dates[0]  # Use nearest expiration
             
-            # Get option chain for the selected expiration
-            try:
-                logger.info(f"Fetching option chain for expiration date: {expiration_date}")
-                chain = ticker.option_chain(expiration_date)
-                
-                if not hasattr(chain, 'calls') or not hasattr(chain, 'puts'):
-                    logger.warning(f"Incomplete options chain for SPY at {expiration_date}")
-                    return self._get_fallback_sentiment_data(expiration_date)
-                
-                # Calculate call/put volume ratio
-                total_call_volume = chain.calls['volume'].sum() if 'volume' in chain.calls.columns else 0
-                total_put_volume = chain.puts['volume'].sum() if 'volume' in chain.puts.columns else 0
-                
-                if total_put_volume == 0:  # Avoid division by zero
-                    call_put_volume_ratio = 1.5  # Default bullish if no put volume
-                else:
-                    call_put_volume_ratio = total_call_volume / total_put_volume
-                
-                # Calculate call/put open interest ratio
-                total_call_oi = chain.calls['openInterest'].sum() if 'openInterest' in chain.calls.columns else 0
-                total_put_oi = chain.puts['openInterest'].sum() if 'openInterest' in chain.puts.columns else 0
-                
-                if total_put_oi == 0:  # Avoid division by zero
-                    call_put_oi_ratio = 1.5  # Default bullish if no put open interest
-                else:
-                    call_put_oi_ratio = total_call_oi / total_put_oi
-                
-                # Calculate average IV for ATM options (within 5% of current price)
-                atm_range_upper = current_price * 1.05
-                atm_range_lower = current_price * 0.95
-                
-                atm_calls = chain.calls[
-                    (chain.calls['strike'] >= atm_range_lower) & 
-                    (chain.calls['strike'] <= atm_range_upper)
-                ]
-                
-                atm_puts = chain.puts[
-                    (chain.puts['strike'] >= atm_range_lower) & 
-                    (chain.puts['strike'] <= atm_range_upper)
-                ]
-                
-                call_iv_avg = atm_calls['impliedVolatility'].mean() if 'impliedVolatility' in atm_calls.columns and not atm_calls.empty else 0.25
-                put_iv_avg = atm_puts['impliedVolatility'].mean() if 'impliedVolatility' in atm_puts.columns and not atm_puts.empty else 0.28
-                
-                # Calculate IV skew (negative means calls more expensive, bullish)
-                iv_skew = put_iv_avg - call_iv_avg
-                
-                # Analyze sentiment based on ratios
-                sentiment = "neutral"
-                if call_put_volume_ratio > 1.2 and iv_skew < -0.02:
-                    sentiment = "strongly_bullish"
-                elif call_put_volume_ratio > 1.1 or iv_skew < -0.01:
-                    sentiment = "bullish"
-                elif call_put_volume_ratio < 0.8 and iv_skew > 0.02:
-                    sentiment = "strongly_bearish"
-                elif call_put_volume_ratio < 0.9 or iv_skew > 0.01:
-                    sentiment = "bearish"
-                
-                return {
-                    "expiration_date": expiration_date,
-                    "call_put_volume_ratio": round(call_put_volume_ratio, 2),
-                    "call_put_oi_ratio": round(call_put_oi_ratio, 2),
-                    "call_iv_avg": round(float(call_iv_avg), 2),
-                    "put_iv_avg": round(float(put_iv_avg), 2),
-                    "iv_skew": round(float(iv_skew), 2),
-                    "sentiment": sentiment,
-                    "total_call_volume": int(total_call_volume),
-                    "total_put_volume": int(total_put_volume)
-                }
-                
-            except Exception as e:
-                logger.error(f"Error analyzing options chain: {e}")
-                return self._get_fallback_sentiment_data(expiration_date)
+            # Get options chain for the expiration date
+            opt = ticker.option_chain(expiration_date)
             
+            if not opt or not hasattr(opt, 'calls') or not hasattr(opt, 'puts'):
+                logger.warning(f"Invalid options data for {symbol}")
+                return None
+            
+            # Calculate volume ratios
+            total_call_volume = opt.calls['volume'].sum()
+            total_put_volume = opt.puts['volume'].sum()
+            total_call_oi = opt.calls['openInterest'].sum()
+            total_put_oi = opt.puts['openInterest'].sum()
+            
+            # Avoid division by zero
+            call_put_volume_ratio = total_call_volume / total_put_volume if total_put_volume > 0 else 1.5
+            call_put_oi_ratio = total_call_oi / total_put_oi if total_put_oi > 0 else 1.5
+            
+            # Calculate IV metrics
+            call_iv_avg = opt.calls['impliedVolatility'].mean()
+            put_iv_avg = opt.puts['impliedVolatility'].mean()
+            iv_skew = call_iv_avg - put_iv_avg
+            
+            # Analyze sentiment based on ratios
+            sentiment = "neutral"
+            if call_put_volume_ratio > 1.2 and iv_skew < -0.02:
+                sentiment = "strongly_bullish"
+            elif call_put_volume_ratio > 1.1 or iv_skew < -0.01:
+                sentiment = "bullish"
+            elif call_put_volume_ratio < 0.8 and iv_skew > 0.02:
+                sentiment = "strongly_bearish"
+            elif call_put_volume_ratio < 0.9 or iv_skew > 0.01:
+                sentiment = "bearish"
+            
+            return {
+                "expiration_date": expiration_date,
+                "call_put_volume_ratio": round(call_put_volume_ratio, 2),
+                "call_put_oi_ratio": round(call_put_oi_ratio, 2),
+                "call_iv_avg": round(float(call_iv_avg), 2),
+                "put_iv_avg": round(float(put_iv_avg), 2),
+                "iv_skew": round(float(iv_skew), 2),
+                "sentiment": sentiment,
+                "total_call_volume": int(total_call_volume),
+                "total_put_volume": int(total_put_volume),
+                "total_call_oi": int(total_call_oi),
+                "total_put_oi": int(total_put_oi)
+            }
         except Exception as e:
-            logger.error(f"Error in get_options_sentiment: {e}")
-            return self._get_fallback_sentiment_data(expiration_date)
+            logger.error(f"Error getting options sentiment for {symbol}: {e}")
+            return None
     
     def _get_fallback_sentiment_data(self, expiration_date=None):
         """Generate fallback options sentiment data when API fails"""
@@ -455,74 +393,33 @@ class YFinanceClient:
             return None
 
     
-    def get_options_for_spread(self, ticker_symbol):
-        """
-        Get options data optimized for finding credit spread opportunities
-        """
-        logger.info(f"Getting options data for credit spreads on {ticker_symbol}")
-        
+    def get_options_for_spread(self, symbol, expiration_date=None):
+        """Get options data formatted for credit spread analysis."""
         try:
-            # Get stock info
-            ticker = yf.Ticker(ticker_symbol)
-            stock_info = ticker.info
-            current_price = stock_info.get('currentPrice', stock_info.get('regularMarketPrice', 0))
+            # Get options data
+            ticker = yf.Ticker(symbol)
             
-            if not current_price or current_price <= 0:
-                logger.warning(f"Invalid current price for {ticker_symbol}: {current_price}")
+            # Get current price
+            current_price = ticker.history(period='1d')['Close'].iloc[-1]
+            
+            # Get all expiration dates if none specified
+            if not expiration_date:
+                expiration_dates = ticker.options
+                if not expiration_dates:
+                    logger.warning(f"No options data available for {symbol}")
+                    return None
+                expiration_date = expiration_dates[0]  # Use nearest expiration
+            
+            # Get options chain for the expiration date
+            opt = ticker.option_chain(expiration_date)
+            
+            if not opt or not hasattr(opt, 'calls') or not hasattr(opt, 'puts'):
+                logger.warning(f"Invalid options data for {symbol}")
                 return None
             
-            logger.info(f"{ticker_symbol} current price: ${current_price}")
-            
-            # Get options expirations
-            expirations = ticker.options
-            if not expirations or len(expirations) == 0:
-                logger.warning(f"No options expirations found for {ticker_symbol}")
-                return None
-            
-            # Sort expirations and find one that's 7-15 days out
-            expirations = sorted(expirations)
-            selected_expiration = None
-            today = datetime.now().date()
-            
-            for exp_date in expirations:
-                exp_date_obj = datetime.strptime(exp_date, '%Y-%m-%d').date()
-                days_to_exp = (exp_date_obj - today).days
-                
-                if 7 <= days_to_exp <= 21:  # Allow a bit wider range than the ideal 7-15
-                    selected_expiration = exp_date
-                    break
-            
-            # If no ideal expiration found, take the closest one
-            if not selected_expiration and expirations:
-                selected_expiration = expirations[0]
-            
-            # Instead of fetching options directly, use our method with greeks
-            options_with_greeks = self.get_option_chain_with_greeks(ticker_symbol, weeks=2)
-            
-            # Filter for selected expiration
-            if selected_expiration and selected_expiration in options_with_greeks:
-                greeks_data = options_with_greeks[selected_expiration]
-            else:
-                # If selected_expiration not found in greeks data, take the first available
-                if options_with_greeks:
-                    selected_expiration = list(options_with_greeks.keys())[0]
-                    greeks_data = options_with_greeks[selected_expiration]
-                else:
-                    greeks_data = {}
-            
-            # Get options chain for the selected expiration
-            try:
-                calls = ticker.option_chain(selected_expiration).calls
-                puts = ticker.option_chain(selected_expiration).puts
-                
-                logger.info(f"Analyzing {len(calls)} calls and {len(puts)} puts for {ticker_symbol} expiring {selected_expiration}")
-            except Exception as e:
-                logger.error(f"Error getting option chain for {ticker_symbol} expiring {selected_expiration}: {e}")
-                return None
-            
-            # Define delta ranges for short and long options
-            short_delta_min, short_delta_max = 0.20, 0.35  # ~65-80% OTM probability
-            long_delta_min, long_delta_max = 0.10, 0.20    # Further OTM for protection
+            # Get calls and puts
+            calls = opt.calls
+            puts = opt.puts
             
             # Calculate bull put spreads (for bullish outlook)
             bull_put_spreads = []
@@ -534,46 +431,33 @@ class YFinanceClient:
                 strike_price = put.strike
                 
                 # Skip if strike is too far ITM or OTM
-                if strike_price > current_price * 1.2 or strike_price < current_price * 0.5:
+                if strike_price < current_price * 0.8 or strike_price > current_price * 1.5:
                     continue
                 
                 # Calculate estimated delta if not available (roughly)
-                # Higher is more ITM, lower is more OTM
                 delta_estimation = (current_price - strike_price) / current_price
                 
-                # Find puts that could be good short legs
-                if (0.9 <= strike_price / current_price <= 0.97) or short_delta_min <= -delta_estimation <= short_delta_max:
-                    short_put = put
-                    short_strike = short_put.strike
+                # Look for a lower strike to buy for protection
+                potential_long_puts = sorted_puts[sorted_puts['strike'] < strike_price]
+                
+                if not potential_long_puts.empty:
+                    # Get the first put with a lower strike
+                    long_put = potential_long_puts.iloc[0]
                     
-                    # Find a long put 5-10 points lower
-                    long_put = None
-                    ideal_long_strike_min = short_strike - 10
-                    ideal_long_strike_max = short_strike - 3
+                    # Calculate credit received
+                    credit = put.lastPrice - long_put.lastPrice
+                    max_risk = strike_price - long_put.strike - credit
                     
-                    long_candidates = sorted_puts[
-                        (sorted_puts.strike < short_strike) & 
-                        (sorted_puts.strike >= ideal_long_strike_min) & 
-                        (sorted_puts.strike <= ideal_long_strike_max)
-                    ]
-                    
-                    if not long_candidates.empty:
-                        long_put = long_candidates.iloc[0]
-                        
-                        # Calculate credit received
-                        credit = short_put.lastPrice - long_put.lastPrice
-                        max_risk = short_strike - long_put.strike - credit
-                        
-                        # Only include if credit is meaningful
-                        if credit > 0.1:
-                            bull_put_spreads.append({
-                                'short_strike': short_strike,
-                                'long_strike': long_put.strike,
-                                'credit': credit,
-                                'max_risk': max_risk,
-                                'return_on_risk': credit / max_risk if max_risk > 0 else 0,
-                                'short_delta': -delta_estimation
-                            })
+                    # Only include if credit is meaningful
+                    if credit > 0.1:
+                        bull_put_spreads.append({
+                            'short_strike': strike_price,
+                            'long_strike': long_put.strike,
+                            'credit': credit,
+                            'max_risk': max_risk,
+                            'return_on_risk': credit / max_risk if max_risk > 0 else 0,
+                            'short_delta': delta_estimation
+                        })
             
             # Calculate bear call spreads (for bearish outlook)
             bear_call_spreads = []
@@ -591,57 +475,42 @@ class YFinanceClient:
                 # Calculate estimated delta if not available (roughly)
                 delta_estimation = (strike_price - current_price) / current_price
                 
-                # Find calls that could be good short legs
-                if (1.03 <= strike_price / current_price <= 1.1) or short_delta_min <= delta_estimation <= short_delta_max:
-                    short_call = call
-                    short_strike = short_call.strike
+                # Look for a higher strike to buy for protection
+                potential_long_calls = sorted_calls[sorted_calls['strike'] > strike_price]
+                
+                if not potential_long_calls.empty:
+                    # Get the first call with a higher strike
+                    long_call = potential_long_calls.iloc[0]
                     
-                    # Find a long call 5-10 points higher
-                    long_call = None
-                    ideal_long_strike_min = short_strike + 3
-                    ideal_long_strike_max = short_strike + 10
+                    # Calculate credit received
+                    credit = call.lastPrice - long_call.lastPrice
+                    max_risk = long_call.strike - strike_price - credit
                     
-                    long_candidates = sorted_calls[
-                        (sorted_calls.strike > short_strike) & 
-                        (sorted_calls.strike >= ideal_long_strike_min) & 
-                        (sorted_calls.strike <= ideal_long_strike_max)
-                    ]
-                    
-                    if not long_candidates.empty:
-                        long_call = long_candidates.iloc[0]
-                        
-                        # Calculate credit received
-                        credit = short_call.lastPrice - long_call.lastPrice
-                        max_risk = long_call.strike - short_strike - credit
-                        
-                        # Only include if credit is meaningful
-                        if credit > 0.1:
-                            bear_call_spreads.append({
-                                'short_strike': short_strike,
-                                'long_strike': long_call.strike,
-                                'credit': credit,
-                                'max_risk': max_risk,
-                                'return_on_risk': credit / max_risk if max_risk > 0 else 0,
-                                'short_delta': delta_estimation
-                            })
+                    # Only include if credit is meaningful
+                    if credit > 0.1:
+                        bear_call_spreads.append({
+                            'short_strike': strike_price,
+                            'long_strike': long_call.strike,
+                            'credit': credit,
+                            'max_risk': max_risk,
+                            'return_on_risk': credit / max_risk if max_risk > 0 else 0,
+                            'short_delta': delta_estimation
+                        })
             
-            # Sort spreads by risk/reward
-            bull_put_spreads = sorted(bull_put_spreads, key=lambda x: x['return_on_risk'], reverse=True)
-            bear_call_spreads = sorted(bear_call_spreads, key=lambda x: x['return_on_risk'], reverse=True)
-            
-            logger.info(f"Found {len(bull_put_spreads)} bull put spreads and {len(bear_call_spreads)} bear call spreads for {ticker_symbol}")
+            # Sort spreads by return on risk
+            bull_put_spreads.sort(key=lambda x: x['return_on_risk'], reverse=True)
+            bear_call_spreads.sort(key=lambda x: x['return_on_risk'], reverse=True)
             
             return {
-                "ticker": ticker_symbol,
-                "current_price": current_price,
-                "expiration_date": selected_expiration,
-                "bull_put_spreads": bull_put_spreads,
-                "bear_call_spreads": bear_call_spreads,
-                "options_with_greeks": greeks_data  # Include the greeks data
+                'ticker': symbol,
+                'expiration_date': expiration_date,
+                'current_price': current_price,
+                'bull_put_spreads': bull_put_spreads,
+                'bear_call_spreads': bear_call_spreads
             }
             
         except Exception as e:
-            logger.error(f"Error getting options data for {ticker_symbol}: {str(e)}")
+            logger.error(f"Error getting options for spread analysis for {symbol}: {e}")
             return None
     
     def get_complete_analysis(self, ticker_symbol="TSLA"):
@@ -966,72 +835,102 @@ class YFinanceClient:
         from scipy.stats import norm
         import math
         
-        if sigma <= 0 or t <= 0:
+        # Check for invalid inputs
+        if sigma <= 0 or t <= 0 or K <= 0 or S <= 0:
             return 1.0 if S > K else 0.0
             
-        d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
-        return norm.cdf(d1)
+        try:
+            d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
+            return norm.cdf(d1)
+        except (ZeroDivisionError, ValueError):
+            logger.warning(f"Invalid inputs in _call_delta: S={S}, K={K}, t={t}, sigma={sigma}")
+            return 1.0 if S > K else 0.0
     
     def _put_delta(self, S, K, t, r, sigma):
         """Calculate put option delta using Black-Scholes"""
         from scipy.stats import norm
         import math
         
-        if sigma <= 0 or t <= 0:
+        # Check for invalid inputs
+        if sigma <= 0 or t <= 0 or K <= 0 or S <= 0:
             return -1.0 if S < K else 0.0
             
-        d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
-        return norm.cdf(d1) - 1
+        try:
+            d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
+            return norm.cdf(d1) - 1
+        except (ZeroDivisionError, ValueError):
+            logger.warning(f"Invalid inputs in _put_delta: S={S}, K={K}, t={t}, sigma={sigma}")
+            return -1.0 if S < K else 0.0
     
     def _gamma(self, S, K, t, r, sigma):
         """Calculate option gamma using Black-Scholes (same for calls and puts)"""
         from scipy.stats import norm
         import math
         
-        if sigma <= 0 or t <= 0:
+        # Check for invalid inputs
+        if sigma <= 0 or t <= 0 or K <= 0 or S <= 0:
             return 0.0
             
-        d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
-        return norm.pdf(d1) / (S * sigma * math.sqrt(t))
+        try:
+            d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
+            return norm.pdf(d1) / (S * sigma * math.sqrt(t))
+        except (ZeroDivisionError, ValueError):
+            logger.warning(f"Invalid inputs in _gamma: S={S}, K={K}, t={t}, sigma={sigma}")
+            return 0.0
     
     def _call_theta(self, S, K, t, r, sigma):
         """Calculate call option theta using Black-Scholes"""
         from scipy.stats import norm
         import math
         
-        if sigma <= 0 or t <= 0:
+        # Check for invalid inputs
+        if sigma <= 0 or t <= 0 or K <= 0 or S <= 0:
             return 0.0
             
-        d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
-        d2 = d1 - sigma * math.sqrt(t)
-        
-        theta = -S * norm.pdf(d1) * sigma / (2 * math.sqrt(t)) - r * K * math.exp(-r * t) * norm.cdf(d2)
-        return theta / 365  # Convert to daily theta
+        try:
+            d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
+            d2 = d1 - sigma * math.sqrt(t)
+            
+            theta = -S * norm.pdf(d1) * sigma / (2 * math.sqrt(t)) - r * K * math.exp(-r * t) * norm.cdf(d2)
+            return theta / 365  # Convert to daily theta
+        except (ZeroDivisionError, ValueError):
+            logger.warning(f"Invalid inputs in _call_theta: S={S}, K={K}, t={t}, sigma={sigma}")
+            return 0.0
     
     def _put_theta(self, S, K, t, r, sigma):
         """Calculate put option theta using Black-Scholes"""
         from scipy.stats import norm
         import math
         
-        if sigma <= 0 or t <= 0:
+        # Check for invalid inputs
+        if sigma <= 0 or t <= 0 or K <= 0 or S <= 0:
             return 0.0
             
-        d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
-        d2 = d1 - sigma * math.sqrt(t)
-        
-        theta = -S * norm.pdf(d1) * sigma / (2 * math.sqrt(t)) + r * K * math.exp(-r * t) * norm.cdf(-d2)
-        return theta / 365  # Convert to daily theta
+        try:
+            d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
+            d2 = d1 - sigma * math.sqrt(t)
+            
+            theta = -S * norm.pdf(d1) * sigma / (2 * math.sqrt(t)) + r * K * math.exp(-r * t) * norm.cdf(-d2)
+            return theta / 365  # Convert to daily theta
+        except (ZeroDivisionError, ValueError):
+            logger.warning(f"Invalid inputs in _put_theta: S={S}, K={K}, t={t}, sigma={sigma}")
+            return 0.0
     
     def _vega(self, S, K, t, r, sigma):
         """Calculate option vega using Black-Scholes (same for calls and puts)"""
         from scipy.stats import norm
         import math
         
-        if sigma <= 0 or t <= 0:
+        # Check for invalid inputs
+        if sigma <= 0 or t <= 0 or K <= 0 or S <= 0:
             return 0.0
             
-        d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
-        return S * math.sqrt(t) * norm.pdf(d1) * 0.01  # Multiply by 0.01 to get vega per 1% change in IV
+        try:
+            d1 = (math.log(S/K) + (r + 0.5 * sigma**2) * t) / (sigma * math.sqrt(t))
+            return S * math.sqrt(t) * norm.pdf(d1) * 0.01  # Multiply by 0.01 to get vega per 1% change in IV
+        except (ZeroDivisionError, ValueError):
+            logger.warning(f"Invalid inputs in _vega: S={S}, K={K}, t={t}, sigma={sigma}")
+            return 0.0
 
 
 # Example usage function
