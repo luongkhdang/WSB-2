@@ -16,8 +16,12 @@ class YFinanceClient:
         try:
             # We'll avoid creating Ticker objects in __init__ to simplify things
             self.tickers = {
-                "SPY": "SPY",
-                "VIX": "^VIX",
+                "SPY": "SPY",   # S&P 500 Index ETF
+                "QQQ": "QQQ",   # Nasdaq 100 ETF (Tech-heavy)
+                "IWM": "IWM",   # Russell 2000 Small Cap ETF
+                "VTV": "VTV",   # Vanguard Value ETF
+                "VGLT": "VGLT", # Vanguard Long-Term Treasury ETF
+                "VIX": "^VIX",  # Volatility Index
                 "TSLA": "TSLA"
             }
             logger.info("YFinanceClient initialized successfully")
@@ -37,50 +41,78 @@ class YFinanceClient:
             return pd.DataFrame()  # Return empty dataframe on error
     
     def get_market_data(self):
-        """Get SPY market trend and direction data"""
+        """Get comprehensive market data including major indices (SPY, QQQ, IWM, VTV, VGLT)"""
         try:
-            # Get historical data
-            spy_history = self._get_ticker_data("SPY", period="5d", interval="1h")
+            # Dictionary to store all market data
+            market_data = {}
             
-            if spy_history.empty:
-                logger.error("Failed to retrieve SPY data")
+            # List of indices to analyze
+            indices = ["SPY", "QQQ", "IWM", "VTV", "VGLT"]
+            
+            # Get historical data for each index
+            for index in indices:
+                history = self._get_ticker_data(index, period="5d", interval="1h")
+                
+                if history.empty:
+                    logger.error(f"Failed to retrieve {index} data")
+                    continue
+                
+                # Calculate basic metrics
+                current_price = history['Close'].iloc[-1].item() if not history.empty else None
+                open_price = history['Open'].iloc[-1].item() if not history.empty else None
+                day_high = history['High'].iloc[-1].item() if not history.empty else None
+                day_low = history['Low'].iloc[-1].item() if not history.empty else None
+                previous_close = history['Close'].iloc[-2].item() if len(history) > 1 else None
+                
+                # Calculate daily change and percentage
+                daily_change = current_price - previous_close if current_price and previous_close else None
+                daily_pct_change = (daily_change / previous_close * 100) if daily_change and previous_close else None
+                
+                # Calculate 50-day average if we have enough data
+                fifty_day_avg = None
+                if len(history) >= 50:
+                    fifty_day_avg = history['Close'].rolling(window=50).mean().iloc[-1].item()
+                
+                # Calculate 200-day average if we have enough data
+                two_hundred_day_avg = None
+                if len(history) >= 200:
+                    two_hundred_day_avg = history['Close'].rolling(window=200).mean().iloc[-1].item()
+                
+                # Calculate 9-day and 21-day EMA for trend analysis
+                ema9 = history['Close'].ewm(span=9, adjust=False).mean().iloc[-1].item() if not history.empty else None
+                ema21 = history['Close'].ewm(span=21, adjust=False).mean().iloc[-1].item() if not history.empty else None
+                
+                # Basic market data
+                index_data = {
+                    "regularMarketPrice": current_price,
+                    "open": open_price,
+                    "dayHigh": day_high,
+                    "dayLow": day_low,
+                    "previousClose": previous_close,
+                    "regularMarketVolume": history['Volume'].iloc[-1].item() if not history.empty else None,
+                    "averageVolume": history['Volume'].mean() if not history.empty else None,
+                    "fiftyDayAverage": fifty_day_avg,
+                    "twoHundredDayAverage": two_hundred_day_avg,
+                    "ema9": ema9,
+                    "ema21": ema21,
+                    "dailyChange": daily_change,
+                    "dailyPctChange": daily_pct_change
+                }
+                
+                market_data[index] = {
+                    "info": index_data,
+                    "history": history
+                }
+            
+            # If we couldn't get SPY data (our primary index), return None
+            if "SPY" not in market_data:
+                logger.error("Failed to retrieve SPY data, which is required for market analysis")
                 return None
+                
+            return market_data
             
-            # Calculate basic metrics
-            current_price = spy_history['Close'].iloc[-1].item() if not spy_history.empty else None
-            open_price = spy_history['Open'].iloc[-1].item() if not spy_history.empty else None
-            day_high = spy_history['High'].iloc[-1].item() if not spy_history.empty else None
-            day_low = spy_history['Low'].iloc[-1].item() if not spy_history.empty else None
-            
-            # Calculate 50-day average if we have enough data
-            fifty_day_avg = None
-            if len(spy_history) >= 50:
-                fifty_day_avg = spy_history['Close'].rolling(window=50).mean().iloc[-1].item()
-            
-            # Calculate 200-day average if we have enough data
-            two_hundred_day_avg = None
-            if len(spy_history) >= 200:
-                two_hundred_day_avg = spy_history['Close'].rolling(window=200).mean().iloc[-1].item()
-            
-            # Basic market data
-            spy_data = {
-                "regularMarketPrice": current_price,
-                "open": open_price,
-                "dayHigh": day_high,
-                "dayLow": day_low,
-                "previousClose": spy_history['Close'].iloc[-2].item() if len(spy_history) > 1 else None,
-                "regularMarketVolume": spy_history['Volume'].iloc[-1].item() if not spy_history.empty else None,
-                "averageVolume": spy_history['Volume'].mean() if not spy_history.empty else None,
-                "fiftyDayAverage": fifty_day_avg,
-                "twoHundredDayAverage": two_hundred_day_avg
-            }
-            
-            return {
-                "info": spy_data,
-                "history": spy_history
-            }
         except Exception as e:
-            logger.error(f"Error fetching SPY market data: {e}")
+            logger.error(f"Error fetching market data: {e}")
             return None
     
     def get_options_sentiment(self, symbol="SPY", expiration_date=None):
@@ -167,6 +199,8 @@ class YFinanceClient:
             "sentiment": "neutral",
             "total_call_volume": 150000,
             "total_put_volume": 143000,
+            "total_call_oi": 150000,
+            "total_put_oi": 143000,
             "note": "This is fallback data. Real options data could not be retrieved."
         }
     

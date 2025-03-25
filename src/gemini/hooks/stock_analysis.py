@@ -1,9 +1,30 @@
 """
 Stock analysis prompt templates for Gemini API.
 """
+import logging
+logger = logging.getLogger(__name__)
 
-def get_stock_analysis_prompt(stock_data, market_context):
+def get_stock_analysis_prompt(*args, **kwargs):
     """Get prompt template for analyzing individual stock data."""
+    # Handle incorrect call with too many arguments
+    if len(args) > 2:
+        logger.warning(f"get_stock_analysis_prompt called with {len(args)} args instead of 2. Ignoring extra args.")
+        stock_data = args[0]
+        market_context = args[1]
+    elif len(args) == 2:
+        stock_data, market_context = args
+    elif len(args) == 1 and 'market_context' in kwargs:
+        stock_data = args[0]
+        market_context = kwargs['market_context']
+    elif 'stock_data' in kwargs and 'market_context' in kwargs:
+        stock_data = kwargs['stock_data']
+        market_context = kwargs['market_context']
+    else:
+        logger.error(f"get_stock_analysis_prompt called with insufficient arguments: args={args}, kwargs={kwargs}")
+        # Provide default empty data to prevent further errors
+        stock_data = {}
+        market_context = {"spy_trend": "neutral"}
+    
     return f'''
     Analyze the underlying stock with this data:
     
@@ -27,15 +48,21 @@ def get_stock_analysis_prompt(stock_data, market_context):
        - Positive earnings/news: +5 to Sentiment
        - Negative news: -5 unless bearish setup aligns
     
-    5. Market Alignment:
-       - Check if stock trend aligns with SPY direction
+    5. Market Alignment - CRITICALLY IMPORTANT:
+       - The overall market trend is: {market_context.get('spy_trend', 'neutral')}
+       - If stock trend matches the SPY trend, mark as "aligned"
+       - If stock trend is opposite to SPY trend, mark as "contrary"
+       - If either stock or market is neutral, mark as "neutral"
+       - YOU MUST INCLUDE a line that starts with "Market Alignment:" followed by "aligned", "contrary", or "neutral"
     
-    Return:
-    1. Stock trend (bullish/bearish/neutral)
-    2. Technical score (out of 15)
-    3. Sentiment score (out of 10)
-    4. Risk assessment
-    5. Market alignment (aligned/contrary/neutral)
+    Your analysis MUST include ALL of the following lines with exact formatting:
+    1. Stock trend: bullish/bearish/neutral
+    2. Technical Score: [number]
+    3. Sentiment Score: [number]
+    4. Risk assessment: high/normal/low
+    5. Market Alignment: aligned/contrary/neutral
+    
+    Always clearly state the Market Alignment based on the rules above. This is critical for the analysis to be processed correctly.
     '''
 
 def get_stock_options_prompt(options_data, stock_analysis, market_analysis):

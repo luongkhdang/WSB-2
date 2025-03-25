@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
+import inspect
 
 # Import clients
 from gemini.client.gemini_client import get_gemini_client
@@ -37,6 +38,12 @@ logger = logging.getLogger(__name__)
 class WSBTradingApp:
     def __init__(self):
         logger.info("Initializing WSB Trading Application...")
+        
+        # Define key market indices to always include in analysis
+        self.key_indices = ['SPY', 'QQQ', 'IWM', 'VTV', 'VGLT', 'VIX', 'DIA', 'BND', 'BTC-USD']
+        
+        # List of ETFs (kept for reference but not used for exclusion)
+        self.etfs = ['SPY', 'QQQ', 'IWM', 'DIA', 'VTV', 'VGLT', 'GLD', 'SLV', 'USO', 'XLF', 'XLE', 'XLI', 'XLK', 'XLV', 'XLP', 'XLU', 'XLB', 'XLY', 'XLC', 'XLRE', 'BND']
         
         # Initialize clients
         self.gemini_client = get_gemini_client()
@@ -83,10 +90,9 @@ class WSBTradingApp:
             
             # Load the CSV file
             df = pd.read_csv(self.screener_file)
-            
-            # Get unique symbols, removing ETFs
-            etfs = ['SPY', 'QQQ', 'IWM', 'XLF', 'XLK']
-            symbols = [sym for sym in df['Symbol'].unique() if sym not in etfs]
+             
+            # Include all unique symbols from the screener (no longer filtering out ETFs)
+            symbols = list(df['Symbol'].unique())
             
             # Sort by volume if available
             if 'Volume' in df.columns:
@@ -94,22 +100,34 @@ class WSBTradingApp:
                 volume_by_symbol = df.groupby('Symbol')['Volume'].sum().reset_index()
                 # Sort by volume in descending order
                 volume_by_symbol = volume_by_symbol.sort_values('Volume', ascending=False)
-                # Get the top 10-15 symbols that aren't ETFs
-                symbols = [sym for sym in volume_by_symbol['Symbol'] if sym not in etfs][:15]
+                # Get the top 15 symbols
+                symbols = list(volume_by_symbol['Symbol'])[:15]
+            
+            # Ensure key indices are included
+            for index in self.key_indices:
+                if index not in symbols:
+                    symbols.append(index)
             
             # Update the watchlist file
             with open(self.watchlist_file, 'w') as f:
                 f.write("# WSB Trading - Credit Spread Watchlist\n")
                 f.write(f"# Last updated: {datetime.now().strftime('%Y-%m-%d')}\n")
-                f.write("# High IV Stocks good for credit spreads\n")
-                f.write("!IMPORTANT - TODAYS-LIST SHOULD BE UPDATED DAILY BASE ON options-screener-high-ivr-credit-spread-scanner.csv\n\n")
-                f.write("#TODAYS-LIST\n\n")
+                f.write("# Stocks and key indices for analysis\n")
+                f.write("!IMPORTANT - TODAYS-LIST SHOULD BE UPDATED DAILY BASED ON options-screener-high-ivr-credit-spread-scanner.csv\n\n")
+                f.write("# KEY INDICES (Always included)\n")
                 
-                # Write symbols
+                # Write key indices first
+                for index in self.key_indices:
+                    f.write(f"{index}\n")
+                
+                f.write("\n# STOCKS FOR CREDIT SPREADS\n\n")
+                
+                # Write other symbols
                 for symbol in symbols:
-                    f.write(f"{symbol}\n")
+                    if symbol not in self.key_indices:  # Avoid duplicates
+                        f.write(f"{symbol}\n")
             
-            logger.info(f"Watchlist updated with {len(symbols)} symbols")
+            logger.info(f"Watchlist updated with {len(symbols)} symbols including key indices")
             return True
             
         except Exception as e:
@@ -117,21 +135,25 @@ class WSBTradingApp:
             return False
     
     def analyze_market(self):
-        """Analyze SPY to understand market conditions"""
-        logger.info("Analyzing market conditions (SPY)...")
+        """Analyze market conditions using multiple indices"""
+        logger.info("Analyzing comprehensive market conditions...")
         
         try:
             # Step 1: Gather all market data from YFinance client
-            spy_market_data = self.yfinance_client.get_market_data()
+            market_indices_data = self.yfinance_client.get_market_data()
             vix_data = self.yfinance_client.get_volatility_filter()
             options_sentiment = self.yfinance_client.get_options_sentiment()
             
-            if not spy_market_data or not vix_data:
-                logger.error("Failed to retrieve SPY or VIX data")
+            if not market_indices_data or not vix_data:
+                logger.error("Failed to retrieve market indices or VIX data")
                 return None
+            
+            # For backwards compatibility with code that expects spy_market_data
+            spy_market_data = market_indices_data.get("SPY", {})
             
             # Step 2: Format the data into a structured format
             market_data_for_analysis = {
+                # SPY data
                 "spy_price": spy_market_data.get("info", {}).get("regularMarketPrice"),
                 "spy_open": spy_market_data.get("info", {}).get("open"),
                 "spy_previous_close": spy_market_data.get("info", {}).get("previousClose"),
@@ -139,9 +161,58 @@ class WSBTradingApp:
                 "spy_avg_volume": spy_market_data.get("info", {}).get("averageVolume"),
                 "spy_50d_avg": spy_market_data.get("info", {}).get("fiftyDayAverage"),
                 "spy_200d_avg": spy_market_data.get("info", {}).get("twoHundredDayAverage"),
+                "spy_ema9": spy_market_data.get("info", {}).get("ema9"),
+                "spy_ema21": spy_market_data.get("info", {}).get("ema21"),
+                "spy_daily_change": spy_market_data.get("info", {}).get("dailyPctChange"),
+                
+                # QQQ data (tech)
+                "qqq_price": market_indices_data.get("QQQ", {}).get("info", {}).get("regularMarketPrice"),
+                "qqq_daily_change": market_indices_data.get("QQQ", {}).get("info", {}).get("dailyPctChange"),
+                "qqq_ema9": market_indices_data.get("QQQ", {}).get("info", {}).get("ema9"),
+                "qqq_ema21": market_indices_data.get("QQQ", {}).get("info", {}).get("ema21"),
+                
+                # IWM data (small caps)
+                "iwm_price": market_indices_data.get("IWM", {}).get("info", {}).get("regularMarketPrice"),
+                "iwm_daily_change": market_indices_data.get("IWM", {}).get("info", {}).get("dailyPctChange"),
+                "iwm_ema9": market_indices_data.get("IWM", {}).get("info", {}).get("ema9"),
+                "iwm_ema21": market_indices_data.get("IWM", {}).get("info", {}).get("ema21"),
+                
+                # VTV data (value)
+                "vtv_price": market_indices_data.get("VTV", {}).get("info", {}).get("regularMarketPrice"),
+                "vtv_daily_change": market_indices_data.get("VTV", {}).get("info", {}).get("dailyPctChange"),
+                "vtv_ema9": market_indices_data.get("VTV", {}).get("info", {}).get("ema9"),
+                "vtv_ema21": market_indices_data.get("VTV", {}).get("info", {}).get("ema21"),
+                
+                # VGLT data (bonds/treasuries)
+                "vglt_price": market_indices_data.get("VGLT", {}).get("info", {}).get("regularMarketPrice"),
+                "vglt_daily_change": market_indices_data.get("VGLT", {}).get("info", {}).get("dailyPctChange"),
+                "vglt_ema9": market_indices_data.get("VGLT", {}).get("info", {}).get("ema9"),
+                "vglt_ema21": market_indices_data.get("VGLT", {}).get("info", {}).get("ema21"),
+                
+                # DIA data (Dow Jones)
+                "dia_price": market_indices_data.get("DIA", {}).get("info", {}).get("regularMarketPrice"),
+                "dia_daily_change": market_indices_data.get("DIA", {}).get("info", {}).get("dailyPctChange"),
+                "dia_ema9": market_indices_data.get("DIA", {}).get("info", {}).get("ema9"),
+                "dia_ema21": market_indices_data.get("DIA", {}).get("info", {}).get("ema21"),
+                
+                # BND data (Total Bond Market)
+                "bnd_price": market_indices_data.get("BND", {}).get("info", {}).get("regularMarketPrice"),
+                "bnd_daily_change": market_indices_data.get("BND", {}).get("info", {}).get("dailyPctChange"),
+                "bnd_ema9": market_indices_data.get("BND", {}).get("info", {}).get("ema9"),
+                "bnd_ema21": market_indices_data.get("BND", {}).get("info", {}).get("ema21"),
+                
+                # BTC-USD data (Bitcoin)
+                "btc_price": market_indices_data.get("BTC-USD", {}).get("info", {}).get("regularMarketPrice"),
+                "btc_daily_change": market_indices_data.get("BTC-USD", {}).get("info", {}).get("dailyPctChange"),
+                "btc_ema9": market_indices_data.get("BTC-USD", {}).get("info", {}).get("ema9"),
+                "btc_ema21": market_indices_data.get("BTC-USD", {}).get("info", {}).get("ema21"),
+                
+                # VIX data
                 "vix_price": vix_data.get("price"),
                 "vix_stability": vix_data.get("stability"),
                 "risk_adjustment": vix_data.get("risk_adjustment"),
+                
+                # Options sentiment
                 "call_put_volume_ratio": options_sentiment.get("call_put_volume_ratio") if options_sentiment else None,
                 "call_put_oi_ratio": options_sentiment.get("call_put_oi_ratio") if options_sentiment else None,
                 "call_iv_avg": options_sentiment.get("call_iv_avg") if options_sentiment else None,
@@ -149,20 +220,55 @@ class WSBTradingApp:
                 "iv_skew": options_sentiment.get("iv_skew") if options_sentiment else None
             }
             
-            # Step 3: Calculate the EMA values using the historical data if available
-            try:
-                recent_history = spy_market_data.get("history")
-                if recent_history is not None and not isinstance(recent_history, pd.DataFrame):
-                    # Convert dictionary back to DataFrame if necessary
-                    recent_history = pd.DataFrame(recent_history)
-                    
-                if recent_history is not None and not recent_history.empty:
-                    ema9 = recent_history['Close'].ewm(span=9, adjust=False).mean()
-                    ema21 = recent_history['Close'].ewm(span=21, adjust=False).mean()
-                    market_data_for_analysis["ema9"] = ema9.iloc[-1] if not ema9.empty else None
-                    market_data_for_analysis["ema21"] = ema21.iloc[-1] if not ema21.empty else None
-            except Exception as e:
-                logger.warning(f"Could not calculate EMAs: {e}")
+            # Detect sector rotation based on relative performance
+            daily_changes = {
+                "SPY": market_data_for_analysis["spy_daily_change"],
+                "QQQ": market_data_for_analysis["qqq_daily_change"],
+                "IWM": market_data_for_analysis["iwm_daily_change"],
+                "VTV": market_data_for_analysis["vtv_daily_change"],
+                "VGLT": market_data_for_analysis["vglt_daily_change"],
+                "DIA": market_data_for_analysis["dia_daily_change"],
+                "BND": market_data_for_analysis["bnd_daily_change"],
+                "BTC-USD": market_data_for_analysis["btc_daily_change"]
+            }
+            
+            # Remove None values
+            daily_changes = {k: v for k, v in daily_changes.items() if v is not None}
+            
+            if daily_changes:
+                # Find leading and lagging indices
+                leading_index = max(daily_changes.items(), key=lambda x: x[1])
+                lagging_index = min(daily_changes.items(), key=lambda x: x[1])
+                
+                # Determine rotation pattern
+                sector_rotation = ""
+                if leading_index[0] == "QQQ" and daily_changes["QQQ"] > 0:
+                    sector_rotation = "TECH LEADERSHIP: Growth/Tech leading the market"
+                elif leading_index[0] == "IWM" and daily_changes["IWM"] > 0:
+                    sector_rotation = "SMALL CAP STRENGTH: Risk-on environment with small caps leading"
+                elif leading_index[0] == "VTV" and daily_changes["VTV"] > 0:
+                    sector_rotation = "VALUE ROTATION: Defensive positioning with value stocks leading"
+                elif leading_index[0] == "VGLT" and daily_changes["VGLT"] > 0:
+                    sector_rotation = "FLIGHT TO SAFETY: Bonds leading, potential risk-off environment"
+                
+                # Add notable divergences
+                spy_change = daily_changes.get("SPY", 0)
+                qqq_change = daily_changes.get("QQQ", 0)
+                iwm_change = daily_changes.get("IWM", 0)
+                
+                if spy_change > 0 and qqq_change < 0:
+                    sector_rotation += " | TECH WEAKNESS: SPY up while QQQ down, potential rotation from tech"
+                elif spy_change < 0 and qqq_change > 0:
+                    sector_rotation += " | TECH RESILIENCE: Tech holding up despite broader market weakness"
+                
+                if spy_change > 0 and iwm_change < 0:
+                    sector_rotation += " | SMALL CAP WEAKNESS: Large caps outperforming small caps"
+                elif spy_change < 0 and iwm_change > 0:
+                    sector_rotation += " | SMALL CAP RESILIENCE: Risk appetite remains for small caps"
+                
+                market_data_for_analysis["sector_rotation"] = sector_rotation
+                market_data_for_analysis["leading_index"] = leading_index[0]
+                market_data_for_analysis["lagging_index"] = lagging_index[0]
             
             # Step 4: Get the market trend prompt from hooks
             prompt = get_market_trend_prompt(market_data_for_analysis)
@@ -175,6 +281,7 @@ class WSBTradingApp:
             market_trend_score = 0
             vix_assessment = ""
             risk_adjustment = "standard"
+            sector_rotation_analysis = ""
             
             # Extract trend
             if "bullish" in market_analysis_text.lower():
@@ -198,12 +305,18 @@ class WSBTradingApp:
             elif "skip" in market_analysis_text.lower() or "avoid" in market_analysis_text.lower():
                 risk_adjustment = "skip"
                 
+            # Extract sector rotation analysis if present
+            sector_rotation_match = re.search(r'Sector Rotation:[\s\n]*(.*?)(?:[\n][\n]|$)', market_analysis_text, re.DOTALL)
+            if sector_rotation_match:
+                sector_rotation_analysis = sector_rotation_match.group(1).strip()
+            
             # Create structured market analysis
             market_trend = {
                 'trend': trend,
                 'market_trend_score': market_trend_score,
                 'vix_assessment': vix_assessment,
                 'risk_adjustment': risk_adjustment,
+                'sector_rotation': sector_rotation_analysis if sector_rotation_analysis else market_data_for_analysis.get("sector_rotation", ""),
                 'full_analysis': market_analysis_text,
                 'raw_data': market_data_for_analysis  # Include the raw data for reference
             }
@@ -275,17 +388,25 @@ class WSBTradingApp:
             
             # Send Discord notification
             self.discord_client.send_market_analysis(
-                title="Daily Market Analysis",
+                title="Comprehensive Market Analysis",
                 content=market_trend.get("full_analysis", "No analysis available"),
                 metrics={
-                    "SPY Trend": market_trend.get("trend", "neutral"),
-                    "VIX": vix_data.get("price", 0),
+                    "Market Trend": market_trend.get("trend", "neutral"),
+                    "SPY": market_data_for_analysis.get("spy_price", 0),
+                    "QQQ": market_data_for_analysis.get("qqq_price", 0),
+                    "IWM": market_data_for_analysis.get("iwm_price", 0),
+                    "VTV": market_data_for_analysis.get("vtv_price", 0),
+                    "VGLT": market_data_for_analysis.get("vglt_price", 0),
+                    "DIA": market_data_for_analysis.get("dia_price", 0),
+                    "BND": market_data_for_analysis.get("bnd_price", 0),
+                    "BTC-USD": market_data_for_analysis.get("btc_price", 0),
+                    "VIX": market_data_for_analysis.get("vix_price", 0),
                     "Market Score": market_trend.get("market_trend_score", 0),
-                    "Risk Adjustment": vix_data.get("risk_adjustment", 1.0)
+                    "Risk Adjustment": market_trend.get("risk_adjustment", "standard")
                 }
             )
             
-            logger.info(f"Market analysis complete: {market_trend.get('trend', 'neutral')}")
+            logger.info(f"Comprehensive market analysis complete: {market_trend.get('trend', 'neutral')}")
             return market_trend
             
         except Exception as e:
@@ -295,6 +416,18 @@ class WSBTradingApp:
     def analyze_stocks(self, market_analysis):
         """Analyze individual stocks in the watchlist."""
         logger.info("Starting stock analysis...")
+        
+        # Check if get_stock_analysis_prompt is defined with correct signature
+        try:
+            sig = inspect.signature(get_stock_analysis_prompt)
+            params = list(sig.parameters.keys())
+            logger.info(f"get_stock_analysis_prompt signature: {sig} with params: {params}")
+            if len(params) != 2:
+                logger.warning(f"WARNING: get_stock_analysis_prompt has {len(params)} parameters instead of 2!")
+                logger.warning(f"Parameters are: {params}")
+        except Exception as e:
+            logger.error(f"Error checking function signature: {e}")
+        
         stock_analyses = {}
         
         # Get watchlist symbols
@@ -527,8 +660,23 @@ class WSBTradingApp:
                 # Step 5: Generate analysis using prompt hook
                 logger.info(f"Step 5: Generating analysis for {symbol}...")
                 try:
+                    # Prepare market context data for the stock analysis prompt
+                    market_context = {
+                        "spy_trend": market_analysis.get("trend", "neutral"),
+                        "market_trend_score": market_analysis.get("market_trend_score", 0),
+                        "vix_price": market_analysis.get("raw_data", {}).get("vix_price"),
+                        "vix_stability": market_analysis.get("raw_data", {}).get("vix_stability"),
+                        "risk_adjustment": market_analysis.get("risk_adjustment", "standard"),
+                        "sector_rotation": market_analysis.get("sector_rotation", ""),
+                        "overall_market": "The market trend is " + market_analysis.get("trend", "neutral")
+                    }
+                    
+                    # DEBUG: Log the arguments being passed to get_stock_analysis_prompt
+                    logger.debug(f"Calling get_stock_analysis_prompt for {symbol} with args: stock_analysis_data, market_context")
+                    
                     # Get the stock analysis prompt from hooks
-                    prompt = get_stock_analysis_prompt(stock_analysis_data, technical_data)
+                    # IMPORTANT: Always use exactly 2 arguments for this function
+                    prompt = get_stock_analysis_prompt(stock_analysis_data, market_context)
                     analysis_text = self.gemini_client.generate_text(prompt)
                     
                     # Parse the response
@@ -570,10 +718,17 @@ class WSBTradingApp:
                         risk_assessment = "high"
                         
                     # Parse market alignment
-                    if "aligned" in analysis_text.lower():
-                        market_alignment = "aligned"
-                    elif "contrary" in analysis_text.lower() or "opposite" in analysis_text.lower():
-                        market_alignment = "contrary"
+                    market_alignment_match = re.search(r'Market Alignment:\s*(.*?)(?:\n\d\.|\n\n|$)', analysis_text, re.DOTALL)
+                    if market_alignment_match:
+                        market_alignment = market_alignment_match.group(1).strip().lower()
+                        logger.info(f"Market alignment for {symbol}: {market_alignment}")
+                    else:
+                        logger.warning(f"No explicit market alignment found for {symbol}, falling back to trend comparison")
+                        if market_analysis.get("trend", "neutral") == trend:
+                            market_alignment = "aligned"
+                        else:
+                            market_alignment = "contrary"
+                        logger.info(f"Market alignment for {symbol} (fallback): {market_alignment}")
                     
                     # Extract options analysis section if present
                     options_section = re.search(r'(?:Options chain analysis|Options-based directional prediction):\s*(.*?)(?:\n\d\.|\n\n|$)', analysis_text, re.DOTALL)
@@ -646,6 +801,9 @@ class WSBTradingApp:
         
         spread_opportunities = []
         
+        # We'll use this to track API calls and add delays
+        api_call_count = 0
+        
         try:
             # Read watchlist symbols
             symbols = []
@@ -690,6 +848,12 @@ class WSBTradingApp:
                 
                 logger.info(f"Analyzing options spreads for {symbol}...")
                 
+                # Apply rate limiting to prevent API overload
+                api_call_count += 1
+                if api_call_count % 5 == 0:  # Add delay every 5 API calls
+                    logger.info(f"Added delay to respect API rate limits...")
+                    time.sleep(30)  # 30 second delay
+                
                 # Step 2: Get options data from stock_analysis if available, otherwise from YFinance
                 options_data = None
                 if "options_summary" in stock_analysis and stock_analysis["options_summary"]:
@@ -719,11 +883,11 @@ class WSBTradingApp:
                             "bear_call_spreads": [],  # To be populated if needed
                             "bull_put_spreads": []    # To be populated if needed
                         }
-                    
+                
                 # If we don't have options data from stock analysis, fetch it directly
                 if not options_data:
                     logger.info(f"Fetching options data directly for {symbol}")
-                options_data = self.yfinance_client.get_options_for_spread(symbol)
+                    options_data = self.yfinance_client.get_options_for_spread(symbol)
                 
                 if not options_data:
                     logger.warning(f"Failed to retrieve options data for {symbol}")
@@ -769,7 +933,7 @@ class WSBTradingApp:
                         "atm_call": greeks_data.get("atm_call", {}),
                         "atm_put": greeks_data.get("atm_put", {}),
                         "call_put_volume_ratio": greeks_data.get("call_put_volume_ratio", 1.0)
-                }
+                    }
                 
                 # Step 4: Get the stock options prompt from hooks
                 prompt = get_stock_options_prompt(formatted_spreads, stock_analysis, market_context)
@@ -929,180 +1093,79 @@ class WSBTradingApp:
                     username="WSB Trading Bot"
                 )
                 
-                # Generate detailed trade plan for the best opportunity
-                best_opportunity = top_opportunities[0]
+                # Add a delay before generating detailed trade plans
+                logger.info("Adding delay before generating detailed trade plans...")
+                time.sleep(30)  # 30 second delay
                 
-                # Step 7: Generate comprehensive trade plan for best opportunity using hooks
-                trade_plan = get_trade_plan_prompt(
-                    market_trend,
-                    market_trend.get("options_analysis", {}),
-                    stock_analyses.get(best_opportunity['symbol'], {}),
-                    best_opportunity,
-                    best_opportunity['symbol']
-                )
+                # Generate detailed trade plans for the top 3 opportunities
+                top_3_opportunities = top_opportunities[:3]
                 
-                trade_plan_text = self.gemini_client.generate_text(trade_plan, temperature=0.4)
+                logger.info(f"Generating detailed trade plans for top {len(top_3_opportunities)} opportunities")
                 
-                # Send detailed plan for the best opportunity
-                self.discord_client.send_message(
-                    content=f"# Detailed Plan for Top Opportunity: {best_opportunity['symbol']} {best_opportunity['spread_type']}",
-                    webhook_type="trade_alerts"
-                )
-                
-                # Split the trade plan text into chunks if needed to avoid exceeding character limit
-                trade_plan_chunks = [trade_plan_text[i:i+1900] for i in range(0, len(trade_plan_text), 1900)]
-                for i, chunk in enumerate(trade_plan_chunks):
-                    chunk_title = "" if i > 0 else "## Trade Plan Details:\n\n"
-                    chunk_suffix = "..." if i < len(trade_plan_chunks)-1 else ""
+                for idx, opportunity in enumerate(top_3_opportunities, 1):
+                    symbol = opportunity['symbol']
+                    spread_type = opportunity['spread_type']
+                    strikes = opportunity['strikes']
                     
+                    # Generate comprehensive trade plan for this opportunity using hooks
+                    trade_plan = get_trade_plan_prompt(
+                        market_trend,
+                        market_trend.get("options_analysis", {}),
+                        stock_analyses.get(symbol, {}),
+                        opportunity,
+                        symbol
+                    )
+                    
+                    trade_plan_text = self.gemini_client.generate_text(trade_plan, temperature=0.4)
+                    
+                    # Send detailed plan for this opportunity
                     self.discord_client.send_message(
-                        content=f"{chunk_title}{chunk}{chunk_suffix}",
+                        content=f"# Detailed Plan #{idx}: {symbol} {spread_type} {strikes}",
                         webhook_type="trade_alerts"
                     )
+                    
+                    # Split the trade plan text into chunks if needed to avoid exceeding character limit
+                    trade_plan_chunks = [trade_plan_text[i:i+1900] for i in range(0, len(trade_plan_text), 1900)]
+                    for i, chunk in enumerate(trade_plan_chunks):
+                        chunk_title = "" if i > 0 else "## Trade Plan Details:\n\n"
+                        chunk_suffix = "..." if i < len(trade_plan_chunks)-1 else ""
+                        
+                        self.discord_client.send_message(
+                            content=f"{chunk_title}{chunk}{chunk_suffix}",
+                            webhook_type="trade_alerts"
+                        )
+                    
+                    logger.info(f"Generated trade plan for opportunity #{idx}: {symbol} {spread_type} {strikes}")
+                    
+                    # Add delay between each trade plan generation
+                    if idx < len(top_3_opportunities):
+                        logger.info("Adding delay between trade plan generations...")
+                        time.sleep(20)  # 20 second delay
                 
-                logger.info(f"Generated trade plan for top opportunity: {best_opportunity['symbol']} {best_opportunity['spread_type']} {best_opportunity['strikes']}")
-                logger.info(f"Reported top {min(5, len(spread_opportunities))} credit spread opportunities")
+                logger.info(f"Reported top {min(5, len(spread_opportunities))} credit spread opportunities with detailed plans for top {len(top_3_opportunities)}")
             else:
                 # When no high-scoring opportunities, still report the top 5 available ones
                 # We need to collect all spread analyses, even those that weren't "recommended"
                 all_spread_analyses = []
                 
-                # Re-process each stock to collect all spread analyses
-                for symbol in symbols:
-                    if symbol not in stock_analyses:
-                        continue
-                    
-                    stock_analysis = stock_analyses[symbol]
-                    
-                    # Skip if no options data or technical score too low
-                    if stock_analysis.get("technical_score", 0) < 5:
-                        continue
-                    
-                    # Get options data and process all spreads, even lower-scored ones
-                    options_data = self.yfinance_client.get_options_for_spread(symbol)
-                    if not options_data:
-                        continue
-                    
-                    # Use the same logic as before, but with a lower threshold
-                    # Determine which spread type to focus on based on trends
-                    potential_spread_type = "Bull Put" if stock_analysis.get("trend") == "bullish" else "Bear Call"
-                    
-                    # Market context data
-                    market_context = {
-                        "spy_trend": market_trend.get("trend", "neutral"),
-                        "market_trend_score": market_trend.get("market_trend_score", 0),
-                        "vix_price": market_trend.get("raw_data", {}).get("vix_price"),
-                        "vix_stability": market_trend.get("raw_data", {}).get("vix_stability"),
-                        "risk_adjustment": market_trend.get("risk_adjustment", "standard")
-                    }
-                    
-                    # Format the spread data
-                    formatted_spreads = {
-                        "ticker": symbol,
-                        "expiration_date": options_data.get("expiration_date"),
-                        "current_price": options_data.get("current_price"),
-                        "potential_spread_type": potential_spread_type,
-                        "bull_put_spreads": options_data.get("bull_put_spreads", [])[:3],
-                        "bear_call_spreads": options_data.get("bear_call_spreads", [])[:3]
-                    }
-                    
-                    # Add greeks data if available
-                    if "options_with_greeks" in options_data:
-                        formatted_spreads["options_greeks"] = options_data.get("options_with_greeks", {})
-                    
-                    # Analyze the spread
-                    prompt = get_stock_options_prompt(formatted_spreads, stock_analysis, market_context)
-                    spread_analysis_text = self.gemini_client.generate_text(prompt, temperature=0.3)
-                    
-                    # Parse the response (same as before)
-                    spread_type = "None"
-                    strikes = "Not specified"
-                    expiration = options_data.get("expiration_date", "Not specified")
-                    quality_score = 0
-                    gamble_score = 0
-                    success_probability = 0
-                    
-                    # Parse spread type
-                    if "Bull Put" in spread_analysis_text:
-                        spread_type = "Bull Put"
-                    elif "Bear Call" in spread_analysis_text:
-                        spread_type = "Bear Call"
-                        
-                    # Parse strikes
-                    strikes_match = re.search(r'[Ss]trikes?:?\s*(\d+\/\d+|\d+[\s-]+\d+)', spread_analysis_text)
-                    if strikes_match:
-                        strikes = strikes_match.group(1).replace(" ", "/").replace("-", "/")
-                        
-                    # Parse quality score
-                    quality_match = re.search(r'[Qq]uality\s*[Ss]core:?\s*(\d+)', spread_analysis_text)
-                    if quality_match:
-                        quality_score = int(quality_match.group(1))
-                        
-                    # Parse gamble score
-                    gamble_match = re.search(r'[Gg]amble\s*[Ss]core:?\s*(\d+)', spread_analysis_text)
-                    if gamble_match:
-                        gamble_score = int(gamble_match.group(1))
-                        
-                    # Parse success probability
-                    prob_match = re.search(r'[Ss]uccess\s*[Pp]robability:?\s*(\d+)%?', spread_analysis_text)
-                    if prob_match:
-                        success_probability = int(prob_match.group(1))
-                    
-                    # Format spread analysis result
-                    spread_analysis = {
-                        'symbol': symbol,
-                        'spread_type': spread_type,
-                        'strikes': strikes,
-                        'expiration': expiration,
-                        'quality_score': quality_score,
-                        'gamble_score': gamble_score,
-                        'success_probability': success_probability,
-                        'total_score': quality_score + (0.4 * gamble_score)
-                    }
-                    
-                    all_spread_analyses.append(spread_analysis)
+                # Send a summary message about no high-scoring opportunities
+                summary_content = "# Today's Credit Spread Opportunities\n\n"
+                summary_content += "⚠️ **Warning: No high-scoring opportunities found today. The following are the best available options but did not meet quality thresholds.**\n\n"
                 
-                if all_spread_analyses:
-                    # Sort by total score
-                    all_spread_analyses.sort(key=lambda x: x.get("total_score", 0), reverse=True)
-                    
-                    # Take top 5
-                    top_opportunities = all_spread_analyses[:5]
-                    
-                    # Send a summary of top 5 opportunities to Discord
-                    summary_content = "# Today's Credit Spread Opportunities\n\n"
-                    summary_content += "⚠️ **Warning: No high-scoring opportunities found today. The following are the best available options but did not meet quality thresholds.**\n\n"
-                    
-                    for idx, opportunity in enumerate(top_opportunities, 1):
-                        symbol = opportunity['symbol']
-                        spread_type = opportunity['spread_type']
-                        strikes = opportunity['strikes']
-                        expiration = opportunity['expiration']
-                        total_score = opportunity.get('total_score', 0)
-                        quality_score = opportunity.get('quality_score', 0)
-                        success_probability = opportunity.get('success_probability', 0)
-                        
-                        summary_content += f"## {idx}. {symbol} {spread_type} {strikes}\n"
-                        summary_content += f"- **Expiration:** {expiration}\n"
-                        summary_content += f"- **Total Score:** {total_score:.1f}\n"
-                        summary_content += f"- **Quality Score:** {quality_score}\n"
-                        summary_content += f"- **Success Probability:** {success_probability}%\n\n"
-                    
-                    self.discord_client.send_message(
-                        content=summary_content,
-                        webhook_type="trade_alerts",
-                        username="WSB Trading Bot"
-                    )
-                    
-                    logger.info(f"Reported top {min(5, len(all_spread_analyses))} credit spread opportunities (none high-scoring)")
-                else:
-                    # No opportunities at all
-                    self.discord_client.send_message(
-                        content="# Credit Spread Opportunities\n\n⚠️ **No valid credit spread opportunities found today.**",
-                        webhook_type="trade_alerts",
-                        username="WSB Trading Bot"
-                    )
-                    logger.info("No credit spread opportunities found")
+                # Sort by total score
+                all_spread_analyses.sort(key=lambda x: x.get("total_score", 0), reverse=True)
+                
+                # Take top 5
+                top_opportunities = all_spread_analyses[:5]
+                
+                # Send a summary of top 5 opportunities to Discord
+                self.discord_client.send_message(
+                    content=summary_content,
+                    webhook_type="trade_alerts",
+                    username="WSB Trading Bot"
+                )
+                
+                logger.info(f"Reported top 5 credit spread opportunities (none high-scoring)")
             
             logger.info(f"Found {len(spread_opportunities)} high-scoring credit spread opportunities")
             return spread_opportunities

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from dotenv import load_dotenv
 import google.generativeai as genai
+import re
 
 from ..hooks import (
     get_market_trend_prompt,
@@ -45,12 +46,34 @@ class GeminiClient:
     
     def generate_text(self, prompt: str, temperature: float = 0.7) -> str:
         """Generate text using the Gemini model."""
-        try:
-            response = self.model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            logger.error(f"Error generating text: {e}")
-            return self._generate_fallback_response(prompt)
+        max_retries = 3
+        base_delay = 30  # Start with a 30-second delay
+        
+        for attempt in range(max_retries + 1):
+            try:
+                response = self.model.generate_content(prompt)
+                return response.text
+            except Exception as e:
+                error_str = str(e)
+                logger.error(f"Error generating text: {e}")
+                
+                # Check if it's a rate limit error (429)
+                if "429" in error_str and attempt < max_retries:
+                    # Extract retry delay if specified in the error
+                    retry_delay = base_delay
+                    delay_match = re.search(r'retry_delay\s*\{\s*seconds:\s*(\d+)', error_str)
+                    if delay_match:
+                        retry_delay = int(delay_match.group(1))
+                    else:
+                        # Exponential backoff
+                        retry_delay = base_delay * (2 ** attempt)
+                    
+                    logger.warning(f"Rate limit exceeded. Waiting {retry_delay} seconds before retry #{attempt+1}")
+                    time.sleep(retry_delay)
+                    continue
+                
+                # For other errors or if we've exhausted retries, return fallback
+                return self._generate_fallback_response(prompt)
     
     def _generate_fallback_response(self, prompt: str) -> str:
         """Generate a simple fallback response when API fails."""
@@ -166,8 +189,6 @@ class GeminiClient:
     
     def _extract_ticker_from_prompt(self, prompt: str) -> Optional[str]:
         """Extract ticker symbol from prompt if present."""
-        import re
-        
         # Common stock tickers are 1-5 uppercase letters
         ticker_matches = re.findall(r'[A-Z]{1,5}', prompt)
         
@@ -220,7 +241,6 @@ class GeminiClient:
                 trend = "neutral"
                 
             # Extract trend score using regex
-            import re
             score_match = re.search(r'(?:score|Score):\s*(\d+)', response)
             if score_match:
                 market_trend_score = int(score_match.group(1))
@@ -363,7 +383,6 @@ class GeminiClient:
                 trend = "bearish"
                 
             # Parse technical score
-            import re
             technical_match = re.search(r'Technical\s*(?:score|Score):\s*(\d+)', response)
             if technical_match:
                 technical_score = int(technical_match.group(1))
@@ -450,7 +469,6 @@ class GeminiClient:
                 spread_type = "Bear Call"
                 
             # Extract strikes
-            import re
             strikes_match = re.search(r'[Ss]trikes?:?\s*(\d+\/\d+)', response)
             if strikes_match:
                 strikes = strikes_match.group(1)
