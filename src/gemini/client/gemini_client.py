@@ -6,13 +6,16 @@ import os
 import logging
 import time
 import random
+import json
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from dotenv import load_dotenv
 import google.generativeai as genai
 import re
+import sys
 
-from ..hooks import (
+# Add proper imports using relative imports
+from gemini.hooks import (
     get_market_trend_prompt,
     get_spy_options_prompt,
     get_market_data_prompt,
@@ -25,7 +28,7 @@ from ..hooks import (
 load_dotenv()
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('gemini_client')
 
 class GeminiClient:
@@ -38,21 +41,110 @@ class GeminiClient:
             
             genai.configure(api_key=api_key)
             self.model = genai.GenerativeModel('gemma-3-27b-it')
+            
+            # Compile regex patterns once at initialization
+            self._patterns = {
+                'score': re.compile(r'(?:score|Score):\s*(\d+)'),
+                'tech_score': re.compile(r'(?:technical score|Technical Score):\s*(\d+)'),
+                'sentiment_score': re.compile(r'(?:sentiment score|Sentiment Score):\s*(\d+)'),
+                'quality_score': re.compile(r'(?:quality score|Quality Score):\s*(\d+)'),
+                'probability': re.compile(r'(?:probability|Probability|success probability|Success Probability):\s*(\d+)%?'),
+                'position_size': re.compile(r'(?:position size|Position Size):\s*\$?(\d+)'),
+                'profit_target': re.compile(r'(?:profit target|Profit Target|target):\s*(\d+)%'),
+                'stop_loss': re.compile(r'(?:stop loss|Stop Loss):\s*(\d+)%'),
+                'market_alignment': re.compile(r'Market Alignment:\s*(.*?)(?:\n\d\.|\n\n|$)', re.DOTALL),
+                'options_section': re.compile(r'(?:Options chain analysis|Options-based directional prediction):\s*(.*?)(?:\n\d\.|\n\n|$)', re.DOTALL),
+                'ticker': re.compile(r'[A-Z]{1,5}')
+            }
+            
+            # Define response templates for more consistent output
+            self.response_templates = {
+                'market_trend': """
+Please respond in this exact JSON format:
+{
+  "trend": "bullish|bearish|neutral",
+  "market_trend_score": <0-100>,
+  "vix_assessment": "<your assessment>",
+  "risk_adjustment": "standard|half size|skip",
+  "sector_rotation": "<your assessment>",
+  "explanation": "<detailed analysis>"
+}
+""",
+                'stock_analysis': """
+Please respond in this exact JSON format:
+{
+  "trend": "bullish|bearish|neutral",
+  "technical_score": <0-100>,
+  "sentiment_score": <0-100>,
+  "risk_assessment": "low|moderate|high",
+  "market_alignment": "aligned|contrary|neutral",
+  "options_analysis": "<your assessment>",
+  "explanation": "<detailed analysis>"
+}
+""",
+                'credit_spread': """
+Please respond in this exact JSON format:
+{
+  "spread_type": "Bull Put|Bear Call|Iron Condor",
+  "strikes": "<strike prices>",
+  "quality_score": <0-100>,
+  "success_probability": <0-100>,
+  "position_size": "$<amount>",
+  "profit_target": "<percentage or amount>",
+  "stop_loss": "<percentage or amount>",
+  "greek_assessment": "<your assessment>",
+  "recommended": true|false,
+  "explanation": "<detailed analysis>"
+}
+"""
+            }
+            
             logger.info("Gemini client initialized successfully")
             
         except Exception as e:
             logger.error(f"Error initializing Gemini client: {e}")
             raise
     
-    def generate_text(self, prompt: str, temperature: float = 0.7) -> str:
-        """Generate text using the Gemini model."""
+    def generate_text(self, prompt: str, temperature: float = 0.7, structured: bool = False, 
+                     response_format: str = None) -> str:
+        """
+        Generate text using the Gemini model.
+        
+        Args:
+            prompt: The text prompt to send to the model
+            temperature: Controls randomness (0.0-1.0)
+            structured: Whether to request structured JSON output
+            response_format: A specific format template to use ('market_trend', 'stock_analysis', 'credit_spread')
+        
+        Returns:
+            The generated text response
+        """
         max_retries = 3
         base_delay = 30  # Start with a 30-second delay
+        
+        # Add structured format instruction if requested
+        if structured:
+            if response_format and response_format in self.response_templates:
+                # Use a specific template
+                format_instruction = self.response_templates[response_format]
+            else:
+                # Generic JSON instruction
+                format_instruction = "Please respond in valid JSON format."
+                
+            prompt = f"{prompt}\n\n{format_instruction}"
+            logger.debug(f"Using structured format: {response_format or 'generic JSON'}")
         
         for attempt in range(max_retries + 1):
             try:
                 response = self.model.generate_content(prompt)
-                return response.text
+                result = response.text
+                
+                # Try to extract JSON if the response contains it
+                if structured:
+                    result = self._extract_json_from_response(result)
+                
+                return result
+                
             except Exception as e:
                 error_str = str(e)
                 logger.error(f"Error generating text: {e}")
@@ -73,17 +165,63 @@ class GeminiClient:
                     continue
                 
                 # For other errors or if we've exhausted retries, return fallback
-                return self._generate_fallback_response(prompt)
+                return self._generate_fallback_response(prompt, structured, response_format)
     
-    def _generate_fallback_response(self, prompt: str) -> str:
+    def _extract_json_from_response(self, response: str) -> str:
+        """Extract JSON from a response that might contain markdown and other text."""
+        try:
+            # Try to find JSON within triple backticks
+            json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', response)
+            if json_match:
+                json_str = json_match.group(1).strip()
+                # Validate it's proper JSON
+                json.loads(json_str)
+                return json_str
+            
+            # Try to find JSON with curly braces
+            json_match = re.search(r'(\{[\s\S]*\})', response)
+            if json_match:
+                json_str = json_match.group(1).strip()
+                # Validate it's proper JSON
+                json.loads(json_str)
+                return json_str
+                
+            logger.warning("Could not extract JSON from response")
+            return response
+            
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse JSON from response: {e}")
+            return response
+
+    def _generate_fallback_response(self, prompt: str, structured: bool = False, 
+                                  response_format: str = None) -> str:
         """Generate a simple fallback response when API fails."""
         logger.info("Generating fallback response")
         
         # Detect what kind of analysis we're doing based on the prompt content
         analysis_type = self._detect_analysis_type(prompt)
         
-        # Return appropriate fallback based on analysis type
-        return self._get_fallback_for_type(analysis_type, prompt)
+        # Get fallback based on analysis type
+        fallback = self._get_fallback_for_type(analysis_type, prompt)
+        
+        # Convert to JSON if structured was requested
+        if structured:
+            try:
+                if isinstance(fallback, dict):
+                    return json.dumps(fallback)
+                else:
+                    # Try to parse the fallback text as JSON
+                    key_values = {}
+                    for line in fallback.split('\n'):
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            key_values[key.strip()] = value.strip()
+                    
+                    return json.dumps(key_values)
+            except Exception as e:
+                logger.error(f"Error converting fallback to JSON: {e}")
+        
+        return fallback
     
     def _detect_analysis_type(self, prompt: str) -> str:
         """Detect the type of analysis based on prompt content."""
@@ -205,14 +343,58 @@ class GeminiClient:
         
         return potential_tickers[0] if potential_tickers else None
     
-    def analyze_market_data(self, market_data: Dict[str, Any]) -> str:
+    def analyze_market_data(self, market_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze market data using the Gemini model."""
         try:
             prompt = get_market_data_prompt(market_data)
-            return self.generate_text(prompt, temperature=0.3)
+            response_text = self.generate_text(prompt, temperature=0.3, structured=True)
+            
+            # Try to parse the response as JSON
+            try:
+                return json.loads(response_text)
+            except json.JSONDecodeError:
+                # Fall back to text parsing if JSON parsing fails
+                logger.warning("Failed to parse market data response as JSON, falling back to text parsing")
+                parsed_result = self._parse_market_analysis_from_text(response_text)
+                return parsed_result
+                
         except Exception as e:
             logger.error(f"Error analyzing market data: {e}")
-            return f"Error analyzing market data: {str(e)}"
+            return {'error': str(e), 'trend': 'neutral', 'market_trend_score': 0}
+    
+    def _parse_market_analysis_from_text(self, text: str) -> Dict[str, Any]:
+        """Parse market analysis from text response using regex patterns."""
+        result = {
+            'trend': 'neutral',
+            'market_trend_score': 0,
+            'vix_assessment': '',
+            'risk_adjustment': 'standard',
+            'full_analysis': text
+        }
+        
+        # Extract trend
+        if "bullish" in text.lower():
+            result['trend'] = "bullish"
+        elif "bearish" in text.lower():
+            result['trend'] = "bearish"
+        
+        # Extract score using compiled pattern
+        score_match = self._patterns['score'].search(text)
+        if score_match:
+            result['market_trend_score'] = int(score_match.group(1))
+        
+        # Extract VIX assessment if present
+        vix_lines = [line for line in text.split("\n") if "VIX" in line]
+        if vix_lines:
+            result['vix_assessment'] = vix_lines[0].strip()
+            
+        # Extract risk adjustment if present
+        if "half" in text.lower() or "reduce" in text.lower():
+            result['risk_adjustment'] = "half size"
+        elif "skip" in text.lower() or "avoid" in text.lower():
+            result['risk_adjustment'] = "skip"
+        
+        return result
     
     def analyze_spy_trend(self, spy_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -227,77 +409,75 @@ class GeminiClient:
         try:
             start_time = time.time()
             prompt = get_market_trend_prompt(spy_data)
-            logger.debug(f"Generated spy trend prompt of length {len(prompt)}")
             
-            response = self.generate_text(prompt, temperature=0.2)
-            logger.debug(f"Received raw response of length {len(response)}")
-            logger.debug(f"Raw response first 100 chars: {response[:100]}")
+            # Request structured JSON output
+            response_text = self.generate_text(
+                prompt, temperature=0.2, structured=True, response_format='market_trend'
+            )
             
-            # Extract structured data from the response
-            trend = "bullish"
-            market_trend_score = 0
-            vix_assessment = ""
-            risk_adjustment = "standard"
-            
-            # Parse the response to extract key information
-            parse_start_time = time.time()
-            
-            if "bearish" in response.lower():
-                trend = "bearish"
-            elif "neutral" in response.lower():
+            # Try to parse the response as JSON
+            try:
+                market_analysis = json.loads(response_text)
+                logger.debug("Successfully parsed JSON response for SPY trend")
+                
+                # Ensure the response has full_analysis for compatibility
+                if 'explanation' in market_analysis and 'full_analysis' not in market_analysis:
+                    market_analysis['full_analysis'] = market_analysis['explanation']
+                
+                return market_analysis
+                
+            except json.JSONDecodeError:
+                # Fall back to regex parsing if JSON fails
+                logger.warning("Failed to parse market trend response as JSON, falling back to regex parsing")
+                
+                # Use the existing parsing logic with compiled patterns
                 trend = "neutral"
-                
-            # Extract trend score using regex
-            score_match = re.search(r'(?:score|Score):\s*(\d+)', response)
-            if score_match:
-                market_trend_score = int(score_match.group(1))
-                logger.debug(f"Found market trend score: {market_trend_score}")
-            else:
-                # Fallback logic to compute score
-                logger.debug("No explicit score found in response, using fallback logic")
-                if "Price > 9/21 EMA" in response and trend == "bullish":
-                    market_trend_score += 10
-                if "Price < 9/21 EMA" in response and trend == "bearish":
-                    market_trend_score += 10
+                if "bullish" in response_text.lower():
+                    trend = "bullish"
+                elif "bearish" in response_text.lower():
+                    trend = "bearish"
                     
-                # VIX score component
-                if "VIX < 20" in response:
-                    market_trend_score += 5
-                    vix_assessment = "Stable, low volatility"
-                    risk_adjustment = "standard"
-                elif "VIX > 25" in response and "VIX < 35" in response:
-                    market_trend_score -= 5
-                    vix_assessment = "Elevated volatility"
-                    risk_adjustment = "half size"
-                elif "VIX > 35" in response:
-                    vix_assessment = "Extreme volatility"
-                    risk_adjustment = "skip"
+                # Extract trend score using regex
+                score_match = self._patterns['score'].search(response_text)
+                market_trend_score = 0
+                if score_match:
+                    market_trend_score = int(score_match.group(1))
                 else:
-                    vix_assessment = "Normal volatility"
-                    risk_adjustment = "standard"
-            
-            # Extract VIX assessment if present
-            vix_lines = [line for line in response.split("\n") if "VIX" in line]
-            if vix_lines:
-                vix_assessment = vix_lines[0].strip()
+                    # Fallback logic to compute score
+                    if "Price > 9/21 EMA" in response_text and trend == "bullish":
+                        market_trend_score += 10
+                    if "Price < 9/21 EMA" in response_text and trend == "bearish":
+                        market_trend_score += 10
+                        
+                    # VIX score component
+                    if "VIX < 20" in response_text:
+                        market_trend_score += 5
                 
-            # Extract risk adjustment if present
-            if "half" in response.lower() or "reduce" in response.lower():
-                risk_adjustment = "half size"
-            elif "skip" in response.lower() or "avoid" in response.lower():
-                risk_adjustment = "skip"
-            
-            market_analysis = {
-                'trend': trend,
-                'market_trend_score': market_trend_score,
-                'vix_assessment': vix_assessment,
-                'risk_adjustment': risk_adjustment,
-                'full_analysis': response
-            }
-            
-            return market_analysis
+                # Extract VIX assessment if present
+                vix_lines = [line for line in response_text.split("\n") if "VIX" in line]
+                vix_assessment = ""
+                if vix_lines:
+                    vix_assessment = vix_lines[0].strip()
+                    
+                # Extract risk adjustment if present
+                risk_adjustment = "standard"
+                if "half" in response_text.lower() or "reduce" in response_text.lower():
+                    risk_adjustment = "half size"
+                elif "skip" in response_text.lower() or "avoid" in response_text.lower():
+                    risk_adjustment = "skip"
+                
+                market_analysis = {
+                    'trend': trend,
+                    'market_trend_score': market_trend_score,
+                    'vix_assessment': vix_assessment,
+                    'risk_adjustment': risk_adjustment,
+                    'full_analysis': response_text
+                }
+                
+                return market_analysis
+                
         except Exception as e:
-            logger.error(f"Error analyzing SPY trend: {e}")
+            logger.error(f"Error analyzing SPY trend: {e}", exc_info=True)
             return {'error': str(e), 'trend': 'neutral', 'market_trend_score': 0}
     
     def analyze_spy_options(self, options_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -377,72 +557,82 @@ class GeminiClient:
         try:
             start_time = time.time()
             prompt = get_stock_analysis_prompt(stock_data, market_context)
-            logger.debug(f"Generated stock analysis prompt of length {len(prompt)}")
             
-            response = self.generate_text(prompt, temperature=0.3)
-            logger.debug(f"Received raw stock analysis response of length {len(response)}")
-            logger.debug(f"Raw stock analysis response first 100 chars: {response[:100]}")
+            # Request structured JSON output
+            response_text = self.generate_text(
+                prompt, temperature=0.3, structured=True, response_format='stock_analysis'
+            )
             
-            parse_start_time = time.time()
-            # Extract structured data from the response
-            trend = "bullish"
-            technical_score = 0
-            sentiment_score = 0
-            risk_assessment = "moderate"
-            market_alignment = "aligned"
-            
-            # Parse trend
-            if "bearish" in response.lower():
-                trend = "bearish"
-            elif "neutral" in response.lower():
-                trend = "neutral"
-            
-            # Extract technical score
-            tech_score_match = re.search(r'(?:technical score|Technical Score):\s*(\d+)', response)
-            if tech_score_match:
-                technical_score = int(tech_score_match.group(1))
-                logger.debug(f"Found technical score: {technical_score}")
-            
-            # Extract sentiment score
-            sent_score_match = re.search(r'(?:sentiment score|Sentiment Score):\s*(\d+)', response)
-            if sent_score_match:
-                sentiment_score = int(sent_score_match.group(1))
-                logger.debug(f"Found sentiment score: {sentiment_score}")
-            
-            # Extract risk assessment
-            if "high risk" in response.lower():
-                risk_assessment = "high"
-            elif "low risk" in response.lower():
-                risk_assessment = "low"
+            # Try to parse the response as JSON
+            try:
+                stock_analysis = json.loads(response_text)
                 
-            # Extract market alignment
-            if "misaligned" in response.lower() or "not aligned" in response.lower():
-                market_alignment = "misaligned"
-            
-            # Calculate overall score
-            overall_score = technical_score + sentiment_score
-            
-            # Calculate parse time
-            parse_time = time.time() - parse_start_time
-            logger.debug(f"Parsing stock analysis response took {parse_time:.4f} seconds")
-            
-            # Calculate total processing time
-            total_time = time.time() - start_time
-            logger.debug(f"Total stock analysis processing took {total_time:.4f} seconds")
-            
-            return {
-                'ticker': stock_data.get('ticker', 'Unknown'),
-                'trend': trend,
-                'technical_score': technical_score,
-                'sentiment_score': sentiment_score,
-                'overall_score': overall_score,
-                'risk_assessment': risk_assessment,
-                'market_alignment': market_alignment,
-                'analysis': response
-            }
-            
+                # Add ticker from input data
+                stock_analysis['ticker'] = stock_data.get('ticker', 'Unknown')
+                
+                # Calculate overall score if not provided
+                if 'overall_score' not in stock_analysis and 'technical_score' in stock_analysis and 'sentiment_score' in stock_analysis:
+                    stock_analysis['overall_score'] = stock_analysis['technical_score'] + stock_analysis['sentiment_score']
+                
+                # Ensure the response has analysis field for compatibility
+                if 'explanation' in stock_analysis and 'analysis' not in stock_analysis:
+                    stock_analysis['analysis'] = stock_analysis['explanation']
+                
+                return stock_analysis
+                
+            except json.JSONDecodeError:
+                # Fall back to regex parsing if JSON fails
+                logger.warning("Failed to parse stock analysis response as JSON, falling back to regex parsing")
+                
+                # Extract structured data from the response using compiled patterns
+                trend = "neutral"
+                if "bullish" in response_text.lower():
+                    trend = "bullish"
+                elif "bearish" in response_text.lower():
+                    trend = "bearish"
+                
+                # Extract technical score
+                tech_score_match = self._patterns['tech_score'].search(response_text)
+                technical_score = 0
+                if tech_score_match:
+                    technical_score = int(tech_score_match.group(1))
+                
+                # Extract sentiment score
+                sent_score_match = self._patterns['sentiment_score'].search(response_text)
+                sentiment_score = 0
+                if sent_score_match:
+                    sentiment_score = int(sent_score_match.group(1))
+                
+                # Extract risk assessment
+                risk_assessment = "moderate"
+                if "high risk" in response_text.lower():
+                    risk_assessment = "high"
+                elif "low risk" in response_text.lower():
+                    risk_assessment = "low"
+                    
+                # Extract market alignment
+                market_alignment = "aligned"
+                if "misaligned" in response_text.lower() or "not aligned" in response_text.lower() or "contrary" in response_text.lower():
+                    market_alignment = "contrary"
+                
+                # Calculate overall score
+                overall_score = technical_score + sentiment_score
+                
+                stock_analysis = {
+                    'ticker': stock_data.get('ticker', 'Unknown'),
+                    'trend': trend,
+                    'technical_score': technical_score,
+                    'sentiment_score': sentiment_score,
+                    'overall_score': overall_score,
+                    'risk_assessment': risk_assessment,
+                    'market_alignment': market_alignment,
+                    'analysis': response_text
+                }
+                
+                return stock_analysis
+                
         except Exception as e:
-            logger.error(f"Error analyzing stock data for {stock_data.get('ticker', 'Unknown')}: {e}")
+            logger.error(f"Error analyzing stock data for {stock_data.get('ticker', 'Unknown')}: {e}", exc_info=True)
             return {
                 'ticker': stock_data.get('ticker', 'Unknown'),
                 'trend': 'neutral',
@@ -467,97 +657,136 @@ class GeminiClient:
         - Dict with spread recommendations, quality score and risk assessment
         """
         try:
-            start_time = time.time()
+            ticker = spread_data.get('ticker', 'Unknown')
             prompt = get_stock_options_prompt(spread_data, stock_analysis, market_analysis)
-            logger.debug(f"Generated credit spread prompt of length {len(prompt)}")
             
-            response = self.generate_text(prompt, temperature=0.2)
-            logger.debug(f"Received raw credit spread response of length {len(response)}")
-            logger.debug(f"Raw credit spread response first 100 chars: {response[:100]}")
+            # Request structured JSON output using the credit_spread template
+            response_text = self.generate_text(
+                prompt, temperature=0.2, structured=True, response_format='credit_spread'
+            )
             
-            parse_start_time = time.time()
-            # Extract structured data from the response
-            spread_type = "Bull Put"
-            quality_score = 0
-            success_prob = 0
-            position_size = "skip"
-            profit_target = "50%"
-            stop_loss = "100%"
-            recommended = False
-            
-            # Parse spread type
-            if "bear call" in response.lower():
-                spread_type = "Bear Call"
-            elif "iron condor" in response.lower():
-                spread_type = "Iron Condor"
-            
-            # Extract quality score
-            quality_match = re.search(r'(?:quality score|Quality Score):\s*(\d+)', response)
-            if quality_match:
-                quality_score = int(quality_match.group(1))
-                logger.debug(f"Found quality score: {quality_score}")
-            
-            # Extract success probability 
-            prob_match = re.search(r'(?:probability|Probability):\s*(\d+)', response)
-            if prob_match:
-                success_prob = int(prob_match.group(1))
-                logger.debug(f"Found success probability: {success_prob}")
-            
-            # Extract position size recommendation
-            if "$200" in response:
-                position_size = "$200"
-            elif "$100" in response:
-                position_size = "$100"
-            elif "$300" in response:
-                position_size = "$300"
-            elif "$400" in response:
-                position_size = "$400"
-            elif "$500" in response:
-                position_size = "$500"
-            
-            # Determine if recommended
-            if "recommended: yes" in response.lower() or "recommendation: yes" in response.lower():
-                recommended = True
-                logger.debug("Spread explicitly recommended")
-            elif quality_score >= 70:  # Default threshold
-                recommended = True
-                logger.debug(f"Spread implicitly recommended based on quality score: {quality_score}")
-            
-            # Extract profit target if present
-            profit_match = re.search(r'(?:profit target|target):\s*(\d+)%', response.lower())
-            if profit_match:
-                profit_target = f"{profit_match.group(1)}%"
-                logger.debug(f"Found profit target: {profit_target}")
-            
-            # Extract stop loss if present
-            stop_match = re.search(r'(?:stop loss|stop):\s*(\d+)%', response.lower())
-            if stop_match:
-                stop_loss = f"{stop_match.group(1)}%"
-                logger.debug(f"Found stop loss: {stop_loss}")
+            # Try to parse the response as JSON
+            try:
+                spread_analysis = json.loads(response_text)
                 
-            # Calculate parse time
-            parse_time = time.time() - parse_start_time
-            logger.debug(f"Parsing credit spread response took {parse_time:.4f} seconds")
+                # Add ticker from input data
+                spread_analysis['ticker'] = ticker
+                
+                # Ensure the response has analysis field for compatibility
+                if 'explanation' in spread_analysis and 'analysis' not in spread_analysis:
+                    spread_analysis['analysis'] = spread_analysis['explanation']
+                
+                return spread_analysis
+                
+            except json.JSONDecodeError as json_err:
+                # Log the specific JSON error and response for debugging
+                logger.warning(f"JSON decode error for {ticker}: {json_err}")
+                
+                # Fall back to regex parsing if JSON fails
+                logger.warning(f"Failed to parse credit spread response as JSON for {ticker}, falling back to regex parsing")
+                
+                # Extract structured data from the response using compiled patterns
+                spread_type = "Bull Put"
+                if "bear call" in response_text.lower():
+                    spread_type = "Bear Call"
+                elif "iron condor" in response_text.lower():
+                    spread_type = "Iron Condor"
+                
+                # Extract quality score
+                quality_score = 0
+                quality_match = self._patterns['quality_score'].search(response_text)
+                if quality_match:
+                    quality_score = int(quality_match.group(1))
+                
+                # Extract success probability 
+                success_prob = 0
+                prob_match = self._patterns['probability'].search(response_text)
+                if prob_match:
+                    success_prob = int(prob_match.group(1))
+                
+                # Extract position size recommendation
+                position_size = "skip"
+                size_match = self._patterns['position_size'].search(response_text)
+                if size_match:
+                    position_size = f"${size_match.group(1)}"
+                elif "$200" in response_text:
+                    position_size = "$200"
+                elif "$100" in response_text:
+                    position_size = "$100"
+                elif "$300" in response_text:
+                    position_size = "$300"
+                elif "$400" in response_text:
+                    position_size = "$400"
+                elif "$500" in response_text:
+                    position_size = "$500"
+                
+                # Determine if recommended
+                recommended = False
+                if "recommended: yes" in response_text.lower() or "recommendation: yes" in response_text.lower():
+                    recommended = True
+                elif quality_score >= 70:  # Default threshold
+                    recommended = True
+                
+                # Extract profit target if present
+                profit_target = "50%"
+                profit_match = self._patterns['profit_target'].search(response_text)
+                if profit_match:
+                    profit_target = f"{profit_match.group(1)}%"
+                
+                # Extract stop loss if present
+                stop_loss = "100%"
+                stop_match = self._patterns['stop_loss'].search(response_text)
+                if stop_match:
+                    stop_loss = f"{stop_match.group(1)}%"
+                
+                # Extract strikes
+                strikes = "Not specified"
+                strikes_match = re.search(r'[Ss]trikes?:?\s*(\d+\/\d+|\d+[\s-]+\d+)', response_text)
+                if strikes_match:
+                    strikes = strikes_match.group(1).replace(" ", "/").replace("-", "/")
+                
+                spread_analysis = {
+                    'ticker': ticker,
+                    'spread_type': spread_type,
+                    'strikes': strikes,
+                    'quality_score': quality_score,
+                    'success_probability': success_prob,
+                    'position_size': position_size,
+                    'profit_target': profit_target,
+                    'stop_loss': stop_loss,
+                    'recommended': recommended,
+                    'analysis': response_text
+                }
+                
+                return spread_analysis
+                
+        except Exception as e:
+            logger.error(f"Error analyzing credit spreads for {spread_data.get('ticker', 'Unknown')}: {e}", exc_info=True)
+            # Return a detailed error response
+            error_details = {
+                'error_type': type(e).__name__,
+                'error_message': str(e),
+                'phase': 'Unknown'  # Default phase
+            }
             
-            # Calculate total processing time
-            total_time = time.time() - start_time
-            logger.debug(f"Total credit spread processing took {total_time:.4f} seconds")
+            # Try to determine which phase of processing caused the error
+            if 'prompt' in locals():
+                if 'response_text' not in locals():
+                    error_details['phase'] = 'API_CALL'
+                elif 'json_err' in locals():
+                    error_details['phase'] = 'JSON_PARSING'
+                else:
+                    error_details['phase'] = 'TEXT_PARSING'
+            else:
+                error_details['phase'] = 'PROMPT_GENERATION'
             
             return {
                 'ticker': spread_data.get('ticker', 'Unknown'),
-                'spread_type': spread_type,
-                'quality_score': quality_score,
-                'success_probability': success_prob,
-                'position_size': position_size,
-                'profit_target': profit_target,
-                'stop_loss': stop_loss,
-                'recommended': recommended,
-                'analysis': response
+                'error': True,
+                'error_details': error_details,
+                'spread_type': 'None',
+                'recommended': False
             }
-            
-        except Exception as e:
-            logger.error(f"Error analyzing credit spreads: {e}")
-            return {'error': str(e), 'spread_type': 'None', 'recommended': False}
     
     def generate_trade_plan(self, 
                            spy_analysis: Dict[str, Any], 
@@ -579,9 +808,12 @@ class GeminiClient:
         try:
             ticker = stock_analysis.get('ticker', 'the underlying')
             prompt = get_trade_plan_prompt(spy_analysis, options_analysis, stock_analysis, spread_analysis, ticker)
+            
+            # We don't use structured output for trade plans as they're meant to be human-readable
             return self.generate_text(prompt, temperature=0.4)
+            
         except Exception as e:
-            logger.error(f"Error generating trade plan: {e}")
+            logger.error(f"Error generating trade plan for {stock_analysis.get('ticker', 'Unknown')}: {e}", exc_info=True)
             return f"Error generating trade plan: {str(e)}"
 
 
@@ -600,7 +832,7 @@ if __name__ == "__main__":
     # Test the client
     client = get_gemini_client()
     
-    # Basic test of the text generation
+    # Test structured response
     test_prompt = """
     Analyze the following market data and provide insights:
     
@@ -612,5 +844,12 @@ if __name__ == "__main__":
     2. Risk recommendations
     """
     
-    response = client.generate_text(test_prompt, temperature=0.3)
-    print(f"\nGenerated Response:\n{response}") 
+    response = client.generate_text(test_prompt, temperature=0.3, structured=True)
+    print(f"\nGenerated Structured Response:\n{response}")
+    
+    # Try to parse as JSON to validate
+    try:
+        parsed = json.loads(response)
+        print(f"\nSuccessfully parsed as JSON:\n{json.dumps(parsed, indent=2)}")
+    except json.JSONDecodeError:
+        print("\nResponse could not be parsed as JSON.") 

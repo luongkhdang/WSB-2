@@ -5,6 +5,7 @@ import requests
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional, Union
 from datetime import datetime
+import re
 
 # Load environment variables
 load_dotenv()
@@ -326,7 +327,7 @@ class DiscordClient:
             if price:
                 title = f"{ticker} Stock Analysis - ${price:.2f}"
         
-        # Create fields list for the main message
+        # Create fields list for the trade stats message
         fields = [
             {"name": "Trend", "value": trend, "inline": True},
             {"name": "Technical Score", "value": str(technical_score), "inline": True},
@@ -341,12 +342,70 @@ class DiscordClient:
             if len(options_analysis) > 500:
                 options_analysis = options_analysis[:500] + "..."
             fields.append({"name": "Options Analysis", "value": options_analysis, "inline": False})
+            
+        # 1. Extract ANALYZER FULL OPINION section if present
+        analyzer_opinion = ""
+        # First, try to find if the section exists
+        if "ANALYZER FULL OPINION:" in description:
+            # Get everything after "ANALYZER FULL OPINION:" 
+            opinion_start = description.find("ANALYZER FULL OPINION:")
+            if opinion_start != -1:
+                # Extract from the section header to the end or until another major section
+                opinion_text = description[opinion_start + len("ANALYZER FULL OPINION:"):]
+                # Trim leading/trailing whitespace
+                analyzer_opinion = opinion_text.strip()
+                
+                # Log what we found for debugging
+                self.logger.info(f"Found ANALYZER FULL OPINION section for {ticker}, length: {len(analyzer_opinion)} chars")
+                self.logger.info(f"First 100 chars: {analyzer_opinion[:100]}")
+                
+        # If opinion found, send it to trade-opinion webhook
+        if analyzer_opinion:
+            self.logger.info(f"Sending ANALYZER FULL OPINION to trade-opinion webhook for {ticker}")
+            opinion_embed = {
+                "title": f"{ticker} Trading Opinion",
+                "description": analyzer_opinion[:MAX_EMBED_DESCRIPTION_LENGTH],
+                "color": color,
+                "footer": {"text": f"WSB-2 Trading Opinion • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+            }
+            
+            self.send_message(
+                content=(
+                    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"💡 **Trading Opinion for {ticker}**\n"
+                    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                ),
+                webhook_type="trade-opinion",
+                embed_data=opinion_embed
+            )
+        
+        # 2. Send stats to trade-stats webhook
+        self.logger.info(f"Sending stats to trade-stats webhook for {ticker}")
+        stats_embed = {
+            "title": f"{ticker} Stats Summary",
+            "color": color,
+            "fields": fields,
+            "footer": {"text": f"WSB-2 Trading Stats • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+        }
+        
+        self.send_message(
+            content=(
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"📊 **Trading Stats for {ticker}**\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            ),
+            webhook_type="trade-stats",
+            embed_data=stats_embed
+        )
+        
+        # 3. Send full analysis to full-analysis webhook
+        success = True
         
         # Check if we need to split the content
         if description and len(description) > MAX_EMBED_DESCRIPTION_LENGTH:
             self.logger.info(f"Analysis description exceeds Discord limit ({len(description)} chars). Splitting into parts.")
             
-            # First message with metrics and summary
+            # First message with summary
             first_chunk = description[:MAX_EMBED_DESCRIPTION_LENGTH]
             remaining_content = description[MAX_EMBED_DESCRIPTION_LENGTH:]
             
@@ -355,22 +414,17 @@ class DiscordClient:
                 "title": title,
                 "description": first_chunk,
                 "color": color,
-                "fields": fields,
-                "footer": {"text": f"WSB-2 Stock Analysis (Part 1) • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+                "footer": {"text": f"WSB-2 Full Analysis (Part 1) • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
             }
             
             # Send first part with all the fields and metadata
             success = self.send_message(
                 content=(
                     "--------------------------------------------------------------------\n"
-                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
-                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
-                    f"📊 **Stock Analysis for {ticker} (Part 1)**\n"
-                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
-                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
+                    f"📈 **Full Analysis for {ticker} (Part 1)**\n"
                     "--------------------------------------------------------------------\n"
                 ),
-                webhook_type="market_analysis",
+                webhook_type="full-analysis",
                 embed_data=embed
             )
             
@@ -388,12 +442,12 @@ class DiscordClient:
                     "title": f"{ticker} Analysis Continued",
                     "description": chunk,
                     "color": color,
-                    "footer": {"text": f"WSB-2 Stock Analysis (Part {part_number}) • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+                    "footer": {"text": f"WSB-2 Full Analysis (Part {part_number}) • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
                 }
                 
                 success = self.send_message(
-                    content=f"📊 **Stock Analysis for {ticker} (Part {part_number})**\n",
-                    webhook_type="market_analysis",
+                    content=f"📈 **Full Analysis for {ticker} (Part {part_number})**\n",
+                    webhook_type="full-analysis",
                     embed_data=embed
                 )
                 if not success:
@@ -401,26 +455,23 @@ class DiscordClient:
                     return False
                 
                 part_number += 1
-            
-            return True
         else:
             # Original behavior for content within limits
             embed = {
                 "title": title,
                 "description": description if len(description) <= MAX_EMBED_DESCRIPTION_LENGTH else description[:MAX_EMBED_DESCRIPTION_LENGTH] + "...",
                 "color": color,
-                "fields": fields,
-                "footer": {"text": f"WSB-2 Stock Analysis • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+                "footer": {"text": f"WSB-2 Full Analysis • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
             }
             
-            return self.send_message(
+            success = self.send_message(
                 content=(
                     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
-                    f"📊 **Stock Analysis for {ticker}**\n"
-                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    f"📈 **Full Analysis for {ticker}**\n"
                     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
                 ),
-                webhook_type="market_analysis",
+                webhook_type="full-analysis",
                 embed_data=embed
             )
+        
+        return success

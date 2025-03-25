@@ -127,11 +127,11 @@ def get_market_trend_prompt(market_data):
     !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE.
     !IMPORTANT: TODAY IS {today_date}. UP-TO-DATA INFORMATION IS DETRIMENTAL TO THE ANALYSIS.
-    ANALYZER FULL OPINION: [Experience-Based Insight: “In my experience…” ties the analysis to real-world patterns I’ve traded, grounding the decision in practical know-how.
-Frequency Observation: “This happens a lot/rarely happens…” flags how common or unique the setup is, setting expectations for reliability or surprise.
-Comparative Nuance: “This looks like X but not exactly…” draws parallels to past trades, highlighting subtle differences that matter.
-Critical Oversight Check: Identifies risks or edges the scores might miss (e.g., ATR’s mild volatility), ensuring we’re not blindsided.
-Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could go wrong, and how I’d play it.]
+    ANALYZER FULL OPINION: [Experience-Based Insight: "In my experience…" ties the analysis to real-world patterns I've traded, grounding the decision in practical know-how.
+Frequency Observation: "This happens a lot/rarely happens…" flags how common or unique the setup is, setting expectations for reliability or surprise.
+Comparative Nuance: "This looks like X but not exactly…" draws parallels to past trades, highlighting subtle differences that matter.
+Critical Oversight Check: Identifies risks or edges the scores might miss (e.g., ATR's mild volatility), ensuring we're not blindsided.
+Actionable Gut: A final yes/no with reasoning—why I'd trade it, what could go wrong, and how I'd play it.]
     
     
     
@@ -140,6 +140,7 @@ Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could g
 
 def get_spy_options_prompt(options_data):
     """Get prompt template for analyzing SPY options data."""
+    today_date = datetime.now().strftime("%d-%m-%Y")
     return f'''
     Analyze SPY options data to determine market direction:
     
@@ -165,6 +166,7 @@ def get_spy_options_prompt(options_data):
 
 def get_market_data_prompt(market_data):
     """Get prompt template for analyzing general market data."""
+    today_date = datetime.now().strftime("%d-%m-%Y")
     return f'''
     Analyze the following market data and provide insights:
     

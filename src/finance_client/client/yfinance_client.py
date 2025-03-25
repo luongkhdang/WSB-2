@@ -5,8 +5,18 @@ import json
 import copy
 import logging
 import numpy as np
+import pytz
+import matplotlib.pyplot as plt
+import time
+import os
+from typing import Dict, Any, List, Tuple, Optional, Union
+import math
 
-# Set up logging
+# Set up logging for yfinance and urllib3 (used by yfinance)
+logging.getLogger('yfinance').setLevel(logging.ERROR)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+
+# Set up logging for our client
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('yfinance_client')
 
@@ -405,6 +415,190 @@ class YFinanceClient:
                 current_ema9 = None
                 current_ema21 = None
 
+            # Get fundamental data
+            fundamental_data = {}
+            try:
+                logger.info(f"Fetching fundamental data for {ticker_symbol}")
+                ticker = yf.Ticker(ticker_symbol)
+                
+                # Get recent earnings data
+                try:
+                    earnings = ticker.earnings
+                    if earnings is not None and not earnings.empty:
+                        earnings_data = earnings.to_dict()
+                        fundamental_data["earnings"] = earnings_data
+                        
+                        # Check for earnings surprise
+                        if 'Earnings' in earnings.columns and 'Revenue' in earnings.columns:
+                            latest_earnings = earnings.iloc[-1]
+                            if latest_earnings['Earnings'] > 0:
+                                fundamental_data["earnings_positive"] = True
+                            else:
+                                fundamental_data["earnings_positive"] = False
+                    else:
+                        logger.warning(f"No earnings data found for {ticker_symbol}")
+                except Exception as e:
+                    logger.error(f"Error fetching earnings data for {ticker_symbol}: {e}")
+                
+                # Get analyst recommendations
+                try:
+                    recommendations = ticker.recommendations
+                    if recommendations is not None and not recommendations.empty:
+                        # Get most recent recommendations
+                        recent_recs = recommendations.tail(10)
+                        
+                        # Count types of recommendations
+                        if 'To Grade' in recent_recs.columns:
+                            rec_counts = recent_recs['To Grade'].value_counts().to_dict()
+                            fundamental_data["recent_recommendations"] = rec_counts
+                            
+                            # Calculate sentiment based on recommendations
+                            sentiment_map = {
+                                'Strong Buy': 5, 'Buy': 4, 'Overweight': 4, 
+                                'Hold': 3, 'Neutral': 3, 'Equal-Weight': 3,
+                                'Underperform': 2, 'Underweight': 2, 'Sell': 1, 'Strong Sell': 0
+                            }
+                            
+                            total_sentiment = 0
+                            total_count = 0
+                            
+                            for grade, count in rec_counts.items():
+                                if grade in sentiment_map:
+                                    total_sentiment += sentiment_map[grade] * count
+                                    total_count += count
+                            
+                            if total_count > 0:
+                                analyst_sentiment = total_sentiment / total_count
+                                # Normalize to 0-10 scale
+                                fundamental_data["analyst_sentiment_score"] = (analyst_sentiment / 5) * 10
+                    else:
+                        logger.warning(f"No analyst recommendations found for {ticker_symbol}")
+                except Exception as e:
+                    logger.error(f"Error fetching analyst recommendations for {ticker_symbol}: {e}")
+                
+                # Get news sentiment (approximate from recent price action)
+                try:
+                    # Calculate recent price movement (last 5 days)
+                    if len(stock_history_3_month) >= 5:
+                        recent_close = stock_history_3_month['Close'].iloc[-1]
+                        five_day_ago_close = stock_history_3_month['Close'].iloc[-5]
+                        price_change_pct = ((recent_close - five_day_ago_close) / five_day_ago_close) * 100
+                        
+                        # Estimate news sentiment from price action
+                        if price_change_pct > 5:
+                            fundamental_data["news_sentiment"] = "very_positive"
+                        elif price_change_pct > 2:
+                            fundamental_data["news_sentiment"] = "positive"
+                        elif price_change_pct < -5:
+                            fundamental_data["news_sentiment"] = "very_negative"
+                        elif price_change_pct < -2:
+                            fundamental_data["news_sentiment"] = "negative"
+                        else:
+                            fundamental_data["news_sentiment"] = "neutral"
+                        
+                        fundamental_data["recent_price_change_pct"] = price_change_pct
+                except Exception as e:
+                    logger.error(f"Error calculating news sentiment from price action for {ticker_symbol}: {e}")
+                
+                # Institutional Ownership data
+                try:
+                    institutional_holders = ticker.institutional_holders
+                    if institutional_holders is not None and not institutional_holders.empty:
+                        # Sum total shares held by institutions
+                        total_institutional_shares = institutional_holders['Shares'].sum()
+                        fundamental_data["institutional_ownership"] = total_institutional_shares
+                    else:
+                        logger.warning(f"No institutional ownership data found for {ticker_symbol}")
+                except Exception as e:
+                    logger.error(f"Error fetching institutional ownership for {ticker_symbol}: {e}")
+                
+                # Get insider trading activity
+                try:
+                    insider_trades = ticker.insider_transactions
+                    if insider_trades is not None and not insider_trades.empty:
+                        # Get recent insider trades
+                        recent_insider = insider_trades.head(5)
+                        
+                        # Calculate net shares bought/sold by insiders
+                        if 'Shares' in recent_insider.columns and 'Transaction' in recent_insider.columns:
+                            net_insider_shares = 0
+                            for idx, trade in recent_insider.iterrows():
+                                if trade['Transaction'] == 'Buy':
+                                    net_insider_shares += trade['Shares']
+                                elif trade['Transaction'] == 'Sale':
+                                    net_insider_shares -= trade['Shares']
+                            
+                            fundamental_data["net_insider_shares"] = net_insider_shares
+                            if net_insider_shares > 0:
+                                fundamental_data["insider_sentiment"] = "positive"
+                            elif net_insider_shares < 0:
+                                fundamental_data["insider_sentiment"] = "negative"
+                            else:
+                                fundamental_data["insider_sentiment"] = "neutral"
+                    else:
+                        logger.warning(f"No insider trading data found for {ticker_symbol}")
+                except Exception as e:
+                    logger.error(f"Error fetching insider transactions for {ticker_symbol}: {e}")
+                
+                # Create a summary sentiment score (0-10 scale)
+                sentiment_score = 5  # Neutral starting point
+                
+                # Adjust based on analyst sentiment
+                if "analyst_sentiment_score" in fundamental_data:
+                    sentiment_score = (sentiment_score + fundamental_data["analyst_sentiment_score"]) / 2
+                
+                # Adjust based on earnings
+                if "earnings_positive" in fundamental_data:
+                    if fundamental_data["earnings_positive"]:
+                        sentiment_score += 1
+                    else:
+                        sentiment_score -= 1
+                
+                # Adjust based on news sentiment
+                if "news_sentiment" in fundamental_data:
+                    news_sentiment_map = {
+                        "very_positive": 2,
+                        "positive": 1,
+                        "neutral": 0,
+                        "negative": -1,
+                        "very_negative": -2
+                    }
+                    if fundamental_data["news_sentiment"] in news_sentiment_map:
+                        sentiment_score += news_sentiment_map[fundamental_data["news_sentiment"]]
+                
+                # Adjust based on insider sentiment
+                if "insider_sentiment" in fundamental_data:
+                    insider_sentiment_map = {
+                        "positive": 1,
+                        "neutral": 0,
+                        "negative": -1
+                    }
+                    if fundamental_data["insider_sentiment"] in insider_sentiment_map:
+                        sentiment_score += insider_sentiment_map[fundamental_data["insider_sentiment"]]
+                
+                # Ensure score is within 0-10 range
+                sentiment_score = max(0, min(10, sentiment_score))
+                fundamental_data["overall_sentiment_score"] = round(sentiment_score, 1)
+                
+                # Add a sentiment description
+                if sentiment_score >= 7.5:
+                    fundamental_data["sentiment_description"] = "Very Positive"
+                elif sentiment_score >= 6:
+                    fundamental_data["sentiment_description"] = "Positive"
+                elif sentiment_score >= 4:
+                    fundamental_data["sentiment_description"] = "Neutral"
+                elif sentiment_score >= 2.5:
+                    fundamental_data["sentiment_description"] = "Negative"
+                else:
+                    fundamental_data["sentiment_description"] = "Very Negative"
+                
+            except Exception as e:
+                logger.error(f"Error fetching fundamental data for {ticker_symbol}: {e}")
+                fundamental_data = {
+                    "error": f"Failed to retrieve fundamental data: {str(e)}",
+                    "overall_sentiment_score": 5
+                }
+
             return {
                 "info": stock_data,
                 "history": stock_history.to_dict(),
@@ -422,7 +616,8 @@ class YFinanceClient:
                     "resistance": float(resistance),
                     "near_support": bool(near_support),
                     "near_resistance": bool(near_resistance)
-                }
+                },
+                "fundamental": fundamental_data
             }
 
         except Exception as e:

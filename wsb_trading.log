@@ -1,0 +1,1016 @@
+2025-03-24 21:09:34,083 - __main__ - INFO - Initializing WSB Trading Application...
+2025-03-24 21:09:34,084 - gemini_client - INFO - Gemini client initialized successfully
+2025-03-24 21:09:34,084 - yfinance_client - INFO - Initializing YFinanceClient
+2025-03-24 21:09:34,084 - yfinance_client - INFO - YFinanceClient initialized successfully
+2025-03-24 21:09:38,088 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:09:38,264 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:09:39,280 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:09:39,281 - __main__ - INFO - All clients initialized successfully
+2025-03-24 21:09:39,281 - __main__ - INFO - Starting WSB Trading Application...
+2025-03-24 21:09:39,281 - __main__ - INFO - Analyzing comprehensive market conditions...
+2025-03-24 21:09:39,659 - yfinance_client - INFO - Downloaded data for SPY, shape: (35, 5)
+2025-03-24 21:09:39,775 - yfinance_client - INFO - Downloaded data for QQQ, shape: (35, 5)
+2025-03-24 21:09:39,858 - yfinance_client - INFO - Downloaded data for IWM, shape: (35, 5)
+2025-03-24 21:09:39,941 - yfinance_client - INFO - Downloaded data for VTV, shape: (35, 5)
+2025-03-24 21:09:40,028 - yfinance_client - INFO - Downloaded data for VGLT, shape: (35, 5)
+2025-03-24 21:09:40,123 - yfinance_client - INFO - Downloaded data for DIA, shape: (35, 5)
+2025-03-24 21:09:40,198 - yfinance_client - INFO - Downloaded data for BND, shape: (35, 5)
+2025-03-24 21:09:40,269 - yfinance_client - INFO - Downloaded data for BTC-USD, shape: (101, 5)
+2025-03-24 21:09:40,351 - yfinance_client - INFO - Downloaded data for ^VIX, shape: (14, 5)
+2025-03-24 21:09:40,352 - yfinance_client - INFO - Current VIX price: 17.479999542236328
+2025-03-24 21:10:17,211 - discord.discord_client - INFO - Content length exceeds Discord limit (5382 chars). Splitting into chunks.
+2025-03-24 21:10:17,696 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:10:17,973 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:10:18,270 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:10:18,271 - __main__ - INFO - Comprehensive market analysis complete: bullish
+2025-03-24 21:10:18,272 - __main__ - INFO - Starting stock analysis...
+2025-03-24 21:10:18,272 - __main__ - INFO - get_stock_analysis_prompt signature: (*args, **kwargs) with params: ['args', 'kwargs']
+2025-03-24 21:10:18,273 - __main__ - INFO - Found 36 symbols in watchlist
+2025-03-24 21:10:18,273 - __main__ - INFO - Analyzing SPY...
+2025-03-24 21:10:18,273 - __main__ - INFO - Step 1: Getting stock data for SPY...
+2025-03-24 21:10:18,373 - yfinance_client - INFO - Downloaded data for SPY, shape: (35, 5)
+2025-03-24 21:10:18,472 - yfinance_client - INFO - Downloaded data for SPY, shape: (59, 5)
+2025-03-24 21:10:18,478 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:10:18,482 - __main__ - INFO - Step 2: Getting options chain data for SPY...
+2025-03-24 21:10:18,482 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for SPY
+2025-03-24 21:10:18,575 - yfinance_client - INFO - Current price of SPY: $574.08
+2025-03-24 21:10:18,673 - yfinance_client - INFO - Found 32 expiration dates for SPY
+2025-03-24 21:10:18,674 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:10:18,806 - yfinance_client - INFO - Retrieved 206 calls and 201 puts
+2025-03-24 21:10:19,503 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:10:19,639 - yfinance_client - INFO - Retrieved 134 calls and 136 puts
+2025-03-24 21:10:19,770 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:10:19,885 - yfinance_client - INFO - Retrieved 143 calls and 131 puts
+2025-03-24 21:10:20,018 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:10:20,165 - yfinance_client - INFO - Retrieved 224 calls and 195 puts
+2025-03-24 21:10:20,367 - yfinance_client - INFO - Successfully fetched 4 option chains for SPY
+2025-03-24 21:10:20,367 - __main__ - INFO - Step 3: Preparing analysis data for SPY...
+2025-03-24 21:10:20,367 - __main__ - INFO - Step 4: Processing options data for SPY...
+2025-03-24 21:10:20,368 - __main__ - INFO - Found 4 expiration dates for SPY
+2025-03-24 21:10:20,368 - __main__ - INFO - Processing expiration date 2025-03-31 for SPY...
+2025-03-24 21:10:20,371 - __main__ - INFO - Successfully processed expiration 2025-03-31 for SPY
+2025-03-24 21:10:20,371 - __main__ - INFO - Processing expiration date 2025-04-04 for SPY...
+2025-03-24 21:10:20,374 - __main__ - INFO - Successfully processed expiration 2025-04-04 for SPY
+2025-03-24 21:10:20,374 - __main__ - INFO - Processing expiration date 2025-04-11 for SPY...
+2025-03-24 21:10:20,376 - __main__ - INFO - Successfully processed expiration 2025-04-11 for SPY
+2025-03-24 21:10:20,377 - __main__ - INFO - Processing expiration date 2025-04-17 for SPY...
+2025-03-24 21:10:20,379 - __main__ - INFO - Successfully processed expiration 2025-04-17 for SPY
+2025-03-24 21:10:20,379 - __main__ - INFO - Step 5: Generating analysis for SPY...
+2025-03-24 21:10:32,043 - __main__ - INFO - Market alignment for SPY: contrary
+2025-03-24 21:10:32,043 - __main__ - INFO - Creating stock analysis result for SPY...
+2025-03-24 21:10:32,044 - __main__ - INFO - Successfully added SPY to stock analyses
+2025-03-24 21:10:32,044 - __main__ - INFO - Updating Notion with analysis for SPY...
+2025-03-24 21:10:32,044 - __main__ - INFO - Sending Discord notification for SPY...
+2025-03-24 21:10:32,045 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2626 chars). Splitting into parts.
+2025-03-24 21:10:32,363 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:10:32,709 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:10:32,710 - __main__ - INFO - Successfully sent Discord notification for SPY
+2025-03-24 21:10:32,711 - __main__ - INFO - Analyzing QQQ...
+2025-03-24 21:10:32,711 - __main__ - INFO - Step 1: Getting stock data for QQQ...
+2025-03-24 21:10:32,803 - yfinance_client - INFO - Downloaded data for QQQ, shape: (35, 5)
+2025-03-24 21:10:32,914 - yfinance_client - INFO - Downloaded data for QQQ, shape: (59, 5)
+2025-03-24 21:10:32,920 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:10:32,923 - __main__ - INFO - Step 2: Getting options chain data for QQQ...
+2025-03-24 21:10:32,924 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for QQQ
+2025-03-24 21:10:33,018 - yfinance_client - INFO - Current price of QQQ: $490.66
+2025-03-24 21:10:33,142 - yfinance_client - INFO - Found 33 expiration dates for QQQ
+2025-03-24 21:10:33,143 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:10:33,252 - yfinance_client - INFO - Retrieved 159 calls and 145 puts
+2025-03-24 21:10:33,397 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:10:33,512 - yfinance_client - INFO - Retrieved 140 calls and 159 puts
+2025-03-24 21:10:33,656 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:10:33,760 - yfinance_client - INFO - Retrieved 136 calls and 133 puts
+2025-03-24 21:10:33,890 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:10:34,015 - yfinance_client - INFO - Retrieved 140 calls and 132 puts
+2025-03-24 21:10:34,145 - yfinance_client - INFO - Successfully fetched 4 option chains for QQQ
+2025-03-24 21:10:34,146 - __main__ - INFO - Step 3: Preparing analysis data for QQQ...
+2025-03-24 21:10:34,146 - __main__ - INFO - Step 4: Processing options data for QQQ...
+2025-03-24 21:10:34,146 - __main__ - INFO - Found 4 expiration dates for QQQ
+2025-03-24 21:10:34,147 - __main__ - INFO - Processing expiration date 2025-03-31 for QQQ...
+2025-03-24 21:10:34,150 - __main__ - INFO - Successfully processed expiration 2025-03-31 for QQQ
+2025-03-24 21:10:34,150 - __main__ - INFO - Processing expiration date 2025-04-04 for QQQ...
+2025-03-24 21:10:34,153 - __main__ - INFO - Successfully processed expiration 2025-04-04 for QQQ
+2025-03-24 21:10:34,153 - __main__ - INFO - Processing expiration date 2025-04-11 for QQQ...
+2025-03-24 21:10:34,155 - __main__ - INFO - Successfully processed expiration 2025-04-11 for QQQ
+2025-03-24 21:10:34,156 - __main__ - INFO - Processing expiration date 2025-04-17 for QQQ...
+2025-03-24 21:10:34,158 - __main__ - INFO - Successfully processed expiration 2025-04-17 for QQQ
+2025-03-24 21:10:34,158 - __main__ - INFO - Step 5: Generating analysis for QQQ...
+2025-03-24 21:10:46,949 - __main__ - INFO - Market alignment for QQQ: contrary
+2025-03-24 21:10:46,950 - __main__ - INFO - Creating stock analysis result for QQQ...
+2025-03-24 21:10:46,950 - __main__ - INFO - Successfully added QQQ to stock analyses
+2025-03-24 21:10:46,950 - __main__ - INFO - Updating Notion with analysis for QQQ...
+2025-03-24 21:10:46,951 - __main__ - INFO - Sending Discord notification for QQQ...
+2025-03-24 21:10:46,951 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2753 chars). Splitting into parts.
+2025-03-24 21:10:47,242 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:10:47,513 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:10:47,513 - __main__ - INFO - Successfully sent Discord notification for QQQ
+2025-03-24 21:10:47,513 - __main__ - INFO - Analyzing IWM...
+2025-03-24 21:10:47,514 - __main__ - INFO - Step 1: Getting stock data for IWM...
+2025-03-24 21:10:47,594 - yfinance_client - INFO - Downloaded data for IWM, shape: (35, 5)
+2025-03-24 21:10:47,712 - yfinance_client - INFO - Downloaded data for IWM, shape: (59, 5)
+2025-03-24 21:10:47,717 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:10:47,720 - __main__ - INFO - Step 2: Getting options chain data for IWM...
+2025-03-24 21:10:47,721 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for IWM
+2025-03-24 21:10:47,813 - yfinance_client - INFO - Current price of IWM: $208.86
+2025-03-24 21:10:47,942 - yfinance_client - INFO - Found 31 expiration dates for IWM
+2025-03-24 21:10:47,943 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:10:48,048 - yfinance_client - INFO - Retrieved 90 calls and 86 puts
+2025-03-24 21:10:48,134 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:10:48,246 - yfinance_client - INFO - Retrieved 80 calls and 82 puts
+2025-03-24 21:10:48,327 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:10:48,410 - yfinance_client - INFO - Retrieved 71 calls and 80 puts
+2025-03-24 21:10:48,484 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:10:48,631 - yfinance_client - INFO - Retrieved 101 calls and 91 puts
+2025-03-24 21:10:48,725 - yfinance_client - INFO - Successfully fetched 4 option chains for IWM
+2025-03-24 21:10:48,726 - __main__ - INFO - Step 3: Preparing analysis data for IWM...
+2025-03-24 21:10:48,726 - __main__ - INFO - Step 4: Processing options data for IWM...
+2025-03-24 21:10:48,726 - __main__ - INFO - Found 4 expiration dates for IWM
+2025-03-24 21:10:48,726 - __main__ - INFO - Processing expiration date 2025-03-31 for IWM...
+2025-03-24 21:10:48,729 - __main__ - INFO - Successfully processed expiration 2025-03-31 for IWM
+2025-03-24 21:10:48,729 - __main__ - INFO - Processing expiration date 2025-04-04 for IWM...
+2025-03-24 21:10:48,732 - __main__ - INFO - Successfully processed expiration 2025-04-04 for IWM
+2025-03-24 21:10:48,732 - __main__ - INFO - Processing expiration date 2025-04-11 for IWM...
+2025-03-24 21:10:48,735 - __main__ - INFO - Successfully processed expiration 2025-04-11 for IWM
+2025-03-24 21:10:48,735 - __main__ - INFO - Processing expiration date 2025-04-17 for IWM...
+2025-03-24 21:10:48,738 - __main__ - INFO - Successfully processed expiration 2025-04-17 for IWM
+2025-03-24 21:10:48,738 - __main__ - INFO - Step 5: Generating analysis for IWM...
+2025-03-24 21:14:44,917 - __main__ - INFO - Initializing WSB Trading Application...
+2025-03-24 21:14:44,918 - gemini_client - INFO - Gemini client initialized successfully
+2025-03-24 21:14:44,918 - yfinance_client - INFO - Initializing YFinanceClient
+2025-03-24 21:14:44,918 - yfinance_client - INFO - YFinanceClient initialized successfully
+2025-03-24 21:14:45,618 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:14:45,796 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:14:45,964 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:14:45,965 - __main__ - INFO - All clients initialized successfully
+2025-03-24 21:14:45,965 - __main__ - INFO - Starting WSB Trading Application...
+2025-03-24 21:14:45,965 - __main__ - INFO - Analyzing comprehensive market conditions...
+2025-03-24 21:14:46,289 - yfinance_client - INFO - Downloaded data for SPY, shape: (35, 5)
+2025-03-24 21:14:46,372 - yfinance_client - INFO - Downloaded data for QQQ, shape: (35, 5)
+2025-03-24 21:14:46,464 - yfinance_client - INFO - Downloaded data for IWM, shape: (35, 5)
+2025-03-24 21:14:46,548 - yfinance_client - INFO - Downloaded data for VTV, shape: (35, 5)
+2025-03-24 21:14:46,622 - yfinance_client - INFO - Downloaded data for VGLT, shape: (35, 5)
+2025-03-24 21:14:46,703 - yfinance_client - INFO - Downloaded data for DIA, shape: (35, 5)
+2025-03-24 21:14:46,796 - yfinance_client - INFO - Downloaded data for BND, shape: (35, 5)
+2025-03-24 21:14:46,872 - yfinance_client - INFO - Downloaded data for BTC-USD, shape: (101, 5)
+2025-03-24 21:14:46,954 - yfinance_client - INFO - Downloaded data for ^VIX, shape: (14, 5)
+2025-03-24 21:14:46,954 - yfinance_client - INFO - Current VIX price: 17.479999542236328
+2025-03-24 21:15:26,850 - discord.discord_client - INFO - Content length exceeds Discord limit (5429 chars). Splitting into chunks.
+2025-03-24 21:15:27,163 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:15:27,487 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:15:27,820 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:15:27,820 - __main__ - INFO - Comprehensive market analysis complete: bullish
+2025-03-24 21:15:27,821 - __main__ - INFO - Starting stock analysis...
+2025-03-24 21:15:27,821 - __main__ - INFO - get_stock_analysis_prompt signature: (*args, **kwargs) with params: ['args', 'kwargs']
+2025-03-24 21:15:27,822 - __main__ - INFO - Found 36 symbols in watchlist
+2025-03-24 21:15:27,822 - __main__ - INFO - Analyzing SPY...
+2025-03-24 21:15:27,822 - __main__ - INFO - Step 1: Getting stock data for SPY...
+2025-03-24 21:15:27,936 - yfinance_client - INFO - Downloaded data for SPY, shape: (35, 5)
+2025-03-24 21:15:28,127 - yfinance_client - INFO - Downloaded data for SPY, shape: (59, 5)
+2025-03-24 21:15:28,137 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:15:28,141 - __main__ - INFO - Step 2: Getting options chain data for SPY...
+2025-03-24 21:15:28,141 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for SPY
+2025-03-24 21:15:28,293 - yfinance_client - INFO - Current price of SPY: $574.08
+2025-03-24 21:15:28,444 - yfinance_client - INFO - Found 32 expiration dates for SPY
+2025-03-24 21:15:28,445 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:15:28,559 - yfinance_client - INFO - Retrieved 206 calls and 201 puts
+2025-03-24 21:15:29,261 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:15:29,365 - yfinance_client - INFO - Retrieved 134 calls and 136 puts
+2025-03-24 21:15:29,502 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:15:29,622 - yfinance_client - INFO - Retrieved 143 calls and 131 puts
+2025-03-24 21:15:29,769 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:15:29,916 - yfinance_client - INFO - Retrieved 224 calls and 195 puts
+2025-03-24 21:15:30,124 - yfinance_client - INFO - Successfully fetched 4 option chains for SPY
+2025-03-24 21:15:30,124 - __main__ - INFO - Step 3: Preparing analysis data for SPY...
+2025-03-24 21:15:30,124 - __main__ - INFO - Step 4: Processing options data for SPY...
+2025-03-24 21:15:30,125 - __main__ - INFO - Found 4 expiration dates for SPY
+2025-03-24 21:15:30,125 - __main__ - INFO - Processing expiration date 2025-03-31 for SPY...
+2025-03-24 21:15:30,128 - __main__ - INFO - Successfully processed expiration 2025-03-31 for SPY
+2025-03-24 21:15:30,128 - __main__ - INFO - Processing expiration date 2025-04-04 for SPY...
+2025-03-24 21:15:30,131 - __main__ - INFO - Successfully processed expiration 2025-04-04 for SPY
+2025-03-24 21:15:30,131 - __main__ - INFO - Processing expiration date 2025-04-11 for SPY...
+2025-03-24 21:15:30,134 - __main__ - INFO - Successfully processed expiration 2025-04-11 for SPY
+2025-03-24 21:15:30,134 - __main__ - INFO - Processing expiration date 2025-04-17 for SPY...
+2025-03-24 21:15:30,137 - __main__ - INFO - Successfully processed expiration 2025-04-17 for SPY
+2025-03-24 21:15:30,137 - __main__ - INFO - Step 5: Generating analysis for SPY...
+2025-03-24 21:15:43,449 - __main__ - INFO - Market alignment for SPY: contrary
+2025-03-24 21:15:43,449 - __main__ - INFO - Creating stock analysis result for SPY...
+2025-03-24 21:15:43,450 - __main__ - INFO - Successfully added SPY to stock analyses
+2025-03-24 21:15:43,450 - __main__ - INFO - Updating Notion with analysis for SPY...
+2025-03-24 21:15:43,450 - __main__ - INFO - Sending Discord notification for SPY...
+2025-03-24 21:15:43,451 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for SPY
+2025-03-24 21:15:43,733 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:15:43,733 - discord.discord_client - INFO - Sending stats to trade-stats webhook for SPY
+2025-03-24 21:15:43,979 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:15:43,979 - discord.discord_client - INFO - Analysis description exceeds Discord limit (3078 chars). Splitting into parts.
+2025-03-24 21:15:44,221 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:15:44,587 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:15:44,588 - __main__ - INFO - Successfully sent Discord notification for SPY
+2025-03-24 21:15:44,588 - __main__ - INFO - Analyzing QQQ...
+2025-03-24 21:15:44,588 - __main__ - INFO - Step 1: Getting stock data for QQQ...
+2025-03-24 21:15:44,684 - yfinance_client - INFO - Downloaded data for QQQ, shape: (35, 5)
+2025-03-24 21:15:44,778 - yfinance_client - INFO - Downloaded data for QQQ, shape: (59, 5)
+2025-03-24 21:15:44,784 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:15:44,787 - __main__ - INFO - Step 2: Getting options chain data for QQQ...
+2025-03-24 21:15:44,787 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for QQQ
+2025-03-24 21:15:44,880 - yfinance_client - INFO - Current price of QQQ: $490.66
+2025-03-24 21:15:45,019 - yfinance_client - INFO - Found 33 expiration dates for QQQ
+2025-03-24 21:15:45,020 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:15:45,131 - yfinance_client - INFO - Retrieved 159 calls and 145 puts
+2025-03-24 21:15:45,314 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:15:45,435 - yfinance_client - INFO - Retrieved 140 calls and 159 puts
+2025-03-24 21:15:45,589 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:15:45,799 - yfinance_client - INFO - Retrieved 136 calls and 133 puts
+2025-03-24 21:15:45,993 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:15:46,115 - yfinance_client - INFO - Retrieved 140 calls and 132 puts
+2025-03-24 21:15:46,298 - yfinance_client - INFO - Successfully fetched 4 option chains for QQQ
+2025-03-24 21:15:46,299 - __main__ - INFO - Step 3: Preparing analysis data for QQQ...
+2025-03-24 21:15:46,299 - __main__ - INFO - Step 4: Processing options data for QQQ...
+2025-03-24 21:15:46,299 - __main__ - INFO - Found 4 expiration dates for QQQ
+2025-03-24 21:15:46,299 - __main__ - INFO - Processing expiration date 2025-03-31 for QQQ...
+2025-03-24 21:15:46,302 - __main__ - INFO - Successfully processed expiration 2025-03-31 for QQQ
+2025-03-24 21:15:46,303 - __main__ - INFO - Processing expiration date 2025-04-04 for QQQ...
+2025-03-24 21:15:46,306 - __main__ - INFO - Successfully processed expiration 2025-04-04 for QQQ
+2025-03-24 21:15:46,306 - __main__ - INFO - Processing expiration date 2025-04-11 for QQQ...
+2025-03-24 21:15:46,309 - __main__ - INFO - Successfully processed expiration 2025-04-11 for QQQ
+2025-03-24 21:15:46,309 - __main__ - INFO - Processing expiration date 2025-04-17 for QQQ...
+2025-03-24 21:15:46,312 - __main__ - INFO - Successfully processed expiration 2025-04-17 for QQQ
+2025-03-24 21:15:46,312 - __main__ - INFO - Step 5: Generating analysis for QQQ...
+2025-03-24 21:15:59,669 - __main__ - INFO - Market alignment for QQQ: contrary
+2025-03-24 21:15:59,669 - __main__ - INFO - Creating stock analysis result for QQQ...
+2025-03-24 21:15:59,670 - __main__ - INFO - Successfully added QQQ to stock analyses
+2025-03-24 21:15:59,670 - __main__ - INFO - Updating Notion with analysis for QQQ...
+2025-03-24 21:15:59,670 - __main__ - INFO - Sending Discord notification for QQQ...
+2025-03-24 21:15:59,670 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for QQQ
+2025-03-24 21:15:59,996 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:15:59,996 - discord.discord_client - INFO - Sending stats to trade-stats webhook for QQQ
+2025-03-24 21:16:00,303 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:16:00,304 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2836 chars). Splitting into parts.
+2025-03-24 21:16:00,565 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:16:00,868 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:16:00,869 - __main__ - INFO - Successfully sent Discord notification for QQQ
+2025-03-24 21:16:00,870 - __main__ - INFO - Analyzing IWM...
+2025-03-24 21:16:00,870 - __main__ - INFO - Step 1: Getting stock data for IWM...
+2025-03-24 21:16:00,952 - yfinance_client - INFO - Downloaded data for IWM, shape: (35, 5)
+2025-03-24 21:16:01,049 - yfinance_client - INFO - Downloaded data for IWM, shape: (59, 5)
+2025-03-24 21:16:01,055 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:16:01,059 - __main__ - INFO - Step 2: Getting options chain data for IWM...
+2025-03-24 21:16:01,059 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for IWM
+2025-03-24 21:16:01,140 - yfinance_client - INFO - Current price of IWM: $208.86
+2025-03-24 21:16:01,230 - yfinance_client - INFO - Found 31 expiration dates for IWM
+2025-03-24 21:16:01,231 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:16:01,327 - yfinance_client - INFO - Retrieved 90 calls and 86 puts
+2025-03-24 21:16:01,419 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:16:01,505 - yfinance_client - INFO - Retrieved 80 calls and 82 puts
+2025-03-24 21:16:01,590 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:16:01,676 - yfinance_client - INFO - Retrieved 71 calls and 80 puts
+2025-03-24 21:16:01,755 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:16:01,861 - yfinance_client - INFO - Retrieved 101 calls and 91 puts
+2025-03-24 21:16:01,957 - yfinance_client - INFO - Successfully fetched 4 option chains for IWM
+2025-03-24 21:16:01,958 - __main__ - INFO - Step 3: Preparing analysis data for IWM...
+2025-03-24 21:16:01,958 - __main__ - INFO - Step 4: Processing options data for IWM...
+2025-03-24 21:16:01,958 - __main__ - INFO - Found 4 expiration dates for IWM
+2025-03-24 21:16:01,958 - __main__ - INFO - Processing expiration date 2025-03-31 for IWM...
+2025-03-24 21:16:01,963 - __main__ - INFO - Successfully processed expiration 2025-03-31 for IWM
+2025-03-24 21:16:01,963 - __main__ - INFO - Processing expiration date 2025-04-04 for IWM...
+2025-03-24 21:16:01,966 - __main__ - INFO - Successfully processed expiration 2025-04-04 for IWM
+2025-03-24 21:16:01,966 - __main__ - INFO - Processing expiration date 2025-04-11 for IWM...
+2025-03-24 21:16:01,969 - __main__ - INFO - Successfully processed expiration 2025-04-11 for IWM
+2025-03-24 21:16:01,970 - __main__ - INFO - Processing expiration date 2025-04-17 for IWM...
+2025-03-24 21:16:01,972 - __main__ - INFO - Successfully processed expiration 2025-04-17 for IWM
+2025-03-24 21:16:01,973 - __main__ - INFO - Step 5: Generating analysis for IWM...
+2025-03-24 21:16:15,140 - __main__ - INFO - Market alignment for IWM: aligned
+2025-03-24 21:16:15,140 - __main__ - INFO - Creating stock analysis result for IWM...
+2025-03-24 21:16:15,140 - __main__ - INFO - Successfully added IWM to stock analyses
+2025-03-24 21:16:15,140 - __main__ - INFO - Updating Notion with analysis for IWM...
+2025-03-24 21:16:15,140 - __main__ - INFO - Sending Discord notification for IWM...
+2025-03-24 21:16:15,141 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for IWM
+2025-03-24 21:16:15,423 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:16:15,423 - discord.discord_client - INFO - Sending stats to trade-stats webhook for IWM
+2025-03-24 21:16:15,668 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:16:15,668 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2877 chars). Splitting into parts.
+2025-03-24 21:16:15,891 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:16:16,132 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:16:16,132 - __main__ - INFO - Successfully sent Discord notification for IWM
+2025-03-24 21:16:16,132 - __main__ - INFO - Analyzing VTV...
+2025-03-24 21:16:16,133 - __main__ - INFO - Step 1: Getting stock data for VTV...
+2025-03-24 21:16:16,205 - yfinance_client - INFO - Downloaded data for VTV, shape: (35, 5)
+2025-03-24 21:16:16,343 - yfinance_client - INFO - Downloaded data for VTV, shape: (59, 5)
+2025-03-24 21:16:16,349 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:16:16,352 - __main__ - INFO - Step 2: Getting options chain data for VTV...
+2025-03-24 21:16:16,352 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for VTV
+2025-03-24 21:16:16,429 - yfinance_client - INFO - Current price of VTV: $174.55
+2025-03-24 21:16:16,493 - yfinance_client - INFO - Found 4 expiration dates for VTV
+2025-03-24 21:16:16,493 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:16:16,557 - yfinance_client - INFO - Retrieved 18 calls and 11 puts
+2025-03-24 21:16:16,575 - yfinance_client - INFO - Successfully fetched 1 option chains for VTV
+2025-03-24 21:16:16,575 - __main__ - INFO - Step 3: Preparing analysis data for VTV...
+2025-03-24 21:16:16,576 - __main__ - INFO - Step 4: Processing options data for VTV...
+2025-03-24 21:16:16,576 - __main__ - INFO - Found 1 expiration dates for VTV
+2025-03-24 21:16:16,576 - __main__ - INFO - Processing expiration date 2025-04-17 for VTV...
+2025-03-24 21:16:16,579 - __main__ - INFO - Successfully processed expiration 2025-04-17 for VTV
+2025-03-24 21:16:16,579 - __main__ - INFO - Step 5: Generating analysis for VTV...
+2025-03-24 21:16:31,151 - __main__ - INFO - Market alignment for VTV: **
+2025-03-24 21:16:31,151 - __main__ - INFO - Creating stock analysis result for VTV...
+2025-03-24 21:16:31,152 - __main__ - INFO - Successfully added VTV to stock analyses
+2025-03-24 21:16:31,152 - __main__ - INFO - Updating Notion with analysis for VTV...
+2025-03-24 21:16:31,152 - __main__ - INFO - Sending Discord notification for VTV...
+2025-03-24 21:16:31,152 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for VTV
+2025-03-24 21:16:31,710 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:16:31,711 - discord.discord_client - INFO - Sending stats to trade-stats webhook for VTV
+2025-03-24 21:16:31,948 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:16:31,948 - discord.discord_client - INFO - Analysis description exceeds Discord limit (3160 chars). Splitting into parts.
+2025-03-24 21:16:32,236 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:16:32,466 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:16:32,466 - __main__ - INFO - Successfully sent Discord notification for VTV
+2025-03-24 21:16:32,467 - __main__ - INFO - Analyzing VGLT...
+2025-03-24 21:16:32,467 - __main__ - INFO - Step 1: Getting stock data for VGLT...
+2025-03-24 21:16:32,546 - yfinance_client - INFO - Downloaded data for VGLT, shape: (35, 5)
+2025-03-24 21:16:32,645 - yfinance_client - INFO - Downloaded data for VGLT, shape: (59, 5)
+2025-03-24 21:16:32,651 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:16:32,655 - __main__ - INFO - Step 2: Getting options chain data for VGLT...
+2025-03-24 21:16:32,655 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for VGLT
+2025-03-24 21:16:32,738 - yfinance_client - INFO - Current price of VGLT: $56.85
+2025-03-24 21:16:32,797 - yfinance_client - INFO - Found 4 expiration dates for VGLT
+2025-03-24 21:16:32,797 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:16:32,862 - yfinance_client - INFO - Retrieved 8 calls and 8 puts
+2025-03-24 21:16:32,875 - yfinance_client - INFO - Successfully fetched 1 option chains for VGLT
+2025-03-24 21:16:32,875 - __main__ - INFO - Step 3: Preparing analysis data for VGLT...
+2025-03-24 21:16:32,875 - __main__ - INFO - Step 4: Processing options data for VGLT...
+2025-03-24 21:16:32,875 - __main__ - INFO - Found 1 expiration dates for VGLT
+2025-03-24 21:16:32,876 - __main__ - INFO - Processing expiration date 2025-04-17 for VGLT...
+2025-03-24 21:16:32,878 - __main__ - INFO - Successfully processed expiration 2025-04-17 for VGLT
+2025-03-24 21:16:32,879 - __main__ - INFO - Step 5: Generating analysis for VGLT...
+2025-03-24 21:20:14,727 - __main__ - INFO - Initializing WSB Trading Application...
+2025-03-24 21:20:14,728 - gemini_client - INFO - Gemini client initialized successfully
+2025-03-24 21:20:14,729 - yfinance_client - INFO - Initializing YFinanceClient
+2025-03-24 21:20:14,729 - yfinance_client - INFO - YFinanceClient initialized successfully
+2025-03-24 21:20:15,311 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:20:15,455 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:20:15,576 - httpx - INFO - HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+2025-03-24 21:20:15,577 - __main__ - INFO - All clients initialized successfully
+2025-03-24 21:20:15,577 - __main__ - INFO - Starting WSB Trading Application...
+2025-03-24 21:20:15,577 - __main__ - INFO - Analyzing comprehensive market conditions...
+2025-03-24 21:20:15,928 - yfinance_client - INFO - Downloaded data for SPY, shape: (35, 5)
+2025-03-24 21:20:16,018 - yfinance_client - INFO - Downloaded data for QQQ, shape: (35, 5)
+2025-03-24 21:20:16,100 - yfinance_client - INFO - Downloaded data for IWM, shape: (35, 5)
+2025-03-24 21:20:16,190 - yfinance_client - INFO - Downloaded data for VTV, shape: (35, 5)
+2025-03-24 21:20:16,263 - yfinance_client - INFO - Downloaded data for VGLT, shape: (35, 5)
+2025-03-24 21:20:16,346 - yfinance_client - INFO - Downloaded data for DIA, shape: (35, 5)
+2025-03-24 21:20:16,425 - yfinance_client - INFO - Downloaded data for BND, shape: (35, 5)
+2025-03-24 21:20:16,505 - yfinance_client - INFO - Downloaded data for BTC-USD, shape: (101, 5)
+2025-03-24 21:20:16,587 - yfinance_client - INFO - Downloaded data for ^VIX, shape: (14, 5)
+2025-03-24 21:20:16,587 - yfinance_client - INFO - Current VIX price: 17.479999542236328
+2025-03-24 21:20:51,019 - discord.discord_client - INFO - Content length exceeds Discord limit (4453 chars). Splitting into chunks.
+2025-03-24 21:20:51,394 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:20:51,661 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:20:51,967 - discord.discord_client - INFO - Message sent successfully to market_analysis webhook
+2025-03-24 21:20:51,967 - __main__ - INFO - Comprehensive market analysis complete: bullish
+2025-03-24 21:20:51,968 - __main__ - INFO - Starting stock analysis...
+2025-03-24 21:20:51,968 - __main__ - INFO - get_stock_analysis_prompt signature: (*args, **kwargs) with params: ['args', 'kwargs']
+2025-03-24 21:20:51,969 - __main__ - INFO - Found 36 symbols in watchlist
+2025-03-24 21:20:51,969 - __main__ - INFO - Analyzing SPY...
+2025-03-24 21:20:51,969 - __main__ - INFO - Step 1: Getting stock data for SPY...
+2025-03-24 21:20:52,052 - yfinance_client - INFO - Downloaded data for SPY, shape: (35, 5)
+2025-03-24 21:20:52,157 - yfinance_client - INFO - Downloaded data for SPY, shape: (59, 5)
+2025-03-24 21:20:52,163 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:20:52,167 - __main__ - INFO - Step 2: Getting options chain data for SPY...
+2025-03-24 21:20:52,167 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for SPY
+2025-03-24 21:20:52,256 - yfinance_client - INFO - Current price of SPY: $574.08
+2025-03-24 21:20:52,361 - yfinance_client - INFO - Found 32 expiration dates for SPY
+2025-03-24 21:20:52,363 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:20:52,492 - yfinance_client - INFO - Retrieved 206 calls and 201 puts
+2025-03-24 21:20:53,191 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:20:53,309 - yfinance_client - INFO - Retrieved 134 calls and 136 puts
+2025-03-24 21:20:53,442 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:20:53,549 - yfinance_client - INFO - Retrieved 143 calls and 131 puts
+2025-03-24 21:20:53,691 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:20:53,823 - yfinance_client - INFO - Retrieved 224 calls and 195 puts
+2025-03-24 21:20:54,033 - yfinance_client - INFO - Successfully fetched 4 option chains for SPY
+2025-03-24 21:20:54,034 - __main__ - INFO - Step 3: Preparing analysis data for SPY...
+2025-03-24 21:20:54,034 - __main__ - INFO - Step 4: Processing options data for SPY...
+2025-03-24 21:20:54,034 - __main__ - INFO - Found 4 expiration dates for SPY
+2025-03-24 21:20:54,034 - __main__ - INFO - Processing expiration date 2025-03-31 for SPY...
+2025-03-24 21:20:54,037 - __main__ - INFO - Successfully processed expiration 2025-03-31 for SPY
+2025-03-24 21:20:54,038 - __main__ - INFO - Processing expiration date 2025-04-04 for SPY...
+2025-03-24 21:20:54,040 - __main__ - INFO - Successfully processed expiration 2025-04-04 for SPY
+2025-03-24 21:20:54,040 - __main__ - INFO - Processing expiration date 2025-04-11 for SPY...
+2025-03-24 21:20:54,043 - __main__ - INFO - Successfully processed expiration 2025-04-11 for SPY
+2025-03-24 21:20:54,043 - __main__ - INFO - Processing expiration date 2025-04-17 for SPY...
+2025-03-24 21:20:54,046 - __main__ - INFO - Successfully processed expiration 2025-04-17 for SPY
+2025-03-24 21:20:54,046 - __main__ - INFO - Step 5: Generating analysis for SPY...
+2025-03-24 21:21:07,010 - __main__ - INFO - Market alignment for SPY: contrary
+2025-03-24 21:21:07,011 - __main__ - INFO - Creating stock analysis result for SPY...
+2025-03-24 21:21:07,011 - __main__ - INFO - Successfully added SPY to stock analyses
+2025-03-24 21:21:07,011 - __main__ - INFO - Updating Notion with analysis for SPY...
+2025-03-24 21:21:07,011 - __main__ - INFO - Sending Discord notification for SPY...
+2025-03-24 21:21:07,012 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for SPY, length: 1408 chars
+2025-03-24 21:21:07,012 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, contrary setups like this – a stock weakening while
+2025-03-24 21:21:07,012 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for SPY
+2025-03-24 21:21:07,272 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:21:07,272 - discord.discord_client - INFO - Sending stats to trade-stats webhook for SPY
+2025-03-24 21:21:07,548 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:21:07,549 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2865 chars). Splitting into parts.
+2025-03-24 21:21:07,811 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:08,050 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:08,051 - __main__ - INFO - Successfully sent Discord notification for SPY
+2025-03-24 21:21:08,051 - __main__ - INFO - Analyzing QQQ...
+2025-03-24 21:21:08,051 - __main__ - INFO - Step 1: Getting stock data for QQQ...
+2025-03-24 21:21:08,132 - yfinance_client - INFO - Downloaded data for QQQ, shape: (35, 5)
+2025-03-24 21:21:08,231 - yfinance_client - INFO - Downloaded data for QQQ, shape: (59, 5)
+2025-03-24 21:21:08,237 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:21:08,239 - __main__ - INFO - Step 2: Getting options chain data for QQQ...
+2025-03-24 21:21:08,240 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for QQQ
+2025-03-24 21:21:08,331 - yfinance_client - INFO - Current price of QQQ: $490.66
+2025-03-24 21:21:08,421 - yfinance_client - INFO - Found 33 expiration dates for QQQ
+2025-03-24 21:21:08,422 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:21:08,526 - yfinance_client - INFO - Retrieved 159 calls and 145 puts
+2025-03-24 21:21:08,675 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:21:08,777 - yfinance_client - INFO - Retrieved 140 calls and 159 puts
+2025-03-24 21:21:08,922 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:21:09,028 - yfinance_client - INFO - Retrieved 136 calls and 133 puts
+2025-03-24 21:21:09,165 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:21:09,258 - yfinance_client - INFO - Retrieved 140 calls and 132 puts
+2025-03-24 21:21:09,392 - yfinance_client - INFO - Successfully fetched 4 option chains for QQQ
+2025-03-24 21:21:09,392 - __main__ - INFO - Step 3: Preparing analysis data for QQQ...
+2025-03-24 21:21:09,393 - __main__ - INFO - Step 4: Processing options data for QQQ...
+2025-03-24 21:21:09,393 - __main__ - INFO - Found 4 expiration dates for QQQ
+2025-03-24 21:21:09,393 - __main__ - INFO - Processing expiration date 2025-03-31 for QQQ...
+2025-03-24 21:21:09,396 - __main__ - INFO - Successfully processed expiration 2025-03-31 for QQQ
+2025-03-24 21:21:09,396 - __main__ - INFO - Processing expiration date 2025-04-04 for QQQ...
+2025-03-24 21:21:09,399 - __main__ - INFO - Successfully processed expiration 2025-04-04 for QQQ
+2025-03-24 21:21:09,399 - __main__ - INFO - Processing expiration date 2025-04-11 for QQQ...
+2025-03-24 21:21:09,402 - __main__ - INFO - Successfully processed expiration 2025-04-11 for QQQ
+2025-03-24 21:21:09,402 - __main__ - INFO - Processing expiration date 2025-04-17 for QQQ...
+2025-03-24 21:21:09,404 - __main__ - INFO - Successfully processed expiration 2025-04-17 for QQQ
+2025-03-24 21:21:09,405 - __main__ - INFO - Step 5: Generating analysis for QQQ...
+2025-03-24 21:21:23,419 - __main__ - INFO - Market alignment for QQQ: contrary
+2025-03-24 21:21:23,419 - __main__ - INFO - Creating stock analysis result for QQQ...
+2025-03-24 21:21:23,419 - __main__ - INFO - Successfully added QQQ to stock analyses
+2025-03-24 21:21:23,420 - __main__ - INFO - Updating Notion with analysis for QQQ...
+2025-03-24 21:21:23,420 - __main__ - INFO - Sending Discord notification for QQQ...
+2025-03-24 21:21:23,420 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for QQQ, length: 1482 chars
+2025-03-24 21:21:23,420 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing tech (QQQ) underperform while the broader ma
+2025-03-24 21:21:23,421 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for QQQ
+2025-03-24 21:21:23,791 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:21:23,792 - discord.discord_client - INFO - Sending stats to trade-stats webhook for QQQ
+2025-03-24 21:21:24,049 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:21:24,050 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2957 chars). Splitting into parts.
+2025-03-24 21:21:24,303 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:24,544 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:24,544 - __main__ - INFO - Successfully sent Discord notification for QQQ
+2025-03-24 21:21:24,545 - __main__ - INFO - Analyzing IWM...
+2025-03-24 21:21:24,545 - __main__ - INFO - Step 1: Getting stock data for IWM...
+2025-03-24 21:21:24,637 - yfinance_client - INFO - Downloaded data for IWM, shape: (35, 5)
+2025-03-24 21:21:24,736 - yfinance_client - INFO - Downloaded data for IWM, shape: (59, 5)
+2025-03-24 21:21:24,741 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:21:24,744 - __main__ - INFO - Step 2: Getting options chain data for IWM...
+2025-03-24 21:21:24,744 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for IWM
+2025-03-24 21:21:24,826 - yfinance_client - INFO - Current price of IWM: $208.86
+2025-03-24 21:21:24,910 - yfinance_client - INFO - Found 31 expiration dates for IWM
+2025-03-24 21:21:24,911 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:21:25,014 - yfinance_client - INFO - Retrieved 90 calls and 86 puts
+2025-03-24 21:21:25,102 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:21:25,195 - yfinance_client - INFO - Retrieved 80 calls and 82 puts
+2025-03-24 21:21:25,278 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:21:25,367 - yfinance_client - INFO - Retrieved 71 calls and 80 puts
+2025-03-24 21:21:25,444 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:21:25,551 - yfinance_client - INFO - Retrieved 101 calls and 91 puts
+2025-03-24 21:21:25,649 - yfinance_client - INFO - Successfully fetched 4 option chains for IWM
+2025-03-24 21:21:25,650 - __main__ - INFO - Step 3: Preparing analysis data for IWM...
+2025-03-24 21:21:25,650 - __main__ - INFO - Step 4: Processing options data for IWM...
+2025-03-24 21:21:25,650 - __main__ - INFO - Found 4 expiration dates for IWM
+2025-03-24 21:21:25,651 - __main__ - INFO - Processing expiration date 2025-03-31 for IWM...
+2025-03-24 21:21:25,654 - __main__ - INFO - Successfully processed expiration 2025-03-31 for IWM
+2025-03-24 21:21:25,654 - __main__ - INFO - Processing expiration date 2025-04-04 for IWM...
+2025-03-24 21:21:25,656 - __main__ - INFO - Successfully processed expiration 2025-04-04 for IWM
+2025-03-24 21:21:25,657 - __main__ - INFO - Processing expiration date 2025-04-11 for IWM...
+2025-03-24 21:21:25,659 - __main__ - INFO - Successfully processed expiration 2025-04-11 for IWM
+2025-03-24 21:21:25,659 - __main__ - INFO - Processing expiration date 2025-04-17 for IWM...
+2025-03-24 21:21:25,662 - __main__ - INFO - Successfully processed expiration 2025-04-17 for IWM
+2025-03-24 21:21:25,662 - __main__ - INFO - Step 5: Generating analysis for IWM...
+2025-03-24 21:21:40,503 - __main__ - INFO - Market alignment for IWM: **
+2025-03-24 21:21:40,504 - __main__ - INFO - Creating stock analysis result for IWM...
+2025-03-24 21:21:40,504 - __main__ - INFO - Successfully added IWM to stock analyses
+2025-03-24 21:21:40,504 - __main__ - INFO - Updating Notion with analysis for IWM...
+2025-03-24 21:21:40,504 - __main__ - INFO - Sending Discord notification for IWM...
+2025-03-24 21:21:40,505 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for IWM, length: 1477 chars
+2025-03-24 21:21:40,505 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, these ‘contrary’ setups – a small-cap rally while t
+2025-03-24 21:21:40,505 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for IWM
+2025-03-24 21:21:40,842 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:21:40,843 - discord.discord_client - INFO - Sending stats to trade-stats webhook for IWM
+2025-03-24 21:21:41,105 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:21:41,105 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2914 chars). Splitting into parts.
+2025-03-24 21:21:41,441 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:41,734 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:41,734 - __main__ - INFO - Successfully sent Discord notification for IWM
+2025-03-24 21:21:41,734 - __main__ - INFO - Analyzing VTV...
+2025-03-24 21:21:41,735 - __main__ - INFO - Step 1: Getting stock data for VTV...
+2025-03-24 21:21:41,814 - yfinance_client - INFO - Downloaded data for VTV, shape: (35, 5)
+2025-03-24 21:21:41,924 - yfinance_client - INFO - Downloaded data for VTV, shape: (59, 5)
+2025-03-24 21:21:41,929 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:21:41,932 - __main__ - INFO - Step 2: Getting options chain data for VTV...
+2025-03-24 21:21:41,932 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for VTV
+2025-03-24 21:21:42,019 - yfinance_client - INFO - Current price of VTV: $174.55
+2025-03-24 21:21:42,081 - yfinance_client - INFO - Found 4 expiration dates for VTV
+2025-03-24 21:21:42,081 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:21:42,144 - yfinance_client - INFO - Retrieved 18 calls and 11 puts
+2025-03-24 21:21:42,162 - yfinance_client - INFO - Successfully fetched 1 option chains for VTV
+2025-03-24 21:21:42,163 - __main__ - INFO - Step 3: Preparing analysis data for VTV...
+2025-03-24 21:21:42,163 - __main__ - INFO - Step 4: Processing options data for VTV...
+2025-03-24 21:21:42,163 - __main__ - INFO - Found 1 expiration dates for VTV
+2025-03-24 21:21:42,164 - __main__ - INFO - Processing expiration date 2025-04-17 for VTV...
+2025-03-24 21:21:42,166 - __main__ - INFO - Successfully processed expiration 2025-04-17 for VTV
+2025-03-24 21:21:42,167 - __main__ - INFO - Step 5: Generating analysis for VTV...
+2025-03-24 21:21:57,282 - __main__ - INFO - Market alignment for VTV: **
+2025-03-24 21:21:57,282 - __main__ - INFO - Creating stock analysis result for VTV...
+2025-03-24 21:21:57,283 - __main__ - INFO - Successfully added VTV to stock analyses
+2025-03-24 21:21:57,283 - __main__ - INFO - Updating Notion with analysis for VTV...
+2025-03-24 21:21:57,283 - __main__ - INFO - Sending Discord notification for VTV...
+2025-03-24 21:21:57,283 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for VTV, length: 1626 chars
+2025-03-24 21:21:57,284 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, these 'moderately bearish' setups with price action
+2025-03-24 21:21:57,284 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for VTV
+2025-03-24 21:21:57,660 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:21:57,661 - discord.discord_client - INFO - Sending stats to trade-stats webhook for VTV
+2025-03-24 21:21:57,980 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:21:57,981 - discord.discord_client - INFO - Analysis description exceeds Discord limit (3145 chars). Splitting into parts.
+2025-03-24 21:21:58,320 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:58,630 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:21:58,631 - __main__ - INFO - Successfully sent Discord notification for VTV
+2025-03-24 21:21:58,631 - __main__ - INFO - Analyzing VGLT...
+2025-03-24 21:21:58,631 - __main__ - INFO - Step 1: Getting stock data for VGLT...
+2025-03-24 21:21:58,711 - yfinance_client - INFO - Downloaded data for VGLT, shape: (35, 5)
+2025-03-24 21:21:58,801 - yfinance_client - INFO - Downloaded data for VGLT, shape: (59, 5)
+2025-03-24 21:21:58,806 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:21:58,809 - __main__ - INFO - Step 2: Getting options chain data for VGLT...
+2025-03-24 21:21:58,810 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for VGLT
+2025-03-24 21:21:58,940 - yfinance_client - INFO - Current price of VGLT: $56.85
+2025-03-24 21:21:59,005 - yfinance_client - INFO - Found 4 expiration dates for VGLT
+2025-03-24 21:21:59,006 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:21:59,064 - yfinance_client - INFO - Retrieved 8 calls and 8 puts
+2025-03-24 21:21:59,075 - yfinance_client - INFO - Successfully fetched 1 option chains for VGLT
+2025-03-24 21:21:59,076 - __main__ - INFO - Step 3: Preparing analysis data for VGLT...
+2025-03-24 21:21:59,076 - __main__ - INFO - Step 4: Processing options data for VGLT...
+2025-03-24 21:21:59,076 - __main__ - INFO - Found 1 expiration dates for VGLT
+2025-03-24 21:21:59,076 - __main__ - INFO - Processing expiration date 2025-04-17 for VGLT...
+2025-03-24 21:21:59,079 - __main__ - INFO - Successfully processed expiration 2025-04-17 for VGLT
+2025-03-24 21:21:59,080 - __main__ - INFO - Step 5: Generating analysis for VGLT...
+2025-03-24 21:22:12,122 - __main__ - INFO - Market alignment for VGLT: contrary
+2025-03-24 21:22:12,123 - __main__ - INFO - Creating stock analysis result for VGLT...
+2025-03-24 21:22:12,123 - __main__ - INFO - Successfully added VGLT to stock analyses
+2025-03-24 21:22:12,123 - __main__ - INFO - Updating Notion with analysis for VGLT...
+2025-03-24 21:22:12,123 - __main__ - INFO - Sending Discord notification for VGLT...
+2025-03-24 21:22:12,123 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for VGLT, length: 1209 chars
+2025-03-24 21:22:12,124 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing a bond ETF like VGLT lag in a strong risk-on
+2025-03-24 21:22:12,124 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for VGLT
+2025-03-24 21:22:12,380 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:22:12,381 - discord.discord_client - INFO - Sending stats to trade-stats webhook for VGLT
+2025-03-24 21:22:12,748 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:22:12,749 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2797 chars). Splitting into parts.
+2025-03-24 21:22:13,153 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:22:13,436 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:22:13,436 - __main__ - INFO - Successfully sent Discord notification for VGLT
+2025-03-24 21:22:13,436 - __main__ - INFO - Analyzing VIX...
+2025-03-24 21:22:13,437 - __main__ - INFO - Step 1: Getting stock data for VIX...
+2025-03-24 21:22:13,501 - yfinance - ERROR - 
+1 Failed download:
+2025-03-24 21:22:13,502 - yfinance - ERROR - ['VIX']: YFPricesMissingError('possibly delisted; no price data found  (period=5d)')
+2025-03-24 21:22:13,504 - yfinance_client - INFO - Downloaded data for VIX, shape: (0, 6)
+2025-03-24 21:22:13,570 - yfinance - ERROR - 
+1 Failed download:
+2025-03-24 21:22:13,570 - yfinance - ERROR - ['VIX']: YFPricesMissingError('possibly delisted; no price data found  (period=3mo)')
+2025-03-24 21:22:13,572 - yfinance_client - INFO - Downloaded data for VIX, shape: (0, 6)
+2025-03-24 21:22:13,572 - yfinance_client - ERROR - Failed to retrieve data for VIX
+2025-03-24 21:22:13,573 - __main__ - ERROR - Failed to get stock data for VIX
+2025-03-24 21:22:13,573 - __main__ - INFO - Analyzing DIA...
+2025-03-24 21:22:13,573 - __main__ - INFO - Step 1: Getting stock data for DIA...
+2025-03-24 21:22:13,710 - yfinance_client - INFO - Downloaded data for DIA, shape: (35, 5)
+2025-03-24 21:22:13,811 - yfinance_client - INFO - Downloaded data for DIA, shape: (59, 5)
+2025-03-24 21:22:13,817 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:22:13,820 - __main__ - INFO - Step 2: Getting options chain data for DIA...
+2025-03-24 21:22:13,821 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for DIA
+2025-03-24 21:22:13,907 - yfinance_client - INFO - Current price of DIA: $425.49
+2025-03-24 21:22:14,012 - yfinance_client - INFO - Found 17 expiration dates for DIA
+2025-03-24 21:22:14,013 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-31
+2025-03-24 21:22:14,101 - yfinance_client - INFO - Retrieved 113 calls and 106 puts
+2025-03-24 21:22:14,209 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:22:14,297 - yfinance_client - INFO - Retrieved 75 calls and 67 puts
+2025-03-24 21:22:14,379 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:22:14,465 - yfinance_client - INFO - Retrieved 54 calls and 54 puts
+2025-03-24 21:22:14,522 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:22:14,611 - yfinance_client - INFO - Retrieved 99 calls and 89 puts
+2025-03-24 21:22:14,708 - yfinance_client - INFO - Successfully fetched 4 option chains for DIA
+2025-03-24 21:22:14,708 - __main__ - INFO - Step 3: Preparing analysis data for DIA...
+2025-03-24 21:22:14,708 - __main__ - INFO - Step 4: Processing options data for DIA...
+2025-03-24 21:22:14,709 - __main__ - INFO - Found 4 expiration dates for DIA
+2025-03-24 21:22:14,709 - __main__ - INFO - Processing expiration date 2025-03-31 for DIA...
+2025-03-24 21:22:14,712 - __main__ - INFO - Successfully processed expiration 2025-03-31 for DIA
+2025-03-24 21:22:14,712 - __main__ - INFO - Processing expiration date 2025-04-04 for DIA...
+2025-03-24 21:22:14,715 - __main__ - INFO - Successfully processed expiration 2025-04-04 for DIA
+2025-03-24 21:22:14,715 - __main__ - INFO - Processing expiration date 2025-04-11 for DIA...
+2025-03-24 21:22:14,718 - __main__ - INFO - Successfully processed expiration 2025-04-11 for DIA
+2025-03-24 21:22:14,718 - __main__ - INFO - Processing expiration date 2025-04-17 for DIA...
+2025-03-24 21:22:14,721 - __main__ - INFO - Successfully processed expiration 2025-04-17 for DIA
+2025-03-24 21:22:14,721 - __main__ - INFO - Step 5: Generating analysis for DIA...
+2025-03-24 21:22:30,309 - __main__ - INFO - Market alignment for DIA: contrary
+2025-03-24 21:22:30,309 - __main__ - INFO - Creating stock analysis result for DIA...
+2025-03-24 21:22:30,309 - __main__ - INFO - Successfully added DIA to stock analyses
+2025-03-24 21:22:30,310 - __main__ - INFO - Updating Notion with analysis for DIA...
+2025-03-24 21:22:30,310 - __main__ - INFO - Sending Discord notification for DIA...
+2025-03-24 21:22:30,310 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for DIA, length: 1423 chars
+2025-03-24 21:22:30,310 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing a large-cap index like DIA underperform duri
+2025-03-24 21:22:30,311 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for DIA
+2025-03-24 21:22:30,680 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:22:30,681 - discord.discord_client - INFO - Sending stats to trade-stats webhook for DIA
+2025-03-24 21:22:31,087 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:22:31,088 - discord.discord_client - INFO - Analysis description exceeds Discord limit (3500 chars). Splitting into parts.
+2025-03-24 21:22:31,357 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:22:31,626 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:22:31,627 - __main__ - INFO - Successfully sent Discord notification for DIA
+2025-03-24 21:22:31,627 - __main__ - INFO - Analyzing BND...
+2025-03-24 21:22:31,627 - __main__ - INFO - Step 1: Getting stock data for BND...
+2025-03-24 21:22:31,705 - yfinance_client - INFO - Downloaded data for BND, shape: (35, 5)
+2025-03-24 21:22:31,793 - yfinance_client - INFO - Downloaded data for BND, shape: (59, 5)
+2025-03-24 21:22:31,799 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:22:31,802 - __main__ - INFO - Step 2: Getting options chain data for BND...
+2025-03-24 21:22:31,802 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for BND
+2025-03-24 21:22:31,880 - yfinance_client - INFO - Current price of BND: $73.00
+2025-03-24 21:22:31,983 - yfinance_client - INFO - Found 4 expiration dates for BND
+2025-03-24 21:22:31,984 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:22:32,042 - yfinance_client - INFO - Retrieved 6 calls and 2 puts
+2025-03-24 21:22:32,049 - yfinance_client - INFO - Successfully fetched 1 option chains for BND
+2025-03-24 21:22:32,050 - __main__ - INFO - Step 3: Preparing analysis data for BND...
+2025-03-24 21:22:32,050 - __main__ - INFO - Step 4: Processing options data for BND...
+2025-03-24 21:22:32,050 - __main__ - INFO - Found 1 expiration dates for BND
+2025-03-24 21:22:32,050 - __main__ - INFO - Processing expiration date 2025-04-17 for BND...
+2025-03-24 21:22:32,053 - __main__ - INFO - Successfully processed expiration 2025-04-17 for BND
+2025-03-24 21:22:32,054 - __main__ - INFO - Step 5: Generating analysis for BND...
+2025-03-24 21:22:45,844 - __main__ - INFO - Market alignment for BND: **
+2025-03-24 21:22:45,845 - __main__ - INFO - Creating stock analysis result for BND...
+2025-03-24 21:22:45,845 - __main__ - INFO - Successfully added BND to stock analyses
+2025-03-24 21:22:45,845 - __main__ - INFO - Updating Notion with analysis for BND...
+2025-03-24 21:22:45,845 - __main__ - INFO - Sending Discord notification for BND...
+2025-03-24 21:22:45,846 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for BND, length: 1317 chars
+2025-03-24 21:22:45,846 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, these sideways consolidations near key levels, espe
+2025-03-24 21:22:45,846 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for BND
+2025-03-24 21:22:46,197 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:22:46,198 - discord.discord_client - INFO - Sending stats to trade-stats webhook for BND
+2025-03-24 21:22:46,580 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:22:46,580 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2993 chars). Splitting into parts.
+2025-03-24 21:22:46,857 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:22:47,198 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:22:47,199 - __main__ - INFO - Successfully sent Discord notification for BND
+2025-03-24 21:22:47,199 - __main__ - INFO - Analyzing BTC-USD...
+2025-03-24 21:22:47,200 - __main__ - INFO - Step 1: Getting stock data for BTC-USD...
+2025-03-24 21:22:47,279 - yfinance_client - INFO - Downloaded data for BTC-USD, shape: (101, 5)
+2025-03-24 21:22:47,339 - yfinance_client - INFO - Downloaded data for BTC-USD, shape: (90, 5)
+2025-03-24 21:22:47,344 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (90, 5)
+2025-03-24 21:22:47,347 - __main__ - INFO - Step 2: Getting options chain data for BTC-USD...
+2025-03-24 21:22:47,347 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for BTC-USD
+2025-03-24 21:22:47,399 - yfinance_client - INFO - Current price of BTC-USD: $86546.61
+2025-03-24 21:22:47,454 - yfinance_client - WARNING - No options expiration dates found for BTC-USD
+2025-03-24 21:22:47,454 - __main__ - WARNING - No options chain data found for BTC-USD
+2025-03-24 21:22:47,455 - __main__ - INFO - Step 3: Preparing analysis data for BTC-USD...
+2025-03-24 21:22:47,455 - __main__ - INFO - Step 4: Processing options data for BTC-USD...
+2025-03-24 21:22:47,455 - __main__ - INFO - Step 5: Generating analysis for BTC-USD...
+2025-03-24 21:23:00,649 - __main__ - INFO - Market alignment for BTC-USD: contrary
+2025-03-24 21:23:00,650 - __main__ - INFO - Creating stock analysis result for BTC-USD...
+2025-03-24 21:23:00,650 - __main__ - INFO - Successfully added BTC-USD to stock analyses
+2025-03-24 21:23:00,650 - __main__ - INFO - Updating Notion with analysis for BTC-USD...
+2025-03-24 21:23:00,651 - __main__ - INFO - Sending Discord notification for BTC-USD...
+2025-03-24 21:23:00,651 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for BTC-USD, length: 1216 chars
+2025-03-24 21:23:00,651 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, these situations – a stock showing bearish signals 
+2025-03-24 21:23:00,652 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for BTC-USD
+2025-03-24 21:23:01,024 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:23:01,024 - discord.discord_client - INFO - Sending stats to trade-stats webhook for BTC-USD
+2025-03-24 21:23:01,356 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:23:01,357 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2838 chars). Splitting into parts.
+2025-03-24 21:23:01,761 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:02,040 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:02,041 - __main__ - INFO - Successfully sent Discord notification for BTC-USD
+2025-03-24 21:23:02,041 - __main__ - INFO - Analyzing NVDA...
+2025-03-24 21:23:02,042 - __main__ - INFO - Step 1: Getting stock data for NVDA...
+2025-03-24 21:23:02,135 - yfinance_client - INFO - Downloaded data for NVDA, shape: (35, 5)
+2025-03-24 21:23:02,212 - yfinance_client - INFO - Downloaded data for NVDA, shape: (59, 5)
+2025-03-24 21:23:02,218 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:23:02,220 - __main__ - INFO - Step 2: Getting options chain data for NVDA...
+2025-03-24 21:23:02,221 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for NVDA
+2025-03-24 21:23:02,301 - yfinance_client - INFO - Current price of NVDA: $121.41
+2025-03-24 21:23:02,399 - yfinance_client - INFO - Found 21 expiration dates for NVDA
+2025-03-24 21:23:02,400 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-28
+2025-03-24 21:23:02,497 - yfinance_client - INFO - Retrieved 89 calls and 83 puts
+2025-03-24 21:23:02,581 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:23:02,679 - yfinance_client - INFO - Retrieved 80 calls and 73 puts
+2025-03-24 21:23:02,757 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:23:02,841 - yfinance_client - INFO - Retrieved 74 calls and 61 puts
+2025-03-24 21:23:02,910 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:23:03,000 - yfinance_client - INFO - Retrieved 49 calls and 47 puts
+2025-03-24 21:23:03,049 - yfinance_client - INFO - Successfully fetched 4 option chains for NVDA
+2025-03-24 21:23:03,049 - __main__ - INFO - Step 3: Preparing analysis data for NVDA...
+2025-03-24 21:23:03,049 - __main__ - INFO - Step 4: Processing options data for NVDA...
+2025-03-24 21:23:03,050 - __main__ - INFO - Found 4 expiration dates for NVDA
+2025-03-24 21:23:03,050 - __main__ - INFO - Processing expiration date 2025-03-28 for NVDA...
+2025-03-24 21:23:03,053 - __main__ - INFO - Successfully processed expiration 2025-03-28 for NVDA
+2025-03-24 21:23:03,053 - __main__ - INFO - Processing expiration date 2025-04-04 for NVDA...
+2025-03-24 21:23:03,054 - __main__ - INFO - Successfully processed expiration 2025-04-04 for NVDA
+2025-03-24 21:23:03,055 - __main__ - INFO - Processing expiration date 2025-04-11 for NVDA...
+2025-03-24 21:23:03,057 - __main__ - INFO - Successfully processed expiration 2025-04-11 for NVDA
+2025-03-24 21:23:03,057 - __main__ - INFO - Processing expiration date 2025-04-17 for NVDA...
+2025-03-24 21:23:03,060 - __main__ - INFO - Successfully processed expiration 2025-04-17 for NVDA
+2025-03-24 21:23:03,060 - __main__ - INFO - Step 5: Generating analysis for NVDA...
+2025-03-24 21:23:15,592 - __main__ - INFO - Market alignment for NVDA: contrary
+2025-03-24 21:23:15,592 - __main__ - INFO - Creating stock analysis result for NVDA...
+2025-03-24 21:23:15,593 - __main__ - INFO - Successfully added NVDA to stock analyses
+2025-03-24 21:23:15,593 - __main__ - INFO - Updating Notion with analysis for NVDA...
+2025-03-24 21:23:15,593 - __main__ - INFO - Sending Discord notification for NVDA...
+2025-03-24 21:23:15,593 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for NVDA, length: 1425 chars
+2025-03-24 21:23:15,593 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing a tech heavyweight like NVDA show bearish si
+2025-03-24 21:23:15,594 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for NVDA
+2025-03-24 21:23:15,991 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:23:15,991 - discord.discord_client - INFO - Sending stats to trade-stats webhook for NVDA
+2025-03-24 21:23:16,256 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:23:16,256 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2656 chars). Splitting into parts.
+2025-03-24 21:23:16,518 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:16,814 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:16,814 - __main__ - INFO - Successfully sent Discord notification for NVDA
+2025-03-24 21:23:16,814 - __main__ - INFO - Analyzing TSLA...
+2025-03-24 21:23:16,815 - __main__ - INFO - Step 1: Getting stock data for TSLA...
+2025-03-24 21:23:16,883 - yfinance_client - INFO - Downloaded data for TSLA, shape: (35, 5)
+2025-03-24 21:23:16,947 - yfinance_client - INFO - Downloaded data for TSLA, shape: (59, 5)
+2025-03-24 21:23:16,953 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:23:16,956 - __main__ - INFO - Step 2: Getting options chain data for TSLA...
+2025-03-24 21:23:16,956 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for TSLA
+2025-03-24 21:23:17,017 - yfinance_client - INFO - Current price of TSLA: $278.39
+2025-03-24 21:23:17,116 - yfinance_client - INFO - Found 20 expiration dates for TSLA
+2025-03-24 21:23:17,117 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-28
+2025-03-24 21:23:17,260 - yfinance_client - INFO - Retrieved 141 calls and 112 puts
+2025-03-24 21:23:17,379 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:23:17,469 - yfinance_client - INFO - Retrieved 119 calls and 87 puts
+2025-03-24 21:23:17,569 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:23:17,651 - yfinance_client - INFO - Retrieved 92 calls and 69 puts
+2025-03-24 21:23:17,729 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:23:17,836 - yfinance_client - INFO - Retrieved 152 calls and 144 puts
+2025-03-24 21:23:17,978 - yfinance_client - INFO - Successfully fetched 4 option chains for TSLA
+2025-03-24 21:23:17,979 - __main__ - INFO - Step 3: Preparing analysis data for TSLA...
+2025-03-24 21:23:17,979 - __main__ - INFO - Step 4: Processing options data for TSLA...
+2025-03-24 21:23:17,979 - __main__ - INFO - Found 4 expiration dates for TSLA
+2025-03-24 21:23:17,980 - __main__ - INFO - Processing expiration date 2025-03-28 for TSLA...
+2025-03-24 21:23:17,982 - __main__ - INFO - Successfully processed expiration 2025-03-28 for TSLA
+2025-03-24 21:23:17,983 - __main__ - INFO - Processing expiration date 2025-04-04 for TSLA...
+2025-03-24 21:23:17,985 - __main__ - INFO - Successfully processed expiration 2025-04-04 for TSLA
+2025-03-24 21:23:17,985 - __main__ - INFO - Processing expiration date 2025-04-11 for TSLA...
+2025-03-24 21:23:17,988 - __main__ - INFO - Successfully processed expiration 2025-04-11 for TSLA
+2025-03-24 21:23:17,988 - __main__ - INFO - Processing expiration date 2025-04-17 for TSLA...
+2025-03-24 21:23:17,990 - __main__ - INFO - Successfully processed expiration 2025-04-17 for TSLA
+2025-03-24 21:23:17,990 - __main__ - INFO - Step 5: Generating analysis for TSLA...
+2025-03-24 21:23:31,704 - __main__ - INFO - Market alignment for TSLA: contrary
+2025-03-24 21:23:31,704 - __main__ - INFO - Creating stock analysis result for TSLA...
+2025-03-24 21:23:31,705 - __main__ - INFO - Successfully added TSLA to stock analyses
+2025-03-24 21:23:31,705 - __main__ - INFO - Updating Notion with analysis for TSLA...
+2025-03-24 21:23:31,705 - __main__ - INFO - Sending Discord notification for TSLA...
+2025-03-24 21:23:31,705 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for TSLA, length: 1287 chars
+2025-03-24 21:23:31,705 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing a high-profile stock like TSLA move contrary
+2025-03-24 21:23:31,705 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for TSLA
+2025-03-24 21:23:31,998 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:23:31,999 - discord.discord_client - INFO - Sending stats to trade-stats webhook for TSLA
+2025-03-24 21:23:32,285 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:23:32,285 - discord.discord_client - INFO - Analysis description exceeds Discord limit (3042 chars). Splitting into parts.
+2025-03-24 21:23:33,792 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:34,041 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:34,042 - __main__ - INFO - Successfully sent Discord notification for TSLA
+2025-03-24 21:23:34,042 - __main__ - INFO - Analyzing AAPL...
+2025-03-24 21:23:34,043 - __main__ - INFO - Step 1: Getting stock data for AAPL...
+2025-03-24 21:23:34,118 - yfinance_client - INFO - Downloaded data for AAPL, shape: (35, 5)
+2025-03-24 21:23:34,236 - yfinance_client - INFO - Downloaded data for AAPL, shape: (59, 5)
+2025-03-24 21:23:34,242 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:23:34,245 - __main__ - INFO - Step 2: Getting options chain data for AAPL...
+2025-03-24 21:23:34,245 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for AAPL
+2025-03-24 21:23:34,351 - yfinance_client - INFO - Current price of AAPL: $220.73
+2025-03-24 21:23:34,433 - yfinance_client - INFO - Found 20 expiration dates for AAPL
+2025-03-24 21:23:34,434 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-28
+2025-03-24 21:23:34,514 - yfinance_client - INFO - Retrieved 66 calls and 62 puts
+2025-03-24 21:23:34,576 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:23:34,651 - yfinance_client - INFO - Retrieved 53 calls and 48 puts
+2025-03-24 21:23:34,702 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:23:34,772 - yfinance_client - INFO - Retrieved 37 calls and 35 puts
+2025-03-24 21:23:34,810 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:23:34,887 - yfinance_client - INFO - Retrieved 47 calls and 47 puts
+2025-03-24 21:23:34,935 - yfinance_client - INFO - Successfully fetched 4 option chains for AAPL
+2025-03-24 21:23:34,936 - __main__ - INFO - Step 3: Preparing analysis data for AAPL...
+2025-03-24 21:23:34,936 - __main__ - INFO - Step 4: Processing options data for AAPL...
+2025-03-24 21:23:34,937 - __main__ - INFO - Found 4 expiration dates for AAPL
+2025-03-24 21:23:34,937 - __main__ - INFO - Processing expiration date 2025-03-28 for AAPL...
+2025-03-24 21:23:34,940 - __main__ - INFO - Successfully processed expiration 2025-03-28 for AAPL
+2025-03-24 21:23:34,940 - __main__ - INFO - Processing expiration date 2025-04-04 for AAPL...
+2025-03-24 21:23:34,943 - __main__ - INFO - Successfully processed expiration 2025-04-04 for AAPL
+2025-03-24 21:23:34,943 - __main__ - INFO - Processing expiration date 2025-04-11 for AAPL...
+2025-03-24 21:23:34,945 - __main__ - INFO - Successfully processed expiration 2025-04-11 for AAPL
+2025-03-24 21:23:34,945 - __main__ - INFO - Processing expiration date 2025-04-17 for AAPL...
+2025-03-24 21:23:34,948 - __main__ - INFO - Successfully processed expiration 2025-04-17 for AAPL
+2025-03-24 21:23:34,948 - __main__ - INFO - Step 5: Generating analysis for AAPL...
+2025-03-24 21:23:47,525 - __main__ - INFO - Market alignment for AAPL: contrary
+2025-03-24 21:23:47,526 - __main__ - INFO - Creating stock analysis result for AAPL...
+2025-03-24 21:23:47,526 - __main__ - INFO - Successfully added AAPL to stock analyses
+2025-03-24 21:23:47,526 - __main__ - INFO - Updating Notion with analysis for AAPL...
+2025-03-24 21:23:47,527 - __main__ - INFO - Sending Discord notification for AAPL...
+2025-03-24 21:23:47,528 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for AAPL, length: 1273 chars
+2025-03-24 21:23:47,528 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing a stock like AAPL show bearish technicals *d
+2025-03-24 21:23:47,528 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for AAPL
+2025-03-24 21:23:47,786 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:23:47,786 - discord.discord_client - INFO - Sending stats to trade-stats webhook for AAPL
+2025-03-24 21:23:48,086 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:23:48,086 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2672 chars). Splitting into parts.
+2025-03-24 21:23:48,373 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:48,643 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:23:48,644 - __main__ - INFO - Successfully sent Discord notification for AAPL
+2025-03-24 21:23:48,644 - __main__ - INFO - Analyzing GOOGL...
+2025-03-24 21:23:48,644 - __main__ - INFO - Step 1: Getting stock data for GOOGL...
+2025-03-24 21:23:48,776 - yfinance_client - INFO - Downloaded data for GOOGL, shape: (35, 5)
+2025-03-24 21:23:48,853 - yfinance_client - INFO - Downloaded data for GOOGL, shape: (59, 5)
+2025-03-24 21:23:48,859 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:23:48,861 - __main__ - INFO - Step 2: Getting options chain data for GOOGL...
+2025-03-24 21:23:48,862 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for GOOGL
+2025-03-24 21:23:48,917 - yfinance_client - INFO - Current price of GOOGL: $167.68
+2025-03-24 21:23:48,995 - yfinance_client - INFO - Found 20 expiration dates for GOOGL
+2025-03-24 21:23:48,995 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-28
+2025-03-24 21:23:49,093 - yfinance_client - INFO - Retrieved 51 calls and 44 puts
+2025-03-24 21:23:49,141 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:23:49,262 - yfinance_client - INFO - Retrieved 38 calls and 34 puts
+2025-03-24 21:23:49,299 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:23:49,379 - yfinance_client - INFO - Retrieved 23 calls and 24 puts
+2025-03-24 21:23:49,405 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:23:49,503 - yfinance_client - INFO - Retrieved 51 calls and 44 puts
+2025-03-24 21:23:49,552 - yfinance_client - INFO - Successfully fetched 4 option chains for GOOGL
+2025-03-24 21:23:49,552 - __main__ - INFO - Step 3: Preparing analysis data for GOOGL...
+2025-03-24 21:23:49,552 - __main__ - INFO - Step 4: Processing options data for GOOGL...
+2025-03-24 21:23:49,553 - __main__ - INFO - Found 4 expiration dates for GOOGL
+2025-03-24 21:23:49,553 - __main__ - INFO - Processing expiration date 2025-03-28 for GOOGL...
+2025-03-24 21:23:49,556 - __main__ - INFO - Successfully processed expiration 2025-03-28 for GOOGL
+2025-03-24 21:23:49,556 - __main__ - INFO - Processing expiration date 2025-04-04 for GOOGL...
+2025-03-24 21:23:49,559 - __main__ - INFO - Successfully processed expiration 2025-04-04 for GOOGL
+2025-03-24 21:23:49,559 - __main__ - INFO - Processing expiration date 2025-04-11 for GOOGL...
+2025-03-24 21:23:49,562 - __main__ - INFO - Successfully processed expiration 2025-04-11 for GOOGL
+2025-03-24 21:23:49,562 - __main__ - INFO - Processing expiration date 2025-04-17 for GOOGL...
+2025-03-24 21:23:49,564 - __main__ - INFO - Successfully processed expiration 2025-04-17 for GOOGL
+2025-03-24 21:23:49,564 - __main__ - INFO - Step 5: Generating analysis for GOOGL...
+2025-03-24 21:24:01,201 - __main__ - INFO - Market alignment for GOOGL: **
+the stock trend is bearish, while the spy trend is bullish.
+2025-03-24 21:24:01,201 - __main__ - INFO - Creating stock analysis result for GOOGL...
+2025-03-24 21:24:01,202 - __main__ - INFO - Successfully added GOOGL to stock analyses
+2025-03-24 21:24:01,202 - __main__ - INFO - Updating Notion with analysis for GOOGL...
+2025-03-24 21:24:01,202 - __main__ - INFO - Sending Discord notification for GOOGL...
+2025-03-24 21:24:01,203 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for GOOGL, length: 1356 chars
+2025-03-24 21:24:01,203 - discord.discord_client - INFO - First 100 chars: Experience-Based Insight: “In my experience, seeing a stock like GOOGL show bearish signals *against
+2025-03-24 21:24:01,203 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for GOOGL
+2025-03-24 21:24:01,512 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:24:01,513 - discord.discord_client - INFO - Sending stats to trade-stats webhook for GOOGL
+2025-03-24 21:24:01,750 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:24:01,751 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2321 chars). Splitting into parts.
+2025-03-24 21:24:02,026 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:24:02,275 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:24:02,276 - __main__ - INFO - Successfully sent Discord notification for GOOGL
+2025-03-24 21:24:02,276 - __main__ - INFO - Analyzing AMZN...
+2025-03-24 21:24:02,277 - __main__ - INFO - Step 1: Getting stock data for AMZN...
+2025-03-24 21:24:02,348 - yfinance_client - INFO - Downloaded data for AMZN, shape: (35, 5)
+2025-03-24 21:24:02,403 - yfinance_client - INFO - Downloaded data for AMZN, shape: (59, 5)
+2025-03-24 21:24:02,409 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:24:02,412 - __main__ - INFO - Step 2: Getting options chain data for AMZN...
+2025-03-24 21:24:02,412 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for AMZN
+2025-03-24 21:24:02,476 - yfinance_client - INFO - Current price of AMZN: $203.26
+2025-03-24 21:24:02,556 - yfinance_client - INFO - Found 20 expiration dates for AMZN
+2025-03-24 21:24:02,557 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-28
+2025-03-24 21:24:02,643 - yfinance_client - INFO - Retrieved 54 calls and 48 puts
+2025-03-24 21:24:02,696 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:24:02,775 - yfinance_client - INFO - Retrieved 47 calls and 43 puts
+2025-03-24 21:24:02,823 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:24:02,904 - yfinance_client - INFO - Retrieved 32 calls and 33 puts
+2025-03-24 21:24:02,939 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:24:03,020 - yfinance_client - INFO - Retrieved 56 calls and 52 puts
+2025-03-24 21:24:03,075 - yfinance_client - INFO - Successfully fetched 4 option chains for AMZN
+2025-03-24 21:24:03,075 - __main__ - INFO - Step 3: Preparing analysis data for AMZN...
+2025-03-24 21:24:03,076 - __main__ - INFO - Step 4: Processing options data for AMZN...
+2025-03-24 21:24:03,076 - __main__ - INFO - Found 4 expiration dates for AMZN
+2025-03-24 21:24:03,076 - __main__ - INFO - Processing expiration date 2025-03-28 for AMZN...
+2025-03-24 21:24:03,079 - __main__ - INFO - Successfully processed expiration 2025-03-28 for AMZN
+2025-03-24 21:24:03,079 - __main__ - INFO - Processing expiration date 2025-04-04 for AMZN...
+2025-03-24 21:24:03,082 - __main__ - INFO - Successfully processed expiration 2025-04-04 for AMZN
+2025-03-24 21:24:03,082 - __main__ - INFO - Processing expiration date 2025-04-11 for AMZN...
+2025-03-24 21:24:03,085 - __main__ - INFO - Successfully processed expiration 2025-04-11 for AMZN
+2025-03-24 21:24:03,085 - __main__ - INFO - Processing expiration date 2025-04-17 for AMZN...
+2025-03-24 21:24:03,089 - __main__ - INFO - Successfully processed expiration 2025-04-17 for AMZN
+2025-03-24 21:24:03,089 - __main__ - INFO - Step 5: Generating analysis for AMZN...
+2025-03-24 21:24:28,752 - __main__ - INFO - Market alignment for AMZN: contrary
+2025-03-24 21:24:28,752 - __main__ - INFO - Creating stock analysis result for AMZN...
+2025-03-24 21:24:28,752 - __main__ - INFO - Successfully added AMZN to stock analyses
+2025-03-24 21:24:28,753 - __main__ - INFO - Updating Notion with analysis for AMZN...
+2025-03-24 21:24:28,753 - __main__ - INFO - Sending Discord notification for AMZN...
+2025-03-24 21:24:28,753 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for AMZN, length: 1206 chars
+2025-03-24 21:24:28,753 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing a stock like AMZN attempt to test resistance
+2025-03-24 21:24:28,754 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for AMZN
+2025-03-24 21:24:29,036 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:24:29,036 - discord.discord_client - INFO - Sending stats to trade-stats webhook for AMZN
+2025-03-24 21:24:29,314 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:24:29,314 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2454 chars). Splitting into parts.
+2025-03-24 21:24:29,546 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:24:29,917 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:24:29,918 - __main__ - INFO - Successfully sent Discord notification for AMZN
+2025-03-24 21:24:29,918 - __main__ - INFO - Analyzing MSTR...
+2025-03-24 21:24:29,918 - __main__ - INFO - Step 1: Getting stock data for MSTR...
+2025-03-24 21:24:30,009 - yfinance_client - INFO - Downloaded data for MSTR, shape: (35, 5)
+2025-03-24 21:24:30,077 - yfinance_client - INFO - Downloaded data for MSTR, shape: (59, 5)
+2025-03-24 21:24:30,082 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:24:30,085 - __main__ - INFO - Step 2: Getting options chain data for MSTR...
+2025-03-24 21:24:30,086 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for MSTR
+2025-03-24 21:24:30,141 - yfinance_client - INFO - Current price of MSTR: $335.72
+2025-03-24 21:24:30,239 - yfinance_client - INFO - Found 19 expiration dates for MSTR
+2025-03-24 21:24:30,240 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-28
+2025-03-24 21:24:30,333 - yfinance_client - INFO - Retrieved 147 calls and 132 puts
+2025-03-24 21:24:30,473 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:24:30,568 - yfinance_client - INFO - Retrieved 120 calls and 99 puts
+2025-03-24 21:24:30,680 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:24:30,763 - yfinance_client - INFO - Retrieved 80 calls and 67 puts
+2025-03-24 21:24:30,840 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:24:30,952 - yfinance_client - INFO - Retrieved 150 calls and 147 puts
+2025-03-24 21:24:31,102 - yfinance_client - INFO - Successfully fetched 4 option chains for MSTR
+2025-03-24 21:24:31,103 - __main__ - INFO - Step 3: Preparing analysis data for MSTR...
+2025-03-24 21:24:31,103 - __main__ - INFO - Step 4: Processing options data for MSTR...
+2025-03-24 21:24:31,103 - __main__ - INFO - Found 4 expiration dates for MSTR
+2025-03-24 21:24:31,103 - __main__ - INFO - Processing expiration date 2025-03-28 for MSTR...
+2025-03-24 21:24:31,106 - __main__ - INFO - Successfully processed expiration 2025-03-28 for MSTR
+2025-03-24 21:24:31,107 - __main__ - INFO - Processing expiration date 2025-04-04 for MSTR...
+2025-03-24 21:24:31,109 - __main__ - INFO - Successfully processed expiration 2025-04-04 for MSTR
+2025-03-24 21:24:31,109 - __main__ - INFO - Processing expiration date 2025-04-11 for MSTR...
+2025-03-24 21:24:31,112 - __main__ - INFO - Successfully processed expiration 2025-04-11 for MSTR
+2025-03-24 21:24:31,112 - __main__ - INFO - Processing expiration date 2025-04-17 for MSTR...
+2025-03-24 21:24:31,115 - __main__ - INFO - Successfully processed expiration 2025-04-17 for MSTR
+2025-03-24 21:24:31,115 - __main__ - INFO - Step 5: Generating analysis for MSTR...
+2025-03-24 21:24:45,541 - __main__ - INFO - Market alignment for MSTR: aligned
+2025-03-24 21:24:45,542 - __main__ - INFO - Creating stock analysis result for MSTR...
+2025-03-24 21:24:45,542 - __main__ - INFO - Successfully added MSTR to stock analyses
+2025-03-24 21:24:45,542 - __main__ - INFO - Updating Notion with analysis for MSTR...
+2025-03-24 21:24:45,543 - __main__ - INFO - Sending Discord notification for MSTR...
+2025-03-24 21:24:45,543 - discord.discord_client - INFO - Found ANALYZER FULL OPINION section for MSTR, length: 1386 chars
+2025-03-24 21:24:45,543 - discord.discord_client - INFO - First 100 chars: **
+
+Experience-Based Insight: “In my experience, seeing a stock run into resistance during a broader
+2025-03-24 21:24:45,543 - discord.discord_client - INFO - Sending ANALYZER FULL OPINION to trade-opinion webhook for MSTR
+2025-03-24 21:24:45,787 - discord.discord_client - INFO - Message sent successfully to trade-opinion webhook
+2025-03-24 21:24:45,788 - discord.discord_client - INFO - Sending stats to trade-stats webhook for MSTR
+2025-03-24 21:24:46,039 - discord.discord_client - INFO - Message sent successfully to trade-stats webhook
+2025-03-24 21:24:46,040 - discord.discord_client - INFO - Analysis description exceeds Discord limit (2716 chars). Splitting into parts.
+2025-03-24 21:24:46,312 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:24:46,590 - discord.discord_client - INFO - Message sent successfully to full-analysis webhook
+2025-03-24 21:24:46,590 - __main__ - INFO - Successfully sent Discord notification for MSTR
+2025-03-24 21:24:46,591 - __main__ - INFO - Analyzing MSFT...
+2025-03-24 21:24:46,591 - __main__ - INFO - Step 1: Getting stock data for MSFT...
+2025-03-24 21:24:46,674 - yfinance_client - INFO - Downloaded data for MSFT, shape: (35, 5)
+2025-03-24 21:24:46,778 - yfinance_client - INFO - Downloaded data for MSFT, shape: (59, 5)
+2025-03-24 21:24:46,783 - yfinance_client - INFO - Using 3-month data for EMA calculation, shape: (59, 5)
+2025-03-24 21:24:46,786 - __main__ - INFO - Step 2: Getting options chain data for MSFT...
+2025-03-24 21:24:46,786 - yfinance_client - INFO - Fetching 4 weeks of option chains with greeks for MSFT
+2025-03-24 21:24:46,899 - yfinance_client - INFO - Current price of MSFT: $393.08
+2025-03-24 21:24:46,991 - yfinance_client - INFO - Found 20 expiration dates for MSFT
+2025-03-24 21:24:46,992 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-03-28
+2025-03-24 21:24:47,084 - yfinance_client - INFO - Retrieved 74 calls and 68 puts
+2025-03-24 21:24:47,155 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-04
+2025-03-24 21:24:47,242 - yfinance_client - INFO - Retrieved 55 calls and 52 puts
+2025-03-24 21:24:47,297 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-11
+2025-03-24 21:24:47,380 - yfinance_client - INFO - Retrieved 42 calls and 43 puts
+2025-03-24 21:24:47,424 - yfinance_client - INFO - Fetching option chain for expiration date: 2025-04-17
+2025-03-24 21:24:47,505 - yfinance_client - INFO - Retrieved 84 calls and 73 puts
+2025-03-24 21:24:47,585 - yfinance_client - INFO - Successfully fetched 4 option chains for MSFT
+2025-03-24 21:24:47,585 - __main__ - INFO - Step 3: Preparing analysis data for MSFT...
+2025-03-24 21:24:47,585 - __main__ - INFO - Step 4: Processing options data for MSFT...
+2025-03-24 21:24:47,586 - __main__ - INFO - Found 4 expiration dates for MSFT
+2025-03-24 21:24:47,586 - __main__ - INFO - Processing expiration date 2025-03-28 for MSFT...
+2025-03-24 21:24:47,589 - __main__ - INFO - Successfully processed expiration 2025-03-28 for MSFT
+2025-03-24 21:24:47,589 - __main__ - INFO - Processing expiration date 2025-04-04 for MSFT...
+2025-03-24 21:24:47,591 - __main__ - INFO - Successfully processed expiration 2025-04-04 for MSFT
+2025-03-24 21:24:47,591 - __main__ - INFO - Processing expiration date 2025-04-11 for MSFT...
+2025-03-24 21:24:47,593 - __main__ - INFO - Successfully processed expiration 2025-04-11 for MSFT
+2025-03-24 21:24:47,594 - __main__ - INFO - Processing expiration date 2025-04-17 for MSFT...
+2025-03-24 21:24:47,596 - __main__ - INFO - Successfully processed expiration 2025-04-17 for MSFT
+2025-03-24 21:24:47,596 - __main__ - INFO - Step 5: Generating analysis for MSFT...
