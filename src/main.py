@@ -496,65 +496,6 @@ class WSBTradingApp:
                     "near_resistance": technical_data.get("near_resistance")
                 }
                 
-                # Add fundamental data if available
-                fundamental_data = stock_data.get("fundamental", {})
-                if fundamental_data:
-                    logger.info(f"Adding fundamental data for {symbol}")
-                    stock_analysis_data.update({
-                        "has_fundamental_data": True,
-                        "sentiment_score": fundamental_data.get("overall_sentiment_score", 5),
-                        "sentiment_description": fundamental_data.get("sentiment_description", "Neutral"),
-                        "earnings_positive": fundamental_data.get("earnings_positive", None),
-                        "news_sentiment": fundamental_data.get("news_sentiment", "neutral"),
-                        "recent_price_change_pct": fundamental_data.get("recent_price_change_pct", 0),
-                        "insider_sentiment": fundamental_data.get("insider_sentiment", "neutral"),
-                        "analyst_sentiment_score": fundamental_data.get("analyst_sentiment_score", 5),
-                        "fundamental_summary": f"Overall sentiment: {fundamental_data.get('sentiment_description', 'Neutral')}. "
-                    })
-                    
-                    # Add earnings information if available
-                    if "earnings" in fundamental_data:
-                        try:
-                            latest_year = max(fundamental_data["earnings"].get("Year", {}).keys())
-                            latest_earnings = fundamental_data["earnings"].get("Earnings", {}).get(latest_year, 0)
-                            latest_revenue = fundamental_data["earnings"].get("Revenue", {}).get(latest_year, 0)
-                            
-                            stock_analysis_data["latest_earnings"] = latest_earnings
-                            stock_analysis_data["latest_revenue"] = latest_revenue
-                            stock_analysis_data["fundamental_summary"] += f"Latest earnings: ${latest_earnings:,.2f}M on revenue of ${latest_revenue:,.2f}M. "
-                        except Exception as e:
-                            logger.error(f"Error processing earnings data for {symbol}: {e}")
-                    
-                    # Add analyst recommendations if available
-                    if "recent_recommendations" in fundamental_data:
-                        rec_summary = []
-                        for rec, count in fundamental_data["recent_recommendations"].items():
-                            rec_summary.append(f"{rec}: {count}")
-                        
-                        if rec_summary:
-                            stock_analysis_data["analyst_recommendations"] = ", ".join(rec_summary)
-                            stock_analysis_data["fundamental_summary"] += f"Analyst recommendations: {', '.join(rec_summary)}. "
-                    
-                    # Add news sentiment if available
-                    if "news_sentiment" in fundamental_data:
-                        news_sent = fundamental_data["news_sentiment"]
-                        price_change = fundamental_data.get("recent_price_change_pct", 0)
-                        stock_analysis_data["fundamental_summary"] += f"Recent price action suggests {news_sent} news sentiment (price change: {price_change:.2f}%). "
-                    
-                    # Add insider trading information if available
-                    if "insider_sentiment" in fundamental_data:
-                        insider_sent = fundamental_data["insider_sentiment"]
-                        net_shares = fundamental_data.get("net_insider_shares", 0)
-                        stock_analysis_data["fundamental_summary"] += f"Insider trading sentiment is {insider_sent} (net shares: {net_shares:,}). "
-                else:
-                    logger.warning(f"No fundamental data available for {symbol}")
-                    stock_analysis_data.update({
-                        "has_fundamental_data": False,
-                        "sentiment_score": 5,
-                        "sentiment_description": "Neutral",
-                        "fundamental_summary": "No fundamental data available."
-                    })
-                
                 # Step 4: Extract and format options data
                 logger.info(f"Step 4: Processing options data for {symbol}...")
                 options_summary = {}
@@ -780,32 +721,17 @@ class WSBTradingApp:
                         if stock_analysis_data["near_resistance"] and stock_analysis_data["trend"] == "bearish":
                             technical_score += 5
                     
-                    # Parse sentiment score - use fundamental data if available
-                    if stock_analysis_data.get("has_fundamental_data", False):
-                        # Start with the fundamental sentiment score
-                        sentiment_score = int(stock_analysis_data.get("sentiment_score", 5))
-                        logger.info(f"Using fundamental sentiment score for {symbol}: {sentiment_score}")
-                        
-                        # Still check if Gemini provided a specific sentiment score
-                        sentiment_match = re.search(r'Sentiment\s*(?:score|Score):\s*(\d+)', analysis_text)
-                        if sentiment_match:
-                            gemini_sentiment = int(sentiment_match.group(1))
-                            logger.info(f"Gemini provided sentiment score for {symbol}: {gemini_sentiment}")
-                            
-                            # Use average of fundamental and Gemini scores
-                            sentiment_score = (sentiment_score + gemini_sentiment) // 2
-                    else:
-                        # Fall back to Gemini's sentiment score if no fundamental data
-                        sentiment_match = re.search(r'Sentiment\s*(?:score|Score):\s*(\d+)', analysis_text)
-                        if sentiment_match:
-                            sentiment_score = int(sentiment_match.group(1))
+                    # Parse sentiment score
+                    sentiment_match = re.search(r'Sentiment\s*(?:score|Score):\s*(\d+)', analysis_text)
+                    if sentiment_match:
+                        sentiment_score = int(sentiment_match.group(1))
                     
                     # Parse risk assessment
                     if "low risk" in analysis_text.lower() or "stable" in analysis_text.lower():
                         risk_assessment = "low"
                     elif "high risk" in analysis_text.lower() or "volatile" in analysis_text.lower():
                         risk_assessment = "high"
-                    
+                        
                     # Parse market alignment
                     market_alignment_match = re.search(r'Market Alignment:\s*(.*?)(?:\n\d\.|\n\n|$)', analysis_text, re.DOTALL)
                     if market_alignment_match:
