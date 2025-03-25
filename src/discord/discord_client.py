@@ -159,10 +159,19 @@ class DiscordClient:
             
             # Send first part
             success = self.send_message(
-                content=f"Market Analysis: {title} (Part 1)",
+                content=(
+                    "--------------------------------------------------------------------\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    f"📊 **Market Analysis: {title} (Part 1)**\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "--------------------------------------------------------------------\n"
+                ),
                 webhook_type="market_analysis",
                 embed_data=embed
             )
+
             
             if not success:
                 self.logger.error("Failed to send first part of market analysis")
@@ -179,12 +188,13 @@ class DiscordClient:
                     "color": 0x0099FF,
                     "footer": {"text": f"WSB-2 Market Analysis (Part {part_number})"}
                 }
-                
+
                 success = self.send_message(
-                    content=f"Market Analysis: {title} (Part {part_number})",
+                    content=f"📊 **Market Analysis: {title} (Part {part_number})**\n",
                     webhook_type="market_analysis",
                     embed_data=embed
                 )
+
                 
                 if not success:
                     self.logger.error(f"Failed to send part {part_number} of market analysis")
@@ -214,7 +224,11 @@ class DiscordClient:
                 embed["fields"] = field_list
             
             return self.send_message(
-                content=f"Market Analysis: {title}",
+                content=(
+                    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"📊 **Market Analysis: {title}**\n"
+                    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                ),
                 webhook_type="market_analysis",
                 embed_data=embed
             )
@@ -344,7 +358,15 @@ class DiscordClient:
             
             # Send first part with all the fields and metadata
             success = self.send_message(
-                content=f"Stock Analysis for {ticker} (Part 1)",
+                content=(
+                    "--------------------------------------------------------------------\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    f"📊 **Stock Analysis for {ticker} (Part 1)**\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "--------------------------------------------------------------------\n"
+                ),
                 webhook_type="market_analysis",
                 embed_data=embed
             )
@@ -367,11 +389,10 @@ class DiscordClient:
                 }
                 
                 success = self.send_message(
-                    content=f"Stock Analysis for {ticker} (Part {part_number})",
+                    content=f"📊 **Stock Analysis for {ticker} (Part {part_number})**\n",
                     webhook_type="market_analysis",
                     embed_data=embed
                 )
-                
                 if not success:
                     self.logger.error(f"Failed to send part {part_number} of stock analysis")
                     return False
@@ -390,7 +411,13 @@ class DiscordClient:
             }
             
             return self.send_message(
-                content=f"Stock Analysis for {ticker}",
+                content=(
+                    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    f"📊 **Stock Analysis for {ticker}**\n"
+                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                ),
                 webhook_type="market_analysis",
                 embed_data=embed
             )

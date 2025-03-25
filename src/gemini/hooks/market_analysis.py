@@ -124,7 +124,11 @@ def get_market_trend_prompt(market_data):
     !IMPORTANT: YOU , THE AI AGENT, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE.
-    ANALYZER FULL OPINION: [YOUR FULL OPINION HERE]
+    ANALYZER FULL OPINION: [Experience-Based Insight: “In my experience…” ties the analysis to real-world patterns I’ve traded, grounding the decision in practical know-how.
+Frequency Observation: “This happens a lot/rarely happens…” flags how common or unique the setup is, setting expectations for reliability or surprise.
+Comparative Nuance: “This looks like X but not exactly…” draws parallels to past trades, highlighting subtle differences that matter.
+Critical Oversight Check: Identifies risks or edges the scores might miss (e.g., ATR’s mild volatility), ensuring we’re not blindsided.
+Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could go wrong, and how I’d play it.]
     
     
     
@@ -137,7 +141,7 @@ def get_spy_options_prompt(options_data):
     Analyze SPY options data to determine market direction:
     
     {options_data}
-    
+    TODAY'S DATE: [TODAY'S DATE]
     Follow these rules exactly:
     1. Call/Put IV Skew: Compare IV of 20–30 delta calls vs. puts
        - Call IV > Put IV: Bullish direction (+5 to Sentiment)
