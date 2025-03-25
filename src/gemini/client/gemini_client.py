@@ -25,7 +25,7 @@ from ..hooks import (
 load_dotenv()
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('gemini_client')
 
 class GeminiClient:
@@ -225,8 +225,13 @@ class GeminiClient:
         - Dict with market trend analysis, score and recommendations
         """
         try:
+            start_time = time.time()
             prompt = get_market_trend_prompt(spy_data)
+            logger.debug(f"Generated spy trend prompt of length {len(prompt)}")
+            
             response = self.generate_text(prompt, temperature=0.2)
+            logger.debug(f"Received raw response of length {len(response)}")
+            logger.debug(f"Raw response first 100 chars: {response[:100]}")
             
             # Extract structured data from the response
             trend = "bullish"
@@ -235,6 +240,8 @@ class GeminiClient:
             risk_adjustment = "standard"
             
             # Parse the response to extract key information
+            parse_start_time = time.time()
+            
             if "bearish" in response.lower():
                 trend = "bearish"
             elif "neutral" in response.lower():
@@ -244,8 +251,10 @@ class GeminiClient:
             score_match = re.search(r'(?:score|Score):\s*(\d+)', response)
             if score_match:
                 market_trend_score = int(score_match.group(1))
+                logger.debug(f"Found market trend score: {market_trend_score}")
             else:
                 # Fallback logic to compute score
+                logger.debug("No explicit score found in response, using fallback logic")
                 if "Price > 9/21 EMA" in response and trend == "bullish":
                     market_trend_score += 10
                 if "Price < 9/21 EMA" in response and trend == "bearish":
@@ -277,7 +286,7 @@ class GeminiClient:
                 risk_adjustment = "half size"
             elif "skip" in response.lower() or "avoid" in response.lower():
                 risk_adjustment = "skip"
-                
+            
             market_analysis = {
                 'trend': trend,
                 'market_trend_score': market_trend_score,
@@ -356,179 +365,196 @@ class GeminiClient:
     
     def analyze_underlying_stock(self, stock_data: Dict[str, Any], market_context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analyze underlying stock fundamentals and technical data.
+        Analyze individual stock for trading opportunities based on technical and sentiment data.
         
         Parameters:
-        - stock_data: Dict containing stock price, EMA, ATR, news/sentiment
-        - market_context: Dict with market trend analysis from analyze_spy_trend
+        - stock_data: Dict containing stock price, EMA data and volume
+        - market_context: Dict with market trend analysis
         
         Returns:
-        - Dict with stock analysis, scores and alignment with market
+        - Dict with stock analysis, scores and recommendations
         """
         try:
+            start_time = time.time()
             prompt = get_stock_analysis_prompt(stock_data, market_context)
-            response = self.generate_text(prompt, temperature=0.2)
+            logger.debug(f"Generated stock analysis prompt of length {len(prompt)}")
             
-            # Extract structured information from response
-            trend = "neutral"
+            response = self.generate_text(prompt, temperature=0.3)
+            logger.debug(f"Received raw stock analysis response of length {len(response)}")
+            logger.debug(f"Raw stock analysis response first 100 chars: {response[:100]}")
+            
+            parse_start_time = time.time()
+            # Extract structured data from the response
+            trend = "bullish"
             technical_score = 0
             sentiment_score = 0
-            risk_assessment = "normal"
-            market_alignment = "neutral"
+            risk_assessment = "moderate"
+            market_alignment = "aligned"
             
-            # Parse the response for trend
-            if "bullish" in response.lower():
-                trend = "bullish"
-            elif "bearish" in response.lower():
+            # Parse trend
+            if "bearish" in response.lower():
                 trend = "bearish"
-                
-            # Parse technical score
-            technical_match = re.search(r'Technical\s*(?:score|Score):\s*(\d+)', response)
-            if technical_match:
-                technical_score = int(technical_match.group(1))
-            else:
-                # Fallback calculation
-                if "Price > 9/21 EMA" in response and trend == "bullish":
-                    technical_score += 10
-                if "Price < 9/21 EMA" in response and trend == "bearish":
-                    technical_score += 10
-                if "support" in response.lower() and trend == "bullish":
-                    technical_score += 5
-                if "resistance" in response.lower() and trend == "bearish":
-                    technical_score += 5
+            elif "neutral" in response.lower():
+                trend = "neutral"
             
-            # Parse sentiment score
-            sentiment_match = re.search(r'Sentiment\s*(?:score|Score):\s*(\d+)', response)
-            if sentiment_match:
-                sentiment_score = int(sentiment_match.group(1))
-            else:
-                # Fallback calculation
-                if "positive" in response.lower() or "bullish" in response.lower():
-                    sentiment_score += 5
-                if "earnings beat" in response.lower() or "good news" in response.lower():
-                    sentiment_score += 5
-                    
-            # Parse risk assessment
-            if "stable" in response.lower() or "low volatility" in response.lower():
-                risk_assessment = "low"
-            elif "volatile" in response.lower() or "high volatility" in response.lower():
+            # Extract technical score
+            tech_score_match = re.search(r'(?:technical score|Technical Score):\s*(\d+)', response)
+            if tech_score_match:
+                technical_score = int(tech_score_match.group(1))
+                logger.debug(f"Found technical score: {technical_score}")
+            
+            # Extract sentiment score
+            sent_score_match = re.search(r'(?:sentiment score|Sentiment Score):\s*(\d+)', response)
+            if sent_score_match:
+                sentiment_score = int(sent_score_match.group(1))
+                logger.debug(f"Found sentiment score: {sentiment_score}")
+            
+            # Extract risk assessment
+            if "high risk" in response.lower():
                 risk_assessment = "high"
+            elif "low risk" in response.lower():
+                risk_assessment = "low"
                 
-            # Parse market alignment
-            if "aligned" in response.lower():
-                market_alignment = "aligned"
-            elif "contrary" in response.lower() or "opposite" in response.lower():
-                market_alignment = "contrary"
+            # Extract market alignment
+            if "misaligned" in response.lower() or "not aligned" in response.lower():
+                market_alignment = "misaligned"
             
-            stock_analysis = {
+            # Calculate overall score
+            overall_score = technical_score + sentiment_score
+            
+            # Calculate parse time
+            parse_time = time.time() - parse_start_time
+            logger.debug(f"Parsing stock analysis response took {parse_time:.4f} seconds")
+            
+            # Calculate total processing time
+            total_time = time.time() - start_time
+            logger.debug(f"Total stock analysis processing took {total_time:.4f} seconds")
+            
+            return {
+                'ticker': stock_data.get('ticker', 'Unknown'),
                 'trend': trend,
                 'technical_score': technical_score,
                 'sentiment_score': sentiment_score,
+                'overall_score': overall_score,
                 'risk_assessment': risk_assessment,
                 'market_alignment': market_alignment,
-                'full_analysis': response
+                'analysis': response
             }
             
-            return stock_analysis
         except Exception as e:
-            logger.error(f"Error analyzing underlying stock: {e}")
-            return {'error': str(e), 'trend': 'neutral', 'technical_score': 0, 'sentiment_score': 0}
+            logger.error(f"Error analyzing stock data for {stock_data.get('ticker', 'Unknown')}: {e}")
+            return {
+                'ticker': stock_data.get('ticker', 'Unknown'),
+                'trend': 'neutral',
+                'technical_score': 0,
+                'sentiment_score': 0,
+                'overall_score': 0,
+                'risk_assessment': 'high',
+                'market_alignment': 'misaligned',
+                'analysis': f"Error analyzing stock: {str(e)}"
+            }
     
     def analyze_credit_spreads(self, spread_data: Dict[str, Any], stock_analysis: Dict[str, Any], market_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analyze credit spread opportunities based on market and stock analysis.
+        Analyze credit spread opportunities based on options data.
         
         Parameters:
-        - spread_data: Dict with available spread data (IV, delta, DTE, etc.)
-        - stock_analysis: Dict with stock analysis from analyze_underlying_stock
-        - market_analysis: Dict with market analysis from analyze_spy_trend
+        - spread_data: Dict containing options, stock price and IV data
+        - stock_analysis: Dict with stock trend and analysis
+        - market_analysis: Dict with market trend and analysis
         
         Returns:
-        - Dict with spread recommendations, quality scores and risk assessment
+        - Dict with spread recommendations, quality score and risk assessment
         """
         try:
+            start_time = time.time()
             prompt = get_stock_options_prompt(spread_data, stock_analysis, market_analysis)
-            response = self.generate_text(prompt, temperature=0.3)
+            logger.debug(f"Generated credit spread prompt of length {len(prompt)}")
             
-            # Extract key data from the response
-            spread_type = "None"
-            strikes = "Not specified"
-            expiration = "Not specified"
+            response = self.generate_text(prompt, temperature=0.2)
+            logger.debug(f"Received raw credit spread response of length {len(response)}")
+            logger.debug(f"Raw credit spread response first 100 chars: {response[:100]}")
+            
+            parse_start_time = time.time()
+            # Extract structured data from the response
+            spread_type = "Bull Put"
             quality_score = 0
-            gamble_score = 0
-            success_probability = 0
-            position_size = "Not specified"
-            profit_target = "50% of max credit"
-            stop_loss = "2x credit received"
+            success_prob = 0
+            position_size = "skip"
+            profit_target = "50%"
+            stop_loss = "100%"
             recommended = False
             
-            # Parse the response
-            if "Bull Put" in response:
-                spread_type = "Bull Put"
-            elif "Bear Call" in response:
+            # Parse spread type
+            if "bear call" in response.lower():
                 spread_type = "Bear Call"
-                
-            # Extract strikes
-            strikes_match = re.search(r'[Ss]trikes?:?\s*(\d+\/\d+)', response)
-            if strikes_match:
-                strikes = strikes_match.group(1)
-                
-            # Extract expiration
-            expiration_match = re.search(r'[Ee]xpiration:?\s*(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2})', response)
-            if expiration_match:
-                expiration = expiration_match.group(1)
-                
+            elif "iron condor" in response.lower():
+                spread_type = "Iron Condor"
+            
             # Extract quality score
-            quality_match = re.search(r'[Qq]uality\s*[Ss]core:?\s*(\d+)', response)
+            quality_match = re.search(r'(?:quality score|Quality Score):\s*(\d+)', response)
             if quality_match:
                 quality_score = int(quality_match.group(1))
-                
-            # Extract gamble score
-            gamble_match = re.search(r'[Gg]amble\s*[Ss]core:?\s*(\d+)', response)
-            if gamble_match:
-                gamble_score = int(gamble_match.group(1))
-                
-            # Extract success probability
-            prob_match = re.search(r'[Ss]uccess\s*[Pp]robability:?\s*(\d+)%?', response)
-            if prob_match:
-                success_probability = int(prob_match.group(1))
-                
-            # Extract position size
-            size_match = re.search(r'[Pp]osition\s*[Ss]ize:?\s*\$?(\d+)', response)
-            if size_match:
-                position_size = f"${size_match.group(1)}"
-                
-            # Extract profit target and stop loss
-            profit_match = re.search(r'[Pp]rofit\s*[Tt]arget:?\s*(.+?)(\\n|\n|$)', response)
-            if profit_match:
-                profit_target = profit_match.group(1).strip()
-                
-            stop_match = re.search(r'[Ss]top\s*[Ll]oss:?\s*(.+?)(\\n|\n|$)', response)
-            if stop_match:
-                stop_loss = stop_match.group(1).strip()
-                
-            # Determine if recommended
-            recommended = (
-                quality_score >= 80 or 
-                (quality_score >= 70 and gamble_score >= 70) or
-                success_probability >= 70
-            )
+                logger.debug(f"Found quality score: {quality_score}")
             
-            spread_recommendation = {
+            # Extract success probability 
+            prob_match = re.search(r'(?:probability|Probability):\s*(\d+)', response)
+            if prob_match:
+                success_prob = int(prob_match.group(1))
+                logger.debug(f"Found success probability: {success_prob}")
+            
+            # Extract position size recommendation
+            if "$200" in response:
+                position_size = "$200"
+            elif "$100" in response:
+                position_size = "$100"
+            elif "$300" in response:
+                position_size = "$300"
+            elif "$400" in response:
+                position_size = "$400"
+            elif "$500" in response:
+                position_size = "$500"
+            
+            # Determine if recommended
+            if "recommended: yes" in response.lower() or "recommendation: yes" in response.lower():
+                recommended = True
+                logger.debug("Spread explicitly recommended")
+            elif quality_score >= 70:  # Default threshold
+                recommended = True
+                logger.debug(f"Spread implicitly recommended based on quality score: {quality_score}")
+            
+            # Extract profit target if present
+            profit_match = re.search(r'(?:profit target|target):\s*(\d+)%', response.lower())
+            if profit_match:
+                profit_target = f"{profit_match.group(1)}%"
+                logger.debug(f"Found profit target: {profit_target}")
+            
+            # Extract stop loss if present
+            stop_match = re.search(r'(?:stop loss|stop):\s*(\d+)%', response.lower())
+            if stop_match:
+                stop_loss = f"{stop_match.group(1)}%"
+                logger.debug(f"Found stop loss: {stop_loss}")
+                
+            # Calculate parse time
+            parse_time = time.time() - parse_start_time
+            logger.debug(f"Parsing credit spread response took {parse_time:.4f} seconds")
+            
+            # Calculate total processing time
+            total_time = time.time() - start_time
+            logger.debug(f"Total credit spread processing took {total_time:.4f} seconds")
+            
+            return {
+                'ticker': spread_data.get('ticker', 'Unknown'),
                 'spread_type': spread_type,
-                'strikes': strikes,
-                'expiration': expiration,
                 'quality_score': quality_score,
-                'gamble_score': gamble_score,
-                'success_probability': success_probability,
+                'success_probability': success_prob,
                 'position_size': position_size,
                 'profit_target': profit_target,
                 'stop_loss': stop_loss,
                 'recommended': recommended,
-                'full_analysis': response
+                'analysis': response
             }
             
-            return spread_recommendation
         except Exception as e:
             logger.error(f"Error analyzing credit spreads: {e}")
             return {'error': str(e), 'spread_type': 'None', 'recommended': False}

@@ -7,6 +7,18 @@ from datetime import datetime
 import pandas as pd
 import inspect
 
+# Set up detailed logging for debugging gemini_client response parsing
+logging.basicConfig(
+    level=logging.DEBUG,  # Changed from INFO to DEBUG for more detailed logs
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('wsb_trading_debug.log')  # Added a debug-specific log file
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
 # Import clients
 from gemini.client.gemini_client import get_gemini_client
 from finance_client.client.yfinance_client import YFinanceClient
@@ -22,18 +34,6 @@ from gemini.hooks import (
     get_stock_options_prompt,
     get_trade_plan_prompt
 )
-
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('wsb_trading.log')
-    ]
-)
-
-logger = logging.getLogger(__name__)
 
 class WSBTradingApp:
     def __init__(self):

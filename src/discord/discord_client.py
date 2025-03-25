@@ -21,7 +21,10 @@ class DiscordClient:
             'trade_alerts': os.getenv('DISCORD_WEBHOOK_URL_TRADE_ALERTS'),
             'market_analysis': os.getenv('DISCORD_WEBHOOK_URL_MARKET_ANALYSIS'),
             'journal': os.getenv('DISCORD_WEBHOOK_URL_JOURNAL'),
-            'backtest': os.getenv('DISCORD_WEBHOOK_URL_BACKTEST')
+            'backtest': os.getenv('DISCORD_WEBHOOK_URL_BACKTEST'),
+            'trade-stats': os.getenv('DISCORD_WEBHOOK_URL_TRADE_STATS'),
+            'trade-opinion': os.getenv('DISCORD_WEBHOOK_URL_TRADE_OPINION'),
+            'full-analysis': os.getenv('DISCORD_WEBHOOK_URL_FULL_ANALYSIS')
         }
         
         # Set up logging
@@ -360,11 +363,11 @@ class DiscordClient:
             success = self.send_message(
                 content=(
                     "--------------------------------------------------------------------\n"
-                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
-                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
+                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
                     f"📊 **Stock Analysis for {ticker} (Part 1)**\n"
-                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
-                    "🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦\n"
+                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
+                    "🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢\n"
                     "--------------------------------------------------------------------\n"
                 ),
                 webhook_type="market_analysis",

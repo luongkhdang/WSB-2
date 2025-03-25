@@ -1,3 +1,5 @@
+from datetime import datetime
+
 """
 Stock analysis prompt templates for Gemini API.
 """
@@ -24,13 +26,13 @@ def get_stock_analysis_prompt(*args, **kwargs):
         # Provide default empty data to prevent further errors
         stock_data = {}
         market_context = {"spy_trend": "neutral"}
-    
+    today_date = datetime.now().strftime("%d-%m-%Y")
     return f'''
     Analyze the underlying stock with this data:
     
     Stock Data: {stock_data}
     Market Context: {market_context}
-    Today's Date: [TODAY'S DATE]
+    Today's Date: {today_date}
     
     Follow these rules exactly:
     1. Price Trend:
@@ -67,6 +69,7 @@ def get_stock_analysis_prompt(*args, **kwargs):
     !IMPORTANT: YOU , THE AI AGENT, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE.
+    !IMPORTANT: TODAY IS {today_date}. UP-TO-DATA INFORMATION IS DETRIMENTAL TO THE ANALYSIS.
     ANALYZER FULL OPINION: [Experience-Based Insight: “In my experience…” ties the analysis to real-world patterns I’ve traded, grounding the decision in practical know-how.
 Frequency Observation: “This happens a lot/rarely happens…” flags how common or unique the setup is, setting expectations for reliability or surprise.
 Comparative Nuance: “This looks like X but not exactly…” draws parallels to past trades, highlighting subtle differences that matter.
@@ -76,6 +79,7 @@ Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could g
     '''
 
 def get_stock_options_prompt(options_data, stock_analysis, market_analysis):
+    today_date = datetime.now().strftime("%d-%m-%Y")
     """Get prompt template for analyzing stock options data."""
     return f'''
     Analyze credit spread opportunities with this data:
@@ -135,6 +139,7 @@ def get_stock_options_prompt(options_data, stock_analysis, market_analysis):
     !IMPORTANT: YOU , THE AI AGENT, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE.
+    !IMPORTANT: TODAY IS {today_date}. UP-TO-DATA INFORMATION IS DETRIMENTAL TO THE ANALYSIS.
     ANALYZER FULL OPINION: [Experience-Based Insight: “In my experience…” ties the analysis to real-world patterns I’ve traded, grounding the decision in practical know-how.
 Frequency Observation: “This happens a lot/rarely happens…” flags how common or unique the setup is, setting expectations for reliability or surprise.
 Comparative Nuance: “This looks like X but not exactly…” draws parallels to past trades, highlighting subtle differences that matter.
