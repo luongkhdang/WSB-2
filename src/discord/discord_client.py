@@ -121,34 +121,103 @@ class DiscordClient:
         
         Args:
             title: Analysis title
-            content: Analysis content
+            content: Analysis content (can be long, will be split if needed)
             metrics: Optional dictionary of metrics to include
             
         Returns:
             bool: True if successful, False otherwise
         """
-        embed = {
-            "title": title,
-            "description": content,
-            "color": 0x0099FF,
-            "footer": {"text": "WSB-2 Market Analysis"}
-        }
+        # Discord has a 2000 character limit per message
+        # Discord embed description limit is 4096 characters
+        # We'll use 2000 as a safe limit for embed descriptions
+        MAX_EMBED_DESCRIPTION_LENGTH = 2000
         
-        if metrics:
-            field_list = []
-            for key, value in metrics.items():
-                field_list.append({
-                    "name": key,
-                    "value": str(value),
-                    "inline": True
-                })
-            embed["fields"] = field_list
-        
-        return self.send_message(
-            content=f"Market Analysis: {title}",
-            webhook_type="market_analysis",
-            embed_data=embed
-        )
+        # Check if we need to split the content
+        if content and len(content) > MAX_EMBED_DESCRIPTION_LENGTH:
+            self.logger.info(f"Content length exceeds Discord limit ({len(content)} chars). Splitting into chunks.")
+            
+            # First message with metrics and title
+            first_chunk = content[:MAX_EMBED_DESCRIPTION_LENGTH]
+            remaining_content = content[MAX_EMBED_DESCRIPTION_LENGTH:]
+            
+            embed = {
+                "title": title,
+                "description": first_chunk,
+                "color": 0x0099FF,
+                "footer": {"text": "WSB-2 Market Analysis (Part 1)"}
+            }
+            
+            if metrics:
+                field_list = []
+                for key, value in metrics.items():
+                    field_list.append({
+                        "name": key,
+                        "value": str(value),
+                        "inline": True
+                    })
+                embed["fields"] = field_list
+            
+            # Send first part
+            success = self.send_message(
+                content=f"Market Analysis: {title} (Part 1)",
+                webhook_type="market_analysis",
+                embed_data=embed
+            )
+            
+            if not success:
+                self.logger.error("Failed to send first part of market analysis")
+                return False
+            
+            # Split remaining content into chunks and send as follow-up messages
+            part_number = 2
+            while remaining_content:
+                chunk = remaining_content[:MAX_EMBED_DESCRIPTION_LENGTH]
+                remaining_content = remaining_content[MAX_EMBED_DESCRIPTION_LENGTH:]
+                
+                embed = {
+                    "description": chunk,
+                    "color": 0x0099FF,
+                    "footer": {"text": f"WSB-2 Market Analysis (Part {part_number})"}
+                }
+                
+                success = self.send_message(
+                    content=f"Market Analysis: {title} (Part {part_number})",
+                    webhook_type="market_analysis",
+                    embed_data=embed
+                )
+                
+                if not success:
+                    self.logger.error(f"Failed to send part {part_number} of market analysis")
+                    return False
+                
+                part_number += 1
+            
+            return True
+            
+        else:
+            # Original behavior for content within limits
+            embed = {
+                "title": title,
+                "description": content,
+                "color": 0x0099FF,
+                "footer": {"text": "WSB-2 Market Analysis"}
+            }
+            
+            if metrics:
+                field_list = []
+                for key, value in metrics.items():
+                    field_list.append({
+                        "name": key,
+                        "value": str(value),
+                        "inline": True
+                    })
+                embed["fields"] = field_list
+            
+            return self.send_message(
+                content=f"Market Analysis: {title}",
+                webhook_type="market_analysis",
+                embed_data=embed
+            )
     
     def send_journal_entry(self, 
                          title: str, 
@@ -229,10 +298,18 @@ class DiscordClient:
         
         # Create description from full analysis if available
         description = analysis.get('full_analysis', '')
-        if len(description) > 1500:  # Discord embed description limit is 2048, leave room for fields
-            description = description[:1500] + "..."
-            
-        # Create fields list
+        
+        # Discord embed description limit (max 4096, but we'll use 2000 to be safe)
+        MAX_EMBED_DESCRIPTION_LENGTH = 2000
+        
+        # Add price information for the title
+        title = f"{ticker} Stock Analysis"
+        if 'raw_data' in analysis and 'current_price' in analysis['raw_data']:
+            price = analysis['raw_data']['current_price']
+            if price:
+                title = f"{ticker} Stock Analysis - ${price:.2f}"
+        
+        # Create fields list for the main message
         fields = [
             {"name": "Trend", "value": trend, "inline": True},
             {"name": "Technical Score", "value": str(technical_score), "inline": True},
@@ -247,24 +324,73 @@ class DiscordClient:
             if len(options_analysis) > 500:
                 options_analysis = options_analysis[:500] + "..."
             fields.append({"name": "Options Analysis", "value": options_analysis, "inline": False})
+        
+        # Check if we need to split the content
+        if description and len(description) > MAX_EMBED_DESCRIPTION_LENGTH:
+            self.logger.info(f"Analysis description exceeds Discord limit ({len(description)} chars). Splitting into parts.")
             
-        # Create the embed
-        embed = {
-            "title": f"{ticker} Stock Analysis",
-            "description": description,
-            "color": color,
-            "fields": fields,
-            "footer": {"text": f"WSB-2 Stock Analysis • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
-        }
-        
-        # Add price information if available
-        if 'raw_data' in analysis and 'current_price' in analysis['raw_data']:
-            price = analysis['raw_data']['current_price']
-            if price:
-                embed["title"] = f"{ticker} Stock Analysis - ${price:.2f}"
-        
-        return self.send_message(
-            content=f"Stock Analysis for {ticker}",
-            webhook_type="market_analysis",
-            embed_data=embed
-        )
+            # First message with metrics and summary
+            first_chunk = description[:MAX_EMBED_DESCRIPTION_LENGTH]
+            remaining_content = description[MAX_EMBED_DESCRIPTION_LENGTH:]
+            
+            # Create the main embed with the first chunk
+            embed = {
+                "title": title,
+                "description": first_chunk,
+                "color": color,
+                "fields": fields,
+                "footer": {"text": f"WSB-2 Stock Analysis (Part 1) • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+            }
+            
+            # Send first part with all the fields and metadata
+            success = self.send_message(
+                content=f"Stock Analysis for {ticker} (Part 1)",
+                webhook_type="market_analysis",
+                embed_data=embed
+            )
+            
+            if not success:
+                self.logger.error("Failed to send first part of stock analysis")
+                return False
+            
+            # Split remaining content into chunks and send as follow-up messages
+            part_number = 2
+            while remaining_content:
+                chunk = remaining_content[:MAX_EMBED_DESCRIPTION_LENGTH]
+                remaining_content = remaining_content[MAX_EMBED_DESCRIPTION_LENGTH:]
+                
+                embed = {
+                    "title": f"{ticker} Analysis Continued",
+                    "description": chunk,
+                    "color": color,
+                    "footer": {"text": f"WSB-2 Stock Analysis (Part {part_number}) • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+                }
+                
+                success = self.send_message(
+                    content=f"Stock Analysis for {ticker} (Part {part_number})",
+                    webhook_type="market_analysis",
+                    embed_data=embed
+                )
+                
+                if not success:
+                    self.logger.error(f"Failed to send part {part_number} of stock analysis")
+                    return False
+                
+                part_number += 1
+            
+            return True
+        else:
+            # Original behavior for content within limits
+            embed = {
+                "title": title,
+                "description": description if len(description) <= MAX_EMBED_DESCRIPTION_LENGTH else description[:MAX_EMBED_DESCRIPTION_LENGTH] + "...",
+                "color": color,
+                "fields": fields,
+                "footer": {"text": f"WSB-2 Stock Analysis • {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
+            }
+            
+            return self.send_message(
+                content=f"Stock Analysis for {ticker}",
+                webhook_type="market_analysis",
+                embed_data=embed
+            )

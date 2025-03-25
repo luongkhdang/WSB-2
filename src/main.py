@@ -45,6 +45,9 @@ class WSBTradingApp:
         # List of ETFs (kept for reference but not used for exclusion)
         self.etfs = ['SPY', 'QQQ', 'IWM', 'DIA', 'VTV', 'VGLT', 'GLD', 'SLV', 'USO', 'XLF', 'XLE', 'XLI', 'XLK', 'XLV', 'XLP', 'XLU', 'XLB', 'XLY', 'XLC', 'XLRE', 'BND']
         
+        # Constant Big Players to include in every watchlist
+        self.constant_players = ['NVDA', 'TSLA', 'AAPL', 'GOOGL', 'AMZN', 'MSTR', 'MSFT', 'META', 'TSM', 'LLY', 'MU', 'PLTR', 'HOOD']
+        
         # Initialize clients
         self.gemini_client = get_gemini_client()
         self.yfinance_client = YFinanceClient()
@@ -107,6 +110,11 @@ class WSBTradingApp:
             for index in self.key_indices:
                 if index not in symbols:
                     symbols.append(index)
+                    
+            # Add constant big players to the watchlist
+            for player in self.constant_players:
+                if player not in symbols:
+                    symbols.append(player)
             
             # Update the watchlist file
             with open(self.watchlist_file, 'w') as f:
@@ -120,14 +128,21 @@ class WSBTradingApp:
                 for index in self.key_indices:
                     f.write(f"{index}\n")
                 
+                f.write("\n# CONSTANT BIG PLAYERS (Always included)\n")
+                
+                # Write constant big players
+                for player in self.constant_players:
+                    if player not in self.key_indices:  # Avoid duplicates
+                        f.write(f"{player}\n")
+                
                 f.write("\n# STOCKS FOR CREDIT SPREADS\n\n")
                 
                 # Write other symbols
                 for symbol in symbols:
-                    if symbol not in self.key_indices:  # Avoid duplicates
+                    if symbol not in self.key_indices and symbol not in self.constant_players:  # Avoid duplicates
                         f.write(f"{symbol}\n")
             
-            logger.info(f"Watchlist updated with {len(symbols)} symbols including key indices")
+            logger.info(f"Watchlist updated with {len(symbols)} symbols including key indices and constant big players")
             return True
             
         except Exception as e:

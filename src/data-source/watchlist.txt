@@ -1,11 +1,36 @@
 # WSB Trading - Credit Spread Watchlist
 # Last updated: 2025-03-24
-# High IV Stocks good for credit spreads
-!IMPORTANT - TODAYS-LIST SHOULD BE UPDATED DAILY BASE ON options-screener-high-ivr-credit-spread-scanner.csv
+# Stocks and key indices for analysis
+!IMPORTANT - TODAYS-LIST SHOULD BE UPDATED DAILY BASED ON options-screener-high-ivr-credit-spread-scanner.csv
 
-#TODAYS-LIST
+# KEY INDICES (Always included)
+SPY
+QQQ
+IWM
+VTV
+VGLT
+VIX
+DIA
+BND
+BTC-USD
 
+# CONSTANT BIG PLAYERS (Always included)
+NVDA
 TSLA
+AAPL
+GOOGL
+AMZN
+MSTR
+MSFT
+META
+TSM
+LLY
+MU
+PLTR
+HOOD
+
+# STOCKS FOR CREDIT SPREADS
+
 TSLL
 BBAI
 SNAP

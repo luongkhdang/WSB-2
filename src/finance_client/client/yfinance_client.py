@@ -22,6 +22,9 @@ class YFinanceClient:
                 "VTV": "VTV",   # Vanguard Value ETF
                 "VGLT": "VGLT", # Vanguard Long-Term Treasury ETF
                 "VIX": "^VIX",  # Volatility Index
+                "DIA": "DIA",   # Dow Jones Industrial Average ETF
+                "BND": "BND",   # Total Bond Market ETF
+                "BTC-USD": "BTC-USD", # Bitcoin USD
                 "TSLA": "TSLA"
             }
             logger.info("YFinanceClient initialized successfully")
@@ -41,13 +44,13 @@ class YFinanceClient:
             return pd.DataFrame()  # Return empty dataframe on error
     
     def get_market_data(self):
-        """Get comprehensive market data including major indices (SPY, QQQ, IWM, VTV, VGLT)"""
+        """Get comprehensive market data including major indices (SPY, QQQ, IWM, VTV, VGLT, DIA, BND, BTC-USD)"""
         try:
             # Dictionary to store all market data
             market_data = {}
             
             # List of indices to analyze
-            indices = ["SPY", "QQQ", "IWM", "VTV", "VGLT"]
+            indices = ["SPY", "QQQ", "IWM", "VTV", "VGLT", "DIA", "BND", "BTC-USD"]
             
             # Get historical data for each index
             for index in indices:
