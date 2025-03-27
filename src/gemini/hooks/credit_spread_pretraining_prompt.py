@@ -206,6 +206,13 @@ MARKET CONTEXT:
 MEMORY CONTEXT:
 {format_credit_spread_memory(memory_context) if memory_context else "No previous patterns identified."}
 
+CRITICAL TREND INSTRUCTION:
+You MUST avoid excessive "neutral" assessments. Market trends are directional approximately 95% of the time.
+Only classify as "neutral" when there is TRULY no directional bias (approximately 5% of cases).
+- Bullish: When MACD > 0.5, RSI > 60, price above key EMAs, or clear positive momentum.
+- Bearish: When MACD < -0.5, RSI < 40, price below key EMAs, or clear negative momentum.
+- Neutral: ONLY when MACD is tightly range-bound (-0.1 to 0.1), RSI is 45-55, and price is tightly consolidating.
+
 Provide a decisive analysis with the following EXACT sections:
 
 1. LONG-TERM TREND ANALYSIS:
@@ -336,7 +343,7 @@ SECRET (Fixed Reference - Do Not Alter):
 - Core Levels: Support={secret['core_levels']['support']}, Resistance={secret['core_levels']['resistance']}
 
 Use this secret as your foundation - adjustments must align with this stable reference point, not contradict it.
-Deviate from the secret ONLY with 90%+ confidence based on significant new information.
+Deviate from the secret ONLY with 70%+ confidence based on significant new information.
 """
 
     # Add strategy weighting section if provided
@@ -371,6 +378,13 @@ MARKET CONTEXT:
 MEMORY CONTEXT:
 {format_credit_spread_memory(memory_context)}
 
+CRITICAL TREND INSTRUCTION:
+You MUST avoid excessive "neutral" assessments. Market trends are directional approximately 95% of the time.
+Only classify as "neutral" when there is TRULY no directional bias (approximately 5% of cases).
+- Bullish: When MACD > 0.5, RSI > 60, price above key EMAs, or clear positive momentum.
+- Bearish: When MACD < -0.5, RSI < 40, price below key EMAs, or clear negative momentum.
+- Neutral: ONLY when MACD is tightly range-bound (-0.1 to 0.1), RSI is 45-55, and price is tightly consolidating.
+
 Provide a comprehensive intraday analysis with these EXACT sections:
 
 1. {"REFLECTION AND LEARNING ADJUSTMENT:" if is_reflection else "PRIOR CONTEXT INTEGRATION:"}
@@ -401,10 +415,11 @@ Provide a comprehensive intraday analysis with these EXACT sections:
 
 5. CREDIT SPREAD OPPORTUNITY:
    - Specific credit spread setup identification
+   - CONSIDER DIRECTIONAL STRATEGIES based on trend, not just credit spreads
    - Ideal strike selection with rationale
    - Entry timing recommendation based on intraday patterns
    - Probability of success estimate
-   - Risk/reward profile
+   - Risk/reward profile with specific targets and stops
 
 6. PREDICTION:
    Use this exact format for parsing:
@@ -415,8 +430,11 @@ Provide a comprehensive intraday analysis with these EXACT sections:
    timeframe: [next_day]
    confidence: [60-95]
    specific_levels: [list of critical price levels for tomorrow]
-   spread_recommendation: [bull put spread/bear call spread/iron condor]
+   spread_recommendation: [bull put spread/bear call spread/iron condor/long call/long put/call debit spread/put debit spread]
    strike_recommendation: [specific strike prices with rationale]
+   risk_reward_ratio: [1:X - expressed as a ratio where X is the reward multiple of risk]
+   stop_loss: [percentage or price level]
+   profit_target: [percentage or price level]
    invalidation: [condition that would invalidate this prediction]
    ```
 
@@ -451,191 +469,169 @@ def get_summary_prompt(
     strategy_reasoning: Optional[str] = None
 ) -> str:
     """
-    Generate prompt for the summary step that concludes the 6-step analysis.
-
-    This summary synthesizes all the previous analyses and provides actionable
-    trading strategy for credit spreads.
+    Generate summary prompt that synthesizes all previous steps into actionable strategy.
 
     Parameters:
     - ticker: Stock symbol
-    - analysis_period: Dict with start and end dates
-    - analysis_results: List of results from previous steps
+    - analysis_period: Dict with start/end dates and number of days
+    - analysis_results: List of result dictionaries from all previous steps
     - memory_context: Dict with learning memory from all steps
     - weighted_strategies: List of strategies with their weights based on historical performance
     - strategy_reasoning: Explanation of why these strategies were recommended
     """
-    # Extract period information
-    start_date = analysis_period.get('start_date', 'unknown')
-    end_date = analysis_period.get('end_date', 'unknown')
+    # Format the analysis period
+    period_str = f"{analysis_period.get('start_date', 'unknown')} to {analysis_period.get('end_date', 'unknown')}"
+    days_count = analysis_period.get('total_days', 0)
 
-    # Calculate accuracy metrics
-    total_predictions = sum(1 for r in analysis_results if r.get(
-        'prediction_accuracy') is not None)
-    correct_predictions = sum(1 for r in analysis_results
-                              if r.get('prediction_accuracy') is not None
-                              and r.get('prediction_accuracy', {}).get('direction_correct', False))
+    # Extract trends and confidence levels from each step's results
+    trends_summary = []
+    for result in analysis_results:
+        if "step" in result and "trend" in result:
+            step_num = result["step"]
+            trend = result["trend"]
+            price = result.get("price", "N/A")
+            confidence = result.get(
+                "next_day_prediction", {}).get("confidence", "N/A")
 
-    accuracy_rate = correct_predictions / \
-        total_predictions if total_predictions > 0 else 0
+            if step_num == 1:
+                trends_summary.append(
+                    f"Step 1 (1mo/1d): {trend} (conf: {confidence}%), Price: ${price}")
+            else:
+                date = result.get("date", "unknown")
+                trends_summary.append(
+                    f"Step {step_num} ({date}): {trend} (conf: {confidence}%), Price: ${price}")
 
-    # Get performance matrix for different strategies
-    bull_put_data = memory_context.get('spread_performance', {}).get(
-        'bull_put', {'wins': 0, 'total': 0, 'win_rate': 0})
-    bear_call_data = memory_context.get('spread_performance', {}).get(
-        'bear_call', {'wins': 0, 'total': 0, 'win_rate': 0})
-    iron_condor_data = memory_context.get('spread_performance', {}).get(
-        'iron_condor', {'wins': 0, 'total': 0, 'win_rate': 0})
+    # Format trends summary
+    trends_text = "\n".join(trends_summary)
 
-    # Format strategy statistics
-    strategy_stats = f"""
-Strategy Performance:
-- Bull Put Spreads: {bull_put_data.get('wins', 0)}/{bull_put_data.get('total', 0)} successful ({bull_put_data.get('win_rate', 0)*100:.1f}%)
-- Bear Call Spreads: {bear_call_data.get('wins', 0)}/{bear_call_data.get('total', 0)} successful ({bear_call_data.get('win_rate', 0)*100:.1f}%)
-- Iron Condors: {iron_condor_data.get('wins', 0)}/{iron_condor_data.get('total', 0)} successful ({iron_condor_data.get('win_rate', 0)*100:.1f}%)
+    # Extract key levels from memory context
+    key_levels = memory_context.get("key_levels", {})
+    supports = key_levels.get("support", [])
+    resistances = key_levels.get("resistance", [])
+    pivots = key_levels.get("pivot_points", [])
+
+    # Format key levels
+    key_levels_text = f"""
+Support Levels: {', '.join(map(str, supports))}
+Resistance Levels: {', '.join(map(str, resistances))}
+Pivot Points: {', '.join(map(str, pivots))}
 """
 
     # Add strategy weighting section if provided
     strategy_section = ""
     if weighted_strategies and strategy_reasoning:
         strategy_section = f"""
-OPTIMIZED STRATEGY ALLOCATION:
+STRATEGY PERFORMANCE AND WEIGHTING:
 {strategy_reasoning}
 
 RECOMMENDED STRATEGY PRIORITIES:
 {', '.join(weighted_strategies)}
 
-Focus particularly on the highest-weighted strategies, but consider current market conditions and adjust accordingly.
+Consider historical performance but prioritize the current market conditions in your final recommendation.
 """
 
-    # Generate the baseline secret key
-    secret_anchor = ""
+    # Get the secret baseline for context
+    secret_section = ""
     if "secret" in memory_context:
         secret = memory_context["secret"]
-        secret_anchor = f"""
-SECRET BASELINE (Do not contradict):
-- Baseline Trend: {secret.get('baseline_trend', 'neutral')} 
-- Trend Confidence: {secret.get('trend_confidence', 60)}%
-- Volatility Anchor: {secret.get('volatility_anchor', 1.0)}%
-- Core Support Levels: {secret.get('core_levels', {}).get('support', [])}
-- Core Resistance Levels: {secret.get('core_levels', {}).get('resistance', [])}
+        secret_section = f"""
+SECRET (Fixed Reference): 
+- Baseline Trend: {secret['baseline_trend']} ({secret['trend_confidence']}% confidence)
+- Volatility Anchor: {secret['volatility_anchor']}% (30-day ATR)
+- Core Levels: Support={secret['core_levels']['support']}, Resistance={secret['core_levels']['resistance']}
+
+The secret baseline provides stability - significant evidence (3+ days contradiction with 80%+ confidence) 
+is needed to deviate from this baseline in your final recommendation.
 """
 
-    # Extract daily and intraday predictions
-    daily_predictions = [r for r in analysis_results if r.get('step') == 1]
-    intraday_predictions = [
-        r for r in analysis_results if r.get('step') in range(2, 7)]
-
-    # Format predictions for the summary
-    daily_summary = ""
-    if daily_predictions:
-        daily_pred = daily_predictions[0].get('next_day_prediction', {})
-        daily_summary = f"""
-Long-term Daily Analysis:
-- Trend: {daily_pred.get('direction', 'neutral')}
-- Confidence: {daily_pred.get('confidence', 0)}%
-- Key Levels: {daily_pred.get('specific_levels', 'None identified')}
-"""
-
-    intraday_summary = ""
-    if intraday_predictions:
-        intraday_summary = "Intraday Analysis Progression:\n"
-        for i, pred in enumerate(intraday_predictions):
-            prediction = pred.get('next_day_prediction', {})
-            intraday_summary += f"- Day {i+1}: {prediction.get('direction', 'neutral')} with {prediction.get('confidence', 0)}% confidence\n"
-
-    # Create the prompt
     prompt = f"""
-SUMMARY AND STRATEGY DEVELOPMENT FOR {ticker}
+SUMMARY AND SYNTHESIS - PRETRAINING MODE: You are summarizing your 6-step analysis of {ticker} covering the period {period_str}.
 
-You are synthesizing a comprehensive 6-step credit spread trading analysis for {ticker} covering the period {start_date} to {end_date}.
+This summary must integrate insights across all timeframes (1mo/1d, 5d/15m) into an actionable trading strategy
+with precise parameters for credit spreads and/or directional options strategies.
 
-ANALYSIS METRICS:
-- Total Trading Days Analyzed: {len(intraday_predictions)}
-- Overall Prediction Accuracy: {accuracy_rate*100:.1f}% ({correct_predictions}/{total_predictions})
-{strategy_stats}
+FOCUS ON ACTIONABLE STRATEGIES WITH EXACT PARAMETERS:
+- Specific strategy type
+- Exact strikes
+- Entry/exit criteria
+- Risk management rules
+- Position sizing
 
-{secret_anchor}
+{secret_section}
+
+ANALYSIS TIMELINE:
+{trends_text}
+
+KEY PRICE LEVELS IDENTIFIED:
+{key_levels_text}
 
 {strategy_section}
 
-ANALYSIS SUMMARY:
-{daily_summary}
-{intraday_summary}
+CRITICAL TREND INSTRUCTION:
+You MUST avoid excessive "neutral" assessments. Market trends are directional approximately 95% of the time.
+Only classify as "neutral" when there is TRULY no directional bias (approximately 5% of cases).
+- Bullish: When MACD > 0.5, RSI > 60, price above key EMAs, or clear positive momentum.
+- Bearish: When MACD < -0.5, RSI < 40, price below key EMAs, or clear negative momentum.
+- Neutral: ONLY when MACD is tightly range-bound (-0.1 to 0.1), RSI is 45-55, and price is tightly consolidating.
 
-Your task is to synthesize all analysis steps into a coherent trading strategy with specific recommendations:
+Provide a comprehensive summary and forward strategy with these EXACT sections:
 
-1. TREND SYNTHESIS AND PATTERN IDENTIFICATION:
-   - Consensus direction across all timeframes
-   - Most reliable technical patterns observed
-   - Divergences between intraday and daily analysis
-   - Volume profile assessment
+1. MULTI-TIMEFRAME TREND SYNOPSIS:
+   - Summary of trend across analyzed timeframes (1mo/1d, daily, 15m intraday)
+   - Areas of alignment/divergence between timeframes
+   - Dominant price structure and pattern
+   - Overall directional bias with confidence level
 
-2. KEY LEVEL CONSOLIDATION:
-   - Synthesis of critical support and resistance levels
-   - Price action behavior around these levels
-   - Most important price zones for spread strike selection
-   - Highest probability boundaries for price movement
+2. VOLATILITY AND PRICE ACTION SUMMARY:
+   - Volatility trends throughout the analysis period
+   - Changes in ATR and implications for option pricing
+   - Key price action characteristics (e.g., momentum, reversal patterns, consolidation)
+   - What this means for strategy selection
 
-3. VOLATILITY PROFILE:
-   - Summary of volatility behavior and expectations
-   - IV vs HV relationship and implications
-   - Ideal premium collection zones
-   - Risk management parameters based on volatility profile
+3. CRITICAL LEVELS SYNTHESIS:
+   - Most important support/resistance levels identified across all timeframes
+   - Which levels were respected/broken during the analysis period
+   - Key levels to watch for upcoming trading decisions
+   - How these levels inform strike selection
 
-4. OPTIMIZED SPREAD STRATEGY:
-   - Most appropriate credit spread type for current conditions
-   - Specific strike selection with detailed rationale 
-   - Optimal entry timing recommendations
-   - Position sizing and risk parameters
-   - Clear invalidation criteria
+4. PERFORMANCE EVALUATION:
+   - Accuracy of your daily predictions during the analysis period
+   - Which indicators and methods proved most reliable
+   - Specific adjustments made to improve analysis
+   - Lessons learned from incorrect predictions
 
-5. MULTI-TIMEFRAME FORECAST:
-   Use this EXACT format for each timeframe:
+5. STRATEGY RECOMMENDATION:
+   - Primary strategy recommendation (specific credit spread or directional options strategy)
+   - Alternative strategy if market conditions change
+   - Exact entry criteria with price levels
+   - Specific strikes or delta targets
+   - Position sizing recommendation (% of portfolio)
+   - Target profit and stop loss parameters (with exact percentages)
+   - Risk/reward ratio calculation
+   - Days to expiration recommendation
+
+6. FINAL PREDICTION:
+   Use this exact format for parsing:
    ```
-   FORECAST: NEXT DAY (1-2 Day Outlook)
+   PREDICTION OUTPUT:
    direction: [bullish/bearish/neutral]
    magnitude: [expected percentage change]
+   timeframe: [next_5_days]
    confidence: [60-95]
-   spread_recommendation: [specific spread type]
-   strike_selection: [specific strikes with detailed rationale]
-   key_levels: [critical price levels]
-   invalidation: [specific invalidation criteria]
-   risk_reward: [calculated risk/reward ratio]
+   key_levels: [list of critical price levels]
+   strategy: [bull put spread/bear call spread/iron condor/long call/long put/call debit spread/put debit spread]
+   specific_strikes: [exact strike prices]
+   position_size: [% of portfolio]
+   risk_reward_ratio: [1:X - must be a specific ratio]
+   profit_target: [percentage gain]
+   stop_loss: [percentage loss]
+   max_days_in_trade: [number]
+   probability_of_success: [percentage]
    ```
 
-   ```
-   FORECAST: NEXT WEEK (3-5 Day Outlook)
-   direction: [bullish/bearish/neutral]
-   magnitude: [expected percentage change]
-   confidence: [60-95]
-   spread_recommendation: [specific spread type]
-   strike_selection: [specific strikes with detailed rationale]
-   key_levels: [critical price levels]
-   invalidation: [specific invalidation criteria]
-   risk_reward: [calculated risk/reward ratio]
-   ```
-
-   ```
-   FORECAST: NEXT MONTH (20-30 Day Outlook)
-   direction: [bullish/bearish/neutral]
-   magnitude: [expected percentage change]
-   confidence: [60-95]
-   spread_recommendation: [specific spread type]
-   strike_selection: [specific strikes with detailed rationale]
-   key_levels: [critical price levels]
-   invalidation: [specific invalidation criteria]
-   risk_reward: [calculated risk/reward ratio]
-   ```
-
-CRITICAL GUIDELINES:
-1. Be extremely specific with strike selections and exact price levels
-2. Include numerical risk/reward calculations 
-3. Give precise entry and exit criteria, not general guidelines
-4. Demonstrate critical thinking in synthesizing contradictory signals
-5. Specify which technical indicators proved most reliable for this ticker
-6. Focus on actionable credit spread strategies, not general market commentary
-
-Your analysis will be used for actual trading decisions with significant capital at risk.
+YOU MUST BE DECISIVE. This is a FINAL RECOMMENDATION for real trading.
+Your reputation depends on providing SPECIFIC, ACTIONABLE advice, not vague guidelines.
+Include EXACT numerical values for all parameters. Avoid ranges or generalities.
 """
     return prompt
 
@@ -650,6 +646,9 @@ def parse_credit_spread_prediction(text: str) -> Dict[str, Any]:
         "specific_levels": [],
         "spread_recommendation": "",
         "strike_recommendation": "",
+        "risk_reward_ratio": "1:2",  # Default risk/reward ratio
+        "stop_loss": "",
+        "profit_target": "",
         "invalidation": ""
     }
 
@@ -667,6 +666,12 @@ def parse_credit_spread_prediction(text: str) -> Dict[str, Any]:
                 key, value = line.split(":", 1)
                 key = key.strip().lower()
                 value = value.strip()
+
+                # Map some key variants to standard keys
+                if key == "strategy":
+                    key = "spread_recommendation"
+                elif key == "specific_strikes":
+                    key = "strike_recommendation"
 
                 if key in prediction:
                     if key == "magnitude" and isinstance(value, str):
@@ -687,8 +692,30 @@ def parse_credit_spread_prediction(text: str) -> Dict[str, Any]:
                         levels = re.findall(r'(\d+\.?\d*)', value)
                         prediction[key] = [float(level)
                                            for level in levels] if levels else []
+                    elif key == "risk_reward_ratio" and isinstance(value, str):
+                        # Ensure format is 1:X
+                        import re
+                        ratio_match = re.search(r'1:(\d+\.?\d*)', value)
+                        if ratio_match:
+                            reward = float(ratio_match.group(1))
+                            prediction[key] = f"1:{reward}"
+                        else:
+                            # Try to extract just the ratio number
+                            ratio_number = re.search(r'(\d+\.?\d*)', value)
+                            if ratio_number:
+                                prediction[key] = f"1:{ratio_number.group(1)}"
                     else:
                         prediction[key] = value
+
+    # Check if the spread recommendation includes directional strategies
+    directional_strategies = ["long call", "long put",
+                              "call debit spread", "put debit spread"]
+    if any(strategy.lower() in prediction.get("spread_recommendation", "").lower()
+           for strategy in directional_strategies):
+        # Set is_directional flag to true for strategy performance tracking
+        prediction["is_directional"] = True
+    else:
+        prediction["is_directional"] = False
 
     return prediction
 

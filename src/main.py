@@ -134,7 +134,118 @@ class WSBTradingApp:
         else:
             logger.info("Using traditional pretraining implementation")
 
+        # Set the strict validation mode flag
+        self.strict_validation = True
+
         logger.info("All clients initialized successfully")
+
+    def validate_data_quality(self, ticker, min_data_points=60):
+        """
+        Validate data quality for a ticker before processing
+
+        Args:
+            ticker: Stock symbol to validate
+            min_data_points: Minimum data points required
+
+        Raises:
+            ValueError: If critical data is missing or invalid
+        """
+        from src.main_utilities.data_processor import format_stock_data_for_analysis, check_for_fallbacks
+        from src.main_hooks.six_step_pretraining import validate_data_quality
+
+        logger.info(f"Validating data quality for {ticker}")
+
+        try:
+            # Calculate start date (500 days ago from today to ensure enough trading days for SMA200)
+            # This provides ~350+ trading days accounting for weekends and holidays
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=500)
+
+            # Get historical data - use correct parameters
+            historical_data = self.yfinance_client.get_historical_data(
+                ticker,
+                start=start_date.strftime("%Y-%m-%d"),
+                end=end_date.strftime("%Y-%m-%d"),
+                interval='1d'
+            )
+
+            # Validate there's enough data
+            if historical_data is None or historical_data.empty or len(historical_data) < min_data_points:
+                error_msg = f"Insufficient historical data for {ticker}: {len(historical_data) if historical_data is not None and not historical_data.empty else 0} points < {min_data_points} minimum required. Application stopped for debugging."
+                logger.error(error_msg)
+                exit_on_data_error(self, error_msg, ticker)
+
+            # Format and validate the data
+            today = datetime.now().strftime('%Y-%m-%d')
+            formatted_data = format_stock_data_for_analysis(
+                historical_data,
+                ticker,
+                today,
+                min_data_points=min_data_points
+            )
+
+            # Ensure price_history field is populated before validation
+            if 'price_history' not in formatted_data:
+                # Create price history array from historical data (at least 60 days for validation requirements)
+                lookback = min(max(60, min_data_points), len(historical_data))
+                # Convert to numpy array first, then to list to avoid AttributeError
+                price_data = historical_data['Close'].iloc[-lookback:].to_numpy().tolist()
+                formatted_data['price_history'] = price_data
+                logger.info(
+                    f"Added price_history field with {len(price_data)} days of data for {ticker}")
+
+            # Additional validation - use parameter names matching the function signature
+            validate_data_quality(
+                formatted_data, ticker, min_days_required=min_data_points, strict_validation=self.strict_validation)
+
+            # Check for any fallback values that might have been used
+            check_for_fallbacks(formatted_data, ticker,
+                                strict_mode=self.strict_validation)
+
+            logger.info(f"Data validation successful for {ticker}")
+            return formatted_data
+
+        except ValueError as e:
+            error_msg = str(e)
+            logger.error(f"Data validation error for {ticker}: {error_msg}")
+            if self.strict_validation:
+                exit_on_data_error(self, error_msg, ticker)
+            raise
+        except Exception as e:
+            error_msg = f"Unexpected error during data validation for {ticker}: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            exit_on_data_error(self, error_msg, ticker)
+
+    def setup_data_validation(self):
+        """
+        Perform data validation for key indices and tickers before starting the app
+
+        Raises:
+            ValueError: If any key index fails validation
+        """
+        logger.info("Performing initial data validation for key market indices")
+
+        # Validate key indices first
+        for index in self.key_indices:
+            try:
+                self.validate_data_quality(index)
+                logger.info(f"Validation successful for {index}")
+            except ValueError as e:
+                logger.error(f"CRITICAL ERROR in key index {index}: {str(e)}")
+                logger.error(
+                    "Application stopped for debugging - fix data issues before continuing")
+                raise
+            except Exception as e:
+                logger.error(
+                    f"Unexpected error validating {index}: {str(e)}", exc_info=True)
+                logger.error(
+                    "Application stopped for debugging - fix data issues before continuing")
+                raise ValueError(
+                    f"Unexpected error validating {index}: {str(e)}")
+
+        # Additional setup validations
+        logger.info("All key indices passed validation")
+        return True
 
     def get_watchlist_symbols(self):
         """Get list of symbols from watchlist file."""
@@ -146,12 +257,31 @@ class WSBTradingApp:
 
     def analyze_market(self):
         """Analyze market conditions using multiple indices"""
+        # First validate market indices data
+        for index in ['SPY', 'QQQ', 'IWM']:
+            self.validate_data_quality(index)
+
         return analyze_market(self.yfinance_client, self.gemini_client, get_market_trend_prompt)
 
     def analyze_stocks(self, market_analysis):
         """Analyze individual stocks based on market trend"""
         symbols = self.get_watchlist_symbols()
-        return analyze_stocks(self.yfinance_client, self.gemini_client, market_analysis, symbols, get_stock_analysis_prompt)
+
+        # Validate symbols data before analysis
+        valid_symbols = []
+        for symbol in symbols:
+            try:
+                self.validate_data_quality(symbol)
+                valid_symbols.append(symbol)
+            except ValueError as e:
+                logger.warning(
+                    f"Skipping {symbol} due to data validation failure: {str(e)}")
+
+        if not valid_symbols:
+            raise ValueError(
+                "No valid symbols to analyze after data validation. Application stopped for debugging.")
+
+        return analyze_stocks(self.yfinance_client, self.gemini_client, market_analysis, valid_symbols, get_stock_analysis_prompt)
 
     def find_credit_spreads(self, market_trend, stock_analyses):
         """Find credit spread opportunities based on analyses"""
@@ -159,32 +289,55 @@ class WSBTradingApp:
 
     def pretrain_analyzer(self, ticker, start_date=None, end_date=None, save_results=True, callback=None, discord_client=None):
         """Pretrain the AI Analyzer on historical stock data with optional callback for sending results"""
+        # Validate data quality first
+        self.validate_data_quality(ticker)
+
         return integrated_pretrain_analyzer(
             self.yfinance_client,
             self.gemini_client,
             self.pretraining_dir,
             ticker,
             get_pretraining_prompt,  # This will be ignored if using optimized version
-            start_date,
-            end_date,
-            save_results,
-            callback,
+            start_date=start_date,
+            end_date=end_date,
+            save_results=save_results,
+            callback=callback,
             discord_client=discord_client  # Pass discord_client for response tracking
         )
 
     def batch_pretrain_analyzer(self, tickers, start_date=None, end_date=None, save_results=True, callback=None, discord_client=None):
         """Pretrain the AI Analyzer on multiple tickers in batch"""
+        # Validate each ticker first
+        valid_tickers = []
+        for ticker in tickers:
+            try:
+                self.validate_data_quality(ticker)
+                valid_tickers.append(ticker)
+            except ValueError as e:
+                logger.warning(
+                    f"Skipping {ticker} in batch pretrain due to data validation failure: {str(e)}")
+
+        if not valid_tickers:
+            raise ValueError(
+                "No valid tickers to pretrain after data validation. Application stopped for debugging.")
+
+        # Pass strict_validation through kwargs
+        kwargs = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'save_results': save_results,
+            'callback': callback,
+            'strict_validation': self.strict_validation
+        }
+
         return integrated_batch_pretrain_analyzer(
             self.yfinance_client,
             self.gemini_client,
             self.pretraining_dir,
-            tickers,
+            valid_tickers,
             get_pretraining_prompt,  # This will be ignored if using optimized version
             discord_client=discord_client,  # Pass discord_client for response tracking
-            start_date=start_date,
-            end_date=end_date,
-            save_results=save_results,
-            callback=callback
+            **kwargs
         )
 
     def analyze_market_with_pretraining(self, ticker=None):
@@ -203,6 +356,9 @@ class WSBTradingApp:
                 "No pretraining data found, using standard market analysis")
             return self.analyze_market()
 
+        # Validate data quality for the selected ticker
+        self.validate_data_quality(ticker)
+
         return analyze_market_with_pretraining(
             self.yfinance_client,
             self.gemini_client,
@@ -214,6 +370,9 @@ class WSBTradingApp:
 
     def evaluate_pretraining_predictions(self, ticker, lookback_days=30):
         """Evaluate the accuracy of pretraining predictions"""
+        # Validate data quality for the ticker
+        self.validate_data_quality(ticker)
+
         return evaluate_pretraining_predictions(self.yfinance_client, self.pretraining_dir, ticker, lookback_days)
 
     def run(self, extended_lookback=60):
@@ -227,657 +386,375 @@ class WSBTradingApp:
             f"Using extended lookback of {extended_lookback} days for pretraining")
 
         try:
-            # Get watchlist symbols
-            symbols = self.get_watchlist_symbols()
+            # Perform initial data validation for key market indices
+            logger.info(
+                "Performing initial data validation for key market indices")
+            for ticker in self.key_indices:
+                self.validate_data_quality(ticker)
+                logger.info(f"Validation successful for {ticker}")
 
-            # Make sure we have at least one pretraining ticker
-            pretraining_ticker = None
-            has_pretraining_data = False
+            logger.info("All key indices passed validation")
 
-            # First, check if any symbol already has pretraining data
-            for symbol in symbols:
-                ticker_dir = self.pretraining_dir / symbol
-                latest_context_file = ticker_dir / "latest_context.txt"
-
-                if latest_context_file.exists():
-                    has_pretraining_data = True
-                    pretraining_ticker = symbol
-                    logger.info(
-                        f"Found pretraining data for {symbol}, will use it in analysis")
-                    break
-
-            # If no pretraining data exists, select pretraining candidates
-            pretraining_candidates = []
-            if symbols:
-                # Use all symbols in watchlist for pretraining to match --batch-pretrain behavior
-                pretraining_candidates = symbols.copy()
-                logger.info(
-                    f"Will perform pretraining for all {len(pretraining_candidates)} symbols in watchlist")
+            # Get watchlist
+            watchlist = get_watchlist_symbols(self.watchlist_file)
+            logger.info(f"Found {len(watchlist)} symbols in watchlist")
 
             # Always run pretraining before analysis
-            if pretraining_candidates:
+            if self.gemini_client:
                 # Get date range for pretraining with extended lookback for technical indicators
-                end_date = datetime.now() - timedelta(days=1)  # yesterday
+                # Use yesterday's date as the end date to ensure data availability
+                end_date = datetime.now() - timedelta(days=1)
+                # Ensure it's a weekday (Monday-Friday)
+                while end_date.weekday() >= 5:  # 5 is Saturday, 6 is Sunday
+                    end_date = end_date - timedelta(days=1)
+
                 end_date_str = end_date.strftime("%Y-%m-%d")
-                start_date = end_date - \
-                    timedelta(days=extended_lookback)  # Extended lookback
+                # Use the extended lookback parameter
+                start_date = end_date - timedelta(days=extended_lookback)
                 start_date_str = start_date.strftime("%Y-%m-%d")
 
-                logger.info(
-                    f"Running batch pretraining for {len(pretraining_candidates)} tickers from {start_date_str} to {end_date_str} ({extended_lookback}-day lookback for technical indicators)")
-
-                try:
-                    # Create a callback function that handles Discord notifications for multiple tickers
-                    def batch_discord_callback(analysis):
-                        # Get the ticker from the analysis
-                        ticker = analysis.get(
-                            "ticker", pretraining_candidates[0])
-
-                        # Log the ticker for debugging
-                        logger.info(
-                            f"Processing pretraining callback for ticker: {ticker}")
-
-                        # Ensure this ticker is one of our candidates
-                        if ticker not in pretraining_candidates:
-                            logger.warning(
-                                f"Ticker {ticker} not in pretraining candidates {pretraining_candidates}, defaulting to {pretraining_candidates[0]}")
-                            ticker = pretraining_candidates[0]
-
-                        # Create a Discord hook specific to this ticker
-                        discord_hook = create_pretraining_message_hook(
-                            self.discord_client, ticker)
-
-                        # Add ticker to analysis if missing (additional safeguard)
-                        if "ticker" not in analysis:
-                            analysis["ticker"] = ticker
-
-                        # Call the discord hook with the analysis
-                        logger.info(
-                            f"Sending pretraining analysis for {ticker} to Discord")
-                        discord_hook(analysis)
-
-                    # Run batch pretraining
-                    batch_results = self.batch_pretrain_analyzer(
-                        pretraining_candidates,
-                        start_date=start_date_str,
-                        end_date=end_date_str,
-                        save_results=True,
-                        # Pass the callback function to send results to Discord
-                        callback=batch_discord_callback,
-                        # Explicitly pass discord_client to ensure all Gemini responses are tracked
-                        discord_client=self.discord_client
-                    )
-
-                    # Check results and send notifications
-                    successful_tickers = []
-                    for ticker, result in batch_results.items():
-                        if "error" not in result:
-                            successful_tickers.append(ticker)
-                            logger.info(f"Pretraining completed for {ticker}")
-
-                            # Send a notification about pretraining
-                            if hasattr(self, 'discord_client'):
-                                data_points = len(result.get("results", []))
-                                pretraining_time = result.get(
-                                    "processing_time", 0)
-
-                                summary = f"Pretraining completed for {ticker}. Generated {data_points} data points across {(end_date - start_date).days + 1} days. This data will be used to enhance trading recommendations."
-
-                                self.discord_client.send_pretraining(
-                                    ticker=ticker,
-                                    start_date=start_date_str,
-                                    end_date=end_date_str,
-                                    data_points=data_points,
-                                    pretraining_time=pretraining_time,
-                                    summary=summary
-                                )
-                                logger.info(
-                                    f"Sent pretraining notification for {ticker} to Discord")
-                        else:
-                            logger.error(
-                                f"Pretraining failed for {ticker}: {result.get('error')}")
-
-                    # Use the first successful ticker for further analysis
-                    if successful_tickers:
-                        pretraining_ticker = successful_tickers[0]
-                        has_pretraining_data = True
-                    else:
-                        # If all tickers failed pretraining, abort the entire workflow
-                        error_msg = "CRITICAL ERROR: All tickers failed pretraining. Cannot proceed with analysis. Check YFinance data availability."
-                        logger.critical(error_msg)
-                        self.discord_client.send_error_alert(
-                            title="Critical Error - Trading System Halted",
-                            message=error_msg,
-                            suggestions="Check data sources and API availability. Trading suspended until resolved."
-                        )
-                        return False
-
-                except SystemExit as e:
-                    # Propagate SystemExit from YFinance client
-                    error_msg = f"CRITICAL ERROR: YFinance data retrieval failed during pretraining: {str(e)}"
-                    logger.critical(error_msg)
-                    self.discord_client.send_error_alert(
-                        title="Critical Error - Missing Financial Data",
-                        message=error_msg,
-                        suggestions="Check YFinance API status and data availability. Trading suspended."
-                    )
-                    raise  # Re-raise to terminate the application
-
-                except Exception as e:
-                    error_msg = f"CRITICAL ERROR during batch pretraining: {e}"
-                    logger.critical(error_msg)
-                    logger.exception(e)
-                    self.discord_client.send_error_alert(
-                        title="Critical Error - Pretraining Failed",
-                        message=error_msg,
-                        suggestions="Check application logs for details. Trading suspended."
-                    )
-                    raise SystemExit(error_msg)
-            elif pretraining_ticker:
-                # Run single-ticker pretraining for the existing ticker to update it
-                end_date = datetime.now() - timedelta(days=1)  # yesterday
-                end_date_str = end_date.strftime("%Y-%m-%d")
-                # 3 days before for update
-                start_date = end_date - timedelta(days=3)
-                start_date_str = start_date.strftime("%Y-%m-%d")
-
-                logger.info(
-                    f"Running update pretraining for {pretraining_ticker} from {start_date_str} to {end_date_str}")
-
-                try:
-                    # Create a hook for sending pretraining data to Discord
-                    discord_hook = create_pretraining_message_hook(
-                        self.discord_client, pretraining_ticker)
-
-                    # Run pretraining with the hook
-                    pretrain_result = self.pretrain_analyzer(
-                        pretraining_ticker,
-                        start_date=start_date_str,
-                        end_date=end_date_str,
-                        save_results=True,
-                        callback=discord_hook,
-                        # Explicitly pass discord_client to ensure all Gemini responses are tracked
-                        discord_client=self.discord_client
-                    )
-
-                    if "error" not in pretrain_result:
-                        logger.info(
-                            f"Pretraining update completed for {pretraining_ticker}")
-                    else:
-                        error_msg = f"CRITICAL ERROR: Pretraining update failed: {pretrain_result.get('error')}"
-                        logger.critical(error_msg)
-                        self.discord_client.send_error_alert(
-                            title="Critical Error - Pretraining Update Failed",
-                            message=error_msg,
-                            suggestions="Check YFinance data availability. Trading suspended."
-                        )
-                        raise SystemExit(error_msg)
-                except SystemExit as e:
-                    # Propagate SystemExit from YFinance client
-                    error_msg = f"CRITICAL ERROR: YFinance data retrieval failed during pretraining update: {str(e)}"
-                    logger.critical(error_msg)
-                    self.discord_client.send_error_alert(
-                        title="Critical Error - Missing Financial Data",
-                        message=error_msg,
-                        suggestions="Check YFinance API status and data availability. Trading suspended."
-                    )
-                    raise  # Re-raise to terminate the application
-                except Exception as e:
-                    error_msg = f"CRITICAL ERROR during pretraining update: {e}"
-                    logger.critical(error_msg)
-                    logger.exception(e)
-                    self.discord_client.send_error_alert(
-                        title="Critical Error - Pretraining Update Failed",
-                        message=error_msg,
-                        suggestions="Check application logs for details. Trading suspended."
-                    )
-                    raise SystemExit(error_msg)
-
-            # 1. Analyze market conditions with pretraining data if available
-            try:
-                if has_pretraining_data and pretraining_ticker:
+                # Look for existing pretraining data for SPY
+                pretraining_files = list(
+                    self.pretraining_dir.glob("SPY/*.json"))
+                if len(pretraining_files) > 0:
                     logger.info(
-                        f"Using pretraining context for {pretraining_ticker} in market analysis")
-                    market_analysis = self.analyze_market_with_pretraining(
-                        pretraining_ticker)
+                        "Found pretraining data for SPY, will use it in analysis")
                 else:
-                    logger.warning(
-                        "No pretraining data available, using standard market analysis")
-                    market_analysis = self.analyze_market()
-
-                if not market_analysis:
-                    error_msg = "CRITICAL ERROR: Failed to analyze market conditions. No market data available."
-                    logger.critical(error_msg)
-                    self.discord_client.send_error_alert(
-                        title="Critical Error - Market Analysis Failed",
-                        message=error_msg,
-                        suggestions="Check YFinance data availability for market indices. Trading suspended."
-                    )
-                    raise SystemExit(error_msg)
-            except SystemExit as e:
-                # Propagate SystemExit from YFinance client
-                error_msg = f"CRITICAL ERROR: YFinance data retrieval failed during market analysis: {str(e)}"
-                logger.critical(error_msg)
-                self.discord_client.send_error_alert(
-                    title="Critical Error - Missing Market Data",
-                    message=error_msg,
-                    suggestions="Check YFinance API status for market indices. Trading suspended."
-                )
-                raise  # Re-raise to terminate the application
-            except Exception as e:
-                error_msg = f"CRITICAL ERROR during market analysis: {e}"
-                logger.critical(error_msg)
-                logger.exception(e)
-                self.discord_client.send_error_alert(
-                    title="Critical Error - Market Analysis Failed",
-                    message=error_msg,
-                    suggestions="Check application logs for details. Trading suspended."
-                )
-                raise SystemExit(error_msg)
-
-            # Send market analysis to Discord
-            try:
-                market_trend = market_analysis.get('trend', 'neutral')
-                market_title = f"Market Analysis: {market_trend.title()} Trend"
-
-                # Extract metrics for the Discord message
-                metrics = {
-                    "Trend": market_trend,
-                    "Score": market_analysis.get('market_trend_score', 0),
-                    "Risk": market_analysis.get('risk_adjustment', 'standard'),
-                    "Date": datetime.now().strftime("%Y-%m-%d")
-                }
-
-                # Send to Discord
-                self.discord_client.send_market_analysis(
-                    title=market_title,
-                    content=market_analysis.get(
-                        'full_analysis', 'No detailed analysis available'),
-                    metrics=metrics
-                )
-                logger.info("Sent market analysis to Discord")
-            except Exception as e:
-                logger.error(f"Error sending market analysis to Discord: {e}")
-                # Non-critical error, continue workflow
-
-            # 2. Analyze individual stocks
-            try:
-                stock_analyses = self.analyze_stocks(market_analysis)
-                if not stock_analyses:
-                    error_msg = "CRITICAL ERROR: No stock analyses generated. Cannot proceed without stock data."
-                    logger.critical(error_msg)
-                    self.discord_client.send_error_alert(
-                        title="Critical Error - Stock Analysis Failed",
-                        message=error_msg,
-                        suggestions="Check YFinance data availability for watchlist stocks. Trading suspended."
-                    )
-                    raise SystemExit(error_msg)
-            except SystemExit as e:
-                # Propagate SystemExit from YFinance client
-                error_msg = f"CRITICAL ERROR: YFinance data retrieval failed during stock analysis: {str(e)}"
-                logger.critical(error_msg)
-                self.discord_client.send_error_alert(
-                    title="Critical Error - Missing Stock Data",
-                    message=error_msg,
-                    suggestions="Check YFinance API status for watchlist stocks. Trading suspended."
-                )
-                raise  # Re-raise to terminate the application
-            except Exception as e:
-                error_msg = f"CRITICAL ERROR during stock analysis: {e}"
-                logger.critical(error_msg)
-                logger.exception(e)
-                self.discord_client.send_error_alert(
-                    title="Critical Error - Stock Analysis Failed",
-                    message=error_msg,
-                    suggestions="Check application logs for details. Trading suspended."
-                )
-                raise SystemExit(error_msg)
-
-            # Check for errors in individual stock analyses
-            failed_stocks = {}
-            for symbol, analysis in stock_analyses.items():
-                if 'error' in analysis:
-                    failed_stocks[symbol] = analysis['error']
-                    logger.error(
-                        f"Analysis failed for {symbol}: {analysis['error']}")
-
-            # If ALL stocks failed analysis, abort the workflow
-            if failed_stocks and len(failed_stocks) == len(stock_analyses):
-                error_msg = f"CRITICAL ERROR: All stocks failed analysis. Cannot proceed with trading strategy."
-                logger.critical(error_msg)
-                error_details = "\n".join(
-                    [f"{symbol}: {error}" for symbol, error in failed_stocks.items()])
-                logger.critical(f"Error details:\n{error_details}")
-                self.discord_client.send_error_alert(
-                    title="Critical Error - All Stock Analyses Failed",
-                    message=error_msg,
-                    suggestions="Check YFinance data availability for watchlist stocks. Trading suspended."
-                )
-                raise SystemExit(error_msg)
-
-            # Send stock analyses to Discord
-            try:
-                # Send each stock analysis to Discord
-                for symbol, analysis in stock_analyses.items():
-                    if 'error' not in analysis:
-                        # Send analysis to full-analysis webhook
-                        self.discord_client.send_analysis(
-                            analysis=analysis,
-                            ticker=symbol,
-                            title=f"{symbol} Analysis: {analysis.get('trend', 'neutral').title()}"
+                    # No existing pretraining data, need to run pretraining for SPY
+                    logger.info(
+                        "No pretraining data for SPY, running pretraining process")
+                    try:
+                        integrated_pretrain_analyzer(
+                            self.yfinance_client,
+                            self.gemini_client,
+                            self.pretraining_dir,
+                            "SPY",
+                            start_date=start_date_str,
+                            end_date=end_date_str,
+                            discord_client=self.discord_client
                         )
+                    except Exception as e:
+                        logger.error(f"Error during SPY pretraining: {e}")
+                        # Critical - send alert
+                        if self.discord_client:
+                            self.discord_client.send_error_alert(
+                                message=f"Critical Error - Pretraining Failure: Failed to pretrain SPY: {e}"
+                            )
+                        # Continue with other processing
+
+                # Now we run pretraining for all tickers in the watchlist
                 logger.info(
-                    f"Sent {len(stock_analyses) - len(failed_stocks)} stock analyses to Discord")
-            except Exception as e:
-                logger.error(f"Error sending stock analyses to Discord: {e}")
-                # Non-critical error, continue workflow
+                    f"Will perform pretraining for all {len(watchlist)} symbols in watchlist")
 
-            # 3. Find credit spread opportunities
-            try:
-                credit_spreads = self.find_credit_spreads(
-                    market_analysis, stock_analyses)
-                if not credit_spreads and not failed_stocks:
-                    logger.warning(
-                        "No credit spread opportunities found, but workflow completed successfully")
-            except SystemExit as e:
-                # Propagate SystemExit from YFinance client
-                error_msg = f"CRITICAL ERROR: YFinance data retrieval failed during credit spread analysis: {str(e)}"
-                logger.critical(error_msg)
-                self.discord_client.send_error_alert(
-                    title="Critical Error - Missing Options Data",
-                    message=error_msg,
-                    suggestions="Check YFinance API status for options data. Trading suspended."
-                )
-                raise  # Re-raise to terminate the application
-            except Exception as e:
-                error_msg = f"CRITICAL ERROR during credit spread analysis: {e}"
-                logger.critical(error_msg)
-                logger.exception(e)
-                self.discord_client.send_error_alert(
-                    title="Critical Error - Credit Spread Analysis Failed",
-                    message=error_msg,
-                    suggestions="Check application logs for details. Trading suspended."
-                )
-                raise SystemExit(error_msg)
+                logger.info(
+                    f"Running batch pretraining for {len(watchlist)} tickers from {start_date_str} to {end_date_str} ({extended_lookback}-day lookback for technical indicators)")
+                try:
+                    # Pass strict_validation through kwargs
+                    batch_kwargs = {
+                        'start_date': start_date_str,
+                        'end_date': end_date_str,
+                        'strict_validation': self.strict_validation
+                    }
 
-            # Send credit spread opportunities to Discord
-            try:
-                if credit_spreads:
-                    # Send each credit spread to Discord as a trade alert
-                    for spread in credit_spreads:
-                        symbol = spread.get('symbol', 'UNKNOWN')
-                        spread_type = spread.get('spread_type', 'unknown')
-                        direction = spread.get('direction', 'neutral')
-                        strikes = spread.get('strikes', 'N/A')
-                        expiration = spread.get('expiration', 'N/A')
-
-                        # Create a note with details
-                        notes = (
-                            f"Type: {spread_type}\n"
-                            f"Strikes: {strikes}\n"
-                            f"Expiration: {expiration}\n"
-                            f"Premium: ${spread.get('premium', 0):.2f}\n"
-                            f"Max Loss: ${spread.get('max_loss', 0):.2f}\n"
-                            f"Probability: {spread.get('success_probability', 0)}%\n"
-                            f"Total Score: {spread.get('total_score', 0)}"
+                    batch_results = integrated_batch_pretrain_analyzer(
+                        self.yfinance_client,
+                        self.gemini_client,
+                        self.pretraining_dir,
+                        watchlist,
+                        discord_client=self.discord_client,
+                        **batch_kwargs
+                    )
+                    logger.info(
+                        f"Batch pretraining complete for {len(batch_results)} tickers")
+                except Exception as e:
+                    logger.error(f"Error during batch pretraining: {e}")
+                    # Critical - send alert
+                    if self.discord_client:
+                        self.discord_client.send_error_alert(
+                            message=f"Critical Error - Batch Pretraining Failure: Failed to complete batch pretraining: {e}"
                         )
 
-                        # Send a trade alert
-                        self.discord_client.send_trade_alert(
-                            ticker=symbol,
-                            action=direction.upper(),
-                            price=spread.get('premium', 0),
-                            notes=notes
-                        )
-
-                    logger.info(
-                        f"Sent {len(credit_spreads)} credit spread alerts to Discord")
-                else:
-                    logger.info(
-                        "No credit spread opportunities found to send to Discord")
+            # Run SPY analysis with pretraining integration
+            try:
+                market_result = analyze_market_with_pretraining(
+                    self.yfinance_client,
+                    self.gemini_client,
+                    self.pretraining_dir,
+                    "SPY",  # Use SPY as the default ticker
+                    get_market_trend_prompt,
+                    get_spy_options_prompt
+                )
+                logger.info("Market analysis with pretraining complete")
             except Exception as e:
-                logger.error(f"Error sending credit spreads to Discord: {e}")
-                # Non-critical error for final step
+                logger.error(f"Error during market analysis: {e}")
+                # Critical - send alert
+                if self.discord_client:
+                    self.discord_client.send_error_alert(
+                        message=f"Critical Error - Market Analysis Failure: Failed to analyze market: {e}"
+                    )
+                # Stop here if market analysis fails
+                raise ValueError(f"Critical error in market analysis: {e}")
 
-            # 5. Send final notification
-            logger.info("Workflow completed successfully")
-            logger.info("Check Discord for alerts")
+            # Process and alert on pretraining results
+            if self.discord_client:
+                # Detailed pretraining reports
+                for ticker in watchlist[:10]:  # Limit to first 10 to avoid spam
+                    try:
+                        # Check if pretraining file exists
+                        ticker_files = list(
+                            self.pretraining_dir.glob(f"{ticker}/*.json"))
+                        if not ticker_files:
+                            continue
+
+                        pretraining_time = "< 1 minute"  # Default
+                        data_points = "Unknown"  # Default
+
+                        # Send pretraining summary to Discord
+                        self.discord_client.send_pretraining(
+                            ticker=ticker,
+                            start_date=start_date_str,
+                            end_date=end_date_str,
+                            data_points=data_points,
+                            pretraining_time=pretraining_time
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            f"Error sending pretraining report for {ticker}: {e}")
+
+            # Send pretraining complete message
+            if self.discord_client:
+                self.discord_client.send_message(
+                    content=f"⚙️ Pretraining complete for {len(watchlist)} symbols",
+                    webhook_type="alerts"
+                )
+
+            # Done!
+            logger.info("Trading workflow complete")
             return True
 
-        except SystemExit as e:
-            # This will catch any SystemExit exceptions raised throughout the workflow
-            error_msg = f"Application terminated due to critical error: {str(e)}"
-            logger.critical(error_msg)
-            try:
-                self.discord_client.send_error_alert(
-                    title="Critical Error - Application Terminated",
-                    message=error_msg,
-                    suggestions="Check logs for details. This is likely a data availability issue."
-                )
-            except Exception as discord_err:
-                logger.critical(f"Failed to send Discord alert: {discord_err}")
-
-            # Re-raise the exception to properly terminate the application
-            raise
-
         except Exception as e:
-            error_msg = f"Unhandled exception in main workflow: {e}"
-            logger.critical(error_msg)
+            logger.critical(
+                f"Application terminated due to critical error: {str(e)}")
             logger.exception(e)
-            try:
+
+            # Send critical error alert
+            if hasattr(self, 'discord_client') and self.discord_client:
                 self.discord_client.send_error_alert(
-                    title="Critical Error - Unexpected Exception",
-                    message=error_msg,
-                    suggestions="Check application logs for details. Trading suspended."
+                    message=f"Critical Error - Application Terminated: The WSB Trading System has been halted due to a critical error: {str(e)}"
                 )
-            except Exception as discord_err:
-                logger.critical(f"Failed to send Discord alert: {discord_err}")
             return False
 
 
+def exit_on_data_error(app, error_message, ticker=None):
+    """
+    Exit the application due to a critical data validation error
+
+    Args:
+        app: The WSBTradingApp instance
+        error_message: The error message to log and send
+        ticker: Optional ticker symbol related to the error
+
+    Returns:
+        Never returns, exits the application with code 1
+    """
+    logger.error(f"CRITICAL ERROR: {error_message}")
+    logger.error("Application stopped for debugging.")
+
+    # Construct a message for Discord
+    message = f"**⚠️ CRITICAL DATA ERROR ⚠️**\n\n"
+    if ticker:
+        message += f"**Ticker:** {ticker}\n"
+    message += f"**Error:** {error_message}\n\n"
+    message += "**Action Required:** Application halted. Investigate data issues and fix before continuing.\n"
+    message += f"**Timestamp:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+
+    # Send to Discord if available
+    try:
+        if hasattr(app, 'discord_client'):
+            app.discord_client.send_message(message, "ERROR_ALERTS")
+            logger.info("Error notification sent to Discord.")
+    except Exception as e:
+        logger.error(f"Failed to send error to Discord: {e}")
+
+    # Exit with error code
+    sys.exit(1)
+
+
 def main():
-    """
-    Main function to run the WSB Trading workflow
-    """
-    print("======================================")
-    print("  WSB-2 Credit Spread Trading System  ")
-    print("  Powered by Gemini & YFinance        ")
-    print("======================================")
-    print(
-        f"Starting workflow at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    """Main entry point for the WSB Trading System application"""
+    try:
+        logger.info("Starting WSB Trading System")
 
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description='WSB Trading Application')
+        # Parse command line arguments
+        parser = argparse.ArgumentParser(
+            description='WSB Trading System - Credit Spread Trading Platform')
+        parser.add_argument('--pretrain', type=str,
+                            help='Run pretraining for a specific ticker')
+        parser.add_argument('--batch-pretrain', type=str,
+                            help='Run batch pretraining (comma-separated tickers)')
+        parser.add_argument('--evaluate', type=str,
+                            help='Evaluate ticker prediction accuracy')
+        parser.add_argument('--days', type=int, default=30,
+                            help='Lookback days (default: 30)')
+        parser.add_argument('--update-watchlist', action='store_true',
+                            help='Update watchlist from screener data')
+        parser.add_argument('--run', action='store_true',
+                            help='Run full trading workflow')
+        parser.add_argument('--extended-lookback', type=int, default=60,
+                            help='Set extended pretraining lookback period')
+        parser.add_argument('--strict-validation', action='store_true', default=True,
+                            help='Enable strict data validation (default: True)')
+        parser.add_argument('--debug', action='store_true',
+                            help='Enable debug mode')
+        args = parser.parse_args()
 
-    # Add arguments
-    parser.add_argument('--pretrain', dest='pretrain_ticker',
-                        help='Run pretraining for a specific ticker')
-    parser.add_argument('--batch-pretrain', dest='batch_pretrain',
-                        help='Run batch pretraining for comma-separated tickers (e.g., "SPY,AAPL,MSFT")')
-    parser.add_argument('--evaluate', dest='evaluate_ticker',
-                        help='Evaluate pretraining predictions for a specific ticker')
-    parser.add_argument('--days', dest='lookback_days', type=int, default=30,
-                        help='Lookback days for evaluation or pretraining (default: 30)')
-    parser.add_argument('--update-watchlist', dest='update_watchlist', action='store_true',
-                        help='Update the watchlist from options screener data')
-    parser.add_argument('--run', dest='run_workflow', action='store_true',
-                        help='Run the full trading workflow (includes batch pretraining for entire watchlist, market analysis and credit spread discovery)')
-    parser.add_argument('--extended-lookback', dest='extended_lookback', type=int, default=60,
-                        help='Set extended lookback period in days for pretraining (default: 60 days, recommended for technical indicators)')
+        # Initialize the application
+        app = WSBTradingApp()
 
-    args = parser.parse_args()
-
-    # Initialize the app
-    app = WSBTradingApp()
-
-    success = True
-
-    # Handle commands
-    if args.update_watchlist:
-        print("Updating watchlist from options screener data...")
-        success = app.update_watchlist()
-        if success:
-            print("✅ Watchlist updated successfully!")
+        # Set strict validation mode based on argument
+        app.strict_validation = args.strict_validation
+        if args.strict_validation:
+            logger.info(
+                "Strict data validation enabled - app will fail fast on missing or invalid data")
         else:
-            print("❌ Failed to update watchlist.")
+            logger.warning(
+                "Strict data validation disabled - app will attempt to use fallbacks for missing data")
 
-    # Handle pretrain command
-    if args.pretrain_ticker:
-        print(f"Running pretraining for {args.pretrain_ticker}...")
+        # Enable debug mode if requested
+        if args.debug:
+            logging.getLogger().setLevel(logging.DEBUG)
+            logger.debug("Debug mode enabled")
 
-        # Set dates
-        end_date = datetime.now() - timedelta(days=1)  # yesterday
-        end_date_str = end_date.strftime("%Y-%m-%d")
+        # Update the watchlist if requested
+        if args.update_watchlist:
+            logger.info("Updating watchlist...")
+            app.update_watchlist()
 
-        # Use extended lookback if specified
-        if args.extended_lookback:
-            print(
-                f"Using extended lookback period of {args.extended_lookback} days for sufficient technical indicator data")
-            start_date = end_date - timedelta(days=args.extended_lookback)
-        else:
-            # This should not happen with the default, but keeping as a fallback
-            start_date = end_date - timedelta(days=args.lookback_days)
-            print(
-                f"Using lookback period of {args.lookback_days} days (may be insufficient for some technical indicators)")
+        # Run pretraining for a single ticker if specified
+        if args.pretrain:
+            logger.info(f"Running pretraining for {args.pretrain}...")
 
-        start_date_str = start_date.strftime("%Y-%m-%d")
-        print(f"Pretraining period: {start_date_str} to {end_date_str}")
+            # Create a callback to send messages to Discord
+            discord_callback = create_pretraining_message_hook(
+                app.discord_client, "PRETRAINING")
 
-        # Create a hook for sending pretraining data to Discord
-        discord_hook = create_pretraining_message_hook(
-            app.discord_client, args.pretrain_ticker)
+            # Run pretraining with Discord callback
+            result = app.pretrain_analyzer(
+                args.pretrain,
+                start_date=None,  # Use default date calculation
+                end_date=None,  # Use default date calculation
+                callback=discord_callback,
+                discord_client=app.discord_client
+            )
 
-        # Run pretraining with progress output
-        print("Starting pretraining process with enhanced pattern recognition...")
-        result = app.pretrain_analyzer(
-            args.pretrain_ticker,
-            start_date=start_date_str,
-            end_date=end_date_str,
-            save_results=True,
-            callback=lambda analysis: print(
-                f"Processed analysis for {analysis.get('date', 'unknown')} - {analysis.get('analysis_type', 'unknown')}")
-        )
+            logger.info(f"Pretraining completed for {args.pretrain}")
 
-        # Check for errors
-        if "error" in result:
-            print(f"❌ Pretraining failed: {result['error']}")
-            success = False
-        else:
-            analyses_count = result.get("analyses_count", 0)
-            processing_time = result.get("processing_time", 0)
+        # Run batch pretraining if specified
+        if args.batch_pretrain:
+            logger.info(
+                f"Running batch pretraining for {args.batch_pretrain}...")
+            tickers = [t.strip() for t in args.batch_pretrain.split(',')]
 
-            # Check for data quality warnings
-            if any("quality_warning" in analysis for analysis in result.get("results", [])):
-                print("⚠️ Pretraining completed with data quality warnings.")
-                print(
-                    "    Some pattern recognition features may be limited due to insufficient historical data.")
-                print(
-                    "    Try using --extended-lookback with a larger value for better results.")
-            else:
-                print("✅ Pretraining completed successfully!")
+            # Create a callback to send messages to Discord
+            discord_callback = create_pretraining_message_hook(
+                app.discord_client, "BATCH_PRETRAINING")
 
-            print(
-                f"Generated {analyses_count} analysis points in {processing_time:.2f} seconds")
+            # Run batch pretraining with Discord callback
+            result = app.batch_pretrain_analyzer(
+                tickers,
+                start_date=None,  # Use default date calculation
+                end_date=None,  # Use default date calculation
+                callback=discord_callback,
+                discord_client=app.discord_client
+            )
 
-            # Send to Discord
+            logger.info(
+                f"Batch pretraining completed for {len(tickers)} tickers")
+
+        # Evaluate pretraining predictions if specified
+        if args.evaluate:
+            logger.info(
+                f"Evaluating pretraining predictions for {args.evaluate}...")
+            result = app.evaluate_pretraining_predictions(
+                args.evaluate, args.days)
+
+            if result:
+                accuracy = result.get('directional_accuracy', 0)
+                logger.info(
+                    f"Prediction accuracy for {args.evaluate}: {accuracy:.2f}%")
+
+                # Send results to Discord
+                content = f"**Pretraining Evaluation for {args.evaluate}**\n"
+                content += f"Directional Accuracy: {accuracy:.2f}%\n"
+                content += f"Total Predictions: {result.get('total_predictions', 0)}\n"
+                content += f"Average Magnitude Error: {result.get('avg_magnitude_error', 0):.2f}%"
+
+                app.discord_client.send_message(content, "ERROR_ALERTS")
+
+        # Run full trading workflow if requested
+        if args.run:
+            logger.info("Running full trading workflow...")
+
+            # First, validate data quality for key market indices
             try:
-                if hasattr(app, 'discord_client'):
-                    summary = None
-                    for r in result.get("results", []):
-                        if r.get("type") == "summary":
-                            summary = r
-                            break
+                app.setup_data_validation()
+            except ValueError as e:
+                error_msg = str(e)
+                if "Application stopped for debugging" in error_msg:
+                    # Use more detailed error handling for data validation errors
+                    exit_on_data_error(app, error_msg)
+                logger.error(f"Data validation failed, aborting workflow: {e}")
+                return 1
 
-                    app.discord_client.send_pretraining(
-                        ticker=args.pretrain_ticker,
-                        start_date=start_date_str,
-                        end_date=end_date_str,
-                        data_points=analyses_count,
-                        pretraining_time=processing_time,
-                        summary=summary["full_analysis"] if summary else "No summary generated"
-                    )
-                    print("Sent pretraining summary to Discord")
-            except Exception as e:
-                print(f"Failed to send to Discord: {e}")
+            # Run the main trading app with extended lookback
+            app.run(extended_lookback=args.extended_lookback)
 
-    if args.batch_pretrain:
-        tickers = [t.strip() for t in args.batch_pretrain.split(',')]
-        print(
-            f"Running batch pretraining for {len(tickers)} tickers: {', '.join(tickers)}...")
+        # If no action specified, print help
+        if not (args.update_watchlist or args.pretrain or args.batch_pretrain or args.evaluate or args.run):
+            parser.print_help()
+            return 0
 
-        # Set dates using extended_lookback
-        end_date = datetime.now() - timedelta(days=1)  # yesterday
-        end_date_str = end_date.strftime("%Y-%m-%d")
+        return 0  # Successful execution
 
-        # Use extended lookback to ensure sufficient data for technical indicators
-        start_date = end_date - timedelta(days=args.extended_lookback)
-        start_date_str = start_date.strftime("%Y-%m-%d")
-
-        print(
-            f"Pretraining period: {start_date_str} to {end_date_str} ({args.extended_lookback}-day lookback)")
-
-        # Run batch pretraining with dates
-        batch_results = app.batch_pretrain_analyzer(
-            tickers,
-            start_date=start_date_str,
-            end_date=end_date_str
-        )
-
-        # Show results
-        successful = 0
-        for ticker, result in batch_results.items():
-            if "error" not in result:
-                successful += 1
-                analyses_count = result.get('analyses_count', 0)
-                print(
-                    f"✅ {ticker}: Pretraining completed with {analyses_count} analyses")
-            else:
-                print(f"❌ {ticker}: Pretraining failed - {result.get('error')}")
-
-        print(
-            f"\n✅ Batch pretraining completed for {successful}/{len(tickers)} tickers")
-        success = successful > 0
-
-    if args.evaluate_ticker:
-        print(
-            f"Evaluating pretraining predictions for {args.evaluate_ticker} over the last {args.lookback_days} days...")
-        result = app.evaluate_pretraining_predictions(
-            args.evaluate_ticker, args.lookback_days)
-        if "error" not in result:
-            metrics = result.get("metrics", {})
-            print(f"\n✅ Evaluation completed for {args.evaluate_ticker}:")
-            print(
-                f"• Predictions analyzed: {result.get('prediction_count', 0)}")
-            for horizon, horizon_metrics in metrics.items():
-                print(f"• {horizon.replace('_', ' ').title()} Horizon:")
-                print(
-                    f"  - Directional Accuracy: {horizon_metrics.get('directional_accuracy')}")
-                print(
-                    f"  - Avg. Magnitude Error: {horizon_metrics.get('avg_magnitude_error')}")
-                print(f"  - Sample Size: {horizon_metrics.get('sample_size')}")
-
-            success = True
+    except ValueError as e:
+        error_msg = str(e)
+        # Check if this is a critical data validation error
+        if "Application stopped for debugging" in error_msg:
+            # This is a critical data error that needs investigation
+            # Extract ticker if present in the message
+            ticker = None
+            import re
+            match = re.search(r"for\s+([A-Z]+)[\s\.\:]", error_msg)
+            if match:
+                ticker = match.group(1)
+            # Use exit_on_data_error for a cleaner exit with notifications
+            exit_on_data_error(app, error_msg, ticker)
         else:
-            print(f"❌ Evaluation failed: {result.get('error')}")
-            success = False
+            # For other ValueErrors, just log and exit with code 1
+            logger.error(f"ERROR: {error_msg}")
+            return 1
+    except KeyboardInterrupt:
+        logger.info("Application interrupted by user")
+        return 130  # Standard exit code for SIGINT
+    except Exception as e:
+        error_msg = f"Unhandled exception: {str(e)}"
+        logger.error(error_msg, exc_info=True)
 
-    if args.run_workflow or not (args.update_watchlist or args.pretrain_ticker or args.batch_pretrain or args.evaluate_ticker):
-        # Run the full analysis workflow
-        print(
-            f"Running full market analysis workflow with batch pretraining for all watchlist tickers (using 60-day lookback)...")
-        # Always use 60 days for --run regardless of user input
-        success = app.run(60)
+        # Try to send error to Discord if possible
+        try:
+            # Only attempt if we have an app instance
+            if 'app' in locals() and hasattr(app, 'discord_client'):
+                content = f"**❌ UNHANDLED ERROR ❌**\n\n"
+                content += f"**Error:** {str(e)}\n\n"
+                content += f"See logs for stack trace.\n"
+                content += f"**Timestamp:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                app.discord_client.send_message(content, "ERROR_ALERTS")
+        except:
+            # Silently ignore errors in error handling
+            pass
 
-    if success:
-        print("\n✅ Workflow completed successfully!")
-    else:
-        print("\n❌ Workflow failed. Check logs for details.")
-
-    print("\nSee Discord for alerts.")
-    print(
-        f"Workflow completed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    return success
+        return 1  # Error exit code
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -4,7 +4,8 @@ import math
 import numpy as np
 from datetime import datetime, timedelta
 import pandas as pd
-import talib  # Use talib directly instead of alias
+import talib
+from talib import EMA, SMA, RSI, MACD, ATR, BBANDS, ADX
 
 logger = logging.getLogger(__name__)
 
@@ -21,32 +22,27 @@ def format_stock_data_for_analysis(historical_data, ticker, date_str, min_data_p
 
     Returns:
     - Dictionary with formatted data for analysis
+
+    Raises:
+    - ValueError: When critical data is missing or invalid
     """
     logger.info(f"Formatting stock data for {ticker} as of {date_str}")
 
     try:
         # Check if data is None or empty before processing
         if historical_data is None or (hasattr(historical_data, 'empty') and historical_data.empty):
-            logger.error(
-                f"No historical data available for {ticker} on {date_str}")
-            return {
-                "ticker": ticker,
-                "date": date_str,
-                "error": "No data available"
-            }
+            error_msg = f"No historical data available for {ticker} on {date_str}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         # Clone dataframe to avoid modifying original
         data = historical_data.copy()
 
         # Skip if data is empty
         if len(data) == 0:
-            logger.error(
-                f"No historical data available for {ticker} on {date_str}")
-            return {
-                "ticker": ticker,
-                "date": date_str,
-                "error": "No data available"
-            }
+            error_msg = f"No historical data available for {ticker} on {date_str}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         # Log data details for debugging
         logger.debug(
@@ -54,11 +50,11 @@ def format_stock_data_for_analysis(historical_data, ticker, date_str, min_data_p
 
         # Check if we have enough data points for pattern recognition
         if len(data) < min_data_points:
-            logger.warning(
-                f"Insufficient data points for pattern recognition: {len(data)} < {min_data_points}")
-            data_quality = "insufficient"
-        else:
-            data_quality = "good"
+            error_msg = f"Insufficient data points for pattern recognition: {len(data)} < {min_data_points}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        data_quality = "good"
 
         # Handle multi-index columns (from yfinance)
         # If columns are multi-index with (Price, Ticker) structure,
@@ -102,19 +98,9 @@ def format_stock_data_for_analysis(historical_data, ticker, date_str, min_data_p
         if 'Close' in data.columns and len(data) > 0:
             # Check for NaN values in Close
             if data['Close'].iloc[-1] is None or np.isnan(data['Close'].iloc[-1]):
-                logger.warning(
-                    f"Last Close value is NaN for {ticker}, using earlier value")
-                # Try to find the last valid Close
-                valid_close = data['Close'].dropna()
-                if len(valid_close) > 0:
-                    close_series = valid_close.iloc[-1]
-                else:
-                    logger.error(f"No valid Close values found for {ticker}")
-                    return {
-                        "ticker": ticker,
-                        "date": date_str,
-                        "error": "No valid Close values"
-                    }
+                error_msg = f"Last Close value is NaN for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
             else:
                 close_series = data['Close'].iloc[-1]
 
@@ -123,318 +109,219 @@ def format_stock_data_for_analysis(historical_data, ticker, date_str, min_data_p
                 close_series, 'iloc') else float(close_series)
             logger.debug(f"Current price for {ticker}: {current_price}")
         else:
-            logger.error(f"Cannot determine current price for {ticker}")
-            return {
-                "ticker": ticker,
-                "date": date_str,
-                "error": "Cannot determine current price"
-            }
+            error_msg = f"Cannot determine current price for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         # Calculate percent change
-        percent_change = 0
-        if 'Close' in data.columns and len(data) > 1:
-            # Check for NaN in previous close
-            if data['Close'].iloc[-2] is None or np.isnan(data['Close'].iloc[-2]):
-                logger.warning(
-                    f"Previous Close value is NaN for {ticker}, calculating from earlier data")
-                valid_closes = data['Close'].dropna()
-                if len(valid_closes) >= 2:
-                    prev_close = float(valid_closes.iloc[-2])
-                else:
-                    logger.warning(
-                        f"Not enough valid Close values to calculate percent change for {ticker}")
-                    prev_close = current_price  # No change
-            else:
-                close_series_prev = data['Close'].iloc[-2]
-                prev_close = float(close_series_prev.iloc[0]) if hasattr(
-                    close_series_prev, 'iloc') else float(close_series_prev)
+        if len(data) >= 2:
+            prev_close = data['Close'].iloc[-2]
+            if prev_close is None or np.isnan(prev_close):
+                error_msg = f"Previous Close value is NaN for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
 
-            if prev_close > 0:
+            prev_close_value = float(prev_close.iloc[0]) if hasattr(
+                prev_close, 'iloc') else float(prev_close)
+
+            if prev_close_value > 0:
                 percent_change = (
-                    current_price - prev_close) / prev_close * 100
-                logger.debug(
-                    f"Percent change for {ticker}: {percent_change:.2f}%")
+                    (current_price - prev_close_value) / prev_close_value) * 100
             else:
-                logger.warning(
-                    f"Invalid previous close ({prev_close}) for {ticker}, cannot calculate percent change")
+                error_msg = f"Previous close is zero or negative for {ticker}: {prev_close_value}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+        else:
+            error_msg = f"Insufficient data to calculate percent change for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Determine date range of the data
+        try:
+            start_date = data.index[0].strftime('%Y-%m-%d')
+            end_date = data.index[-1].strftime('%Y-%m-%d')
+        except Exception as e:
+            error_msg = f"Error determining date range for {ticker}: {e}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Calculate volume metrics
+        if 'Volume' in data.columns and not data['Volume'].isnull().all():
+            volume = float(data['Volume'].iloc[-1])
+            avg_volume = float(data['Volume'].rolling(
+                window=20).mean().iloc[-1])
+
+            # Calculate volume change
+            if avg_volume > 0:
+                volume_change = ((volume - avg_volume) / avg_volume) * 100
+            else:
+                error_msg = f"Average volume is zero for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+        else:
+            error_msg = f"Volume data is missing or invalid for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Calculate technical indicators
+        # EMA 9 and 21
+        if len(data) >= 21:
+            ema9 = EMA(data['Close'], timeperiod=9)
+            ema21 = EMA(data['Close'], timeperiod=21)
+
+            if np.isnan(ema9.iloc[-1]) or np.isnan(ema21.iloc[-1]):
+                error_msg = f"EMA calculation resulted in NaN for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+
+            ema9_value = float(ema9.iloc[-1])
+            ema21_value = float(ema21.iloc[-1])
+
+            # Calculate distance from price
+            ema9_dist = ((current_price - ema9_value) / ema9_value) * 100
+            ema21_dist = ((current_price - ema21_value) / ema21_value) * 100
+        else:
+            error_msg = f"Insufficient data for EMA calculation for {ticker}: {len(data)} < 21. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # SMA 50 and 200
+        if len(data) >= 50:
+            sma50 = SMA(data['Close'], timeperiod=50)
+            sma50_value = float(sma50.iloc[-1])
+            sma50_dist = ((current_price - sma50_value) / sma50_value) * 100
+        else:
+            error_msg = f"Insufficient data for SMA50 calculation for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Adaptive SMA long-term calculation based on available data
+        if len(data) >= 200:
+            # Use standard SMA200 if we have enough data
+            sma200 = SMA(data['Close'], timeperiod=200)
+            sma200_value = float(sma200.iloc[-1])
+        elif len(data) >= 60:
+            # Use adaptive SMA with the available data (e.g., SMA83 if we have 83 days)
+            available_days = len(data)
+            logger.warning(
+                f"Using adaptive SMA{available_days} instead of SMA200 for {ticker} due to limited historical data")
+            sma_adaptive = SMA(data['Close'], timeperiod=available_days)
+            sma200_value = float(sma_adaptive.iloc[-1])
+        else:
+            error_msg = f"Insufficient data for long-term SMA calculation for {ticker}. Need at least 60 days. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Calculate the distance from current price to SMA200 (or adaptive SMA)
+        sma200_dist = ((current_price - sma200_value) / sma200_value) * 100
+
+        # VWAP if we have high/low/close/volume
+        required_columns = ['High', 'Low', 'Close', 'Volume']
+        if all(col in data.columns for col in required_columns):
+            try:
+                # Reset index to use date as a column
+                df_reset = data.reset_index()
+                df_reset['Date'] = pd.to_datetime(df_reset['Date'])
+
+                # Group by date for daily VWAP
+                date_only = df_reset['Date'].dt.date
+                df_reset['date_only'] = date_only
+
+                # Calculate VWAP
+                df_reset['vwap'] = (
+                    df_reset['Close'] * df_reset['Volume']).cumsum() / df_reset['Volume'].cumsum()
+
+                # Get most recent VWAP
+                vwap = float(df_reset['vwap'].iloc[-1])
+            except Exception as e:
+                error_msg = f"Error calculating VWAP for {ticker}: {e}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+        else:
+            error_msg = f"Missing required columns for VWAP calculation for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Calculate RSI
+        if len(data) >= 14:
+            rsi = RSI(data['Close'], timeperiod=14)
+            if np.isnan(rsi.iloc[-1]):
+                error_msg = f"RSI calculation returned NaN for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+            rsi = float(rsi.iloc[-1])
+        else:
+            error_msg = f"Insufficient data for RSI calculation for {ticker}: {len(data)} < 14. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Calculate MACD
+        if len(data) >= 26:
+            macd, macd_signal, macd_hist = MACD(
+                data['Close'], fastperiod=12, slowperiod=26, signalperiod=9)
+
+            if np.isnan(macd.iloc[-1]):
+                error_msg = f"MACD calculation returned NaN for {ticker} despite sufficient data length {len(data)}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+
+            macd_value = float(macd.iloc[-1])
+            macd_signal_value = float(macd_signal.iloc[-1])
+            macd_hist_value = float(macd_hist.iloc[-1])
+        else:
+            error_msg = f"Insufficient data for MACD calculation for {ticker}: {len(data)} < 26. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Calculate Bollinger Bands
+        if len(data) >= 20:
+            upper, middle, lower = BBANDS(
+                data['Close'], timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+
+            if np.isnan(upper.iloc[-1]) or np.isnan(middle.iloc[-1]) or np.isnan(lower.iloc[-1]):
+                error_msg = f"Bollinger Bands calculation returned NaN for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+
+            bb_width = (upper.iloc[-1] - lower.iloc[-1]) / middle.iloc[-1]
+            bb_width = float(bb_width)
+        else:
+            error_msg = f"Insufficient data for Bollinger Bands calculation for {ticker}: {len(data)} < 20. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         # Calculate ATR (Average True Range)
-        atr = 0
-        atr_percent = 0
-        if 'Low' in data.columns and 'High' in data.columns and len(data) >= 14:
-            try:
-                # Clean data before ATR calculation
-                data_for_atr = data.copy()
-                for col in ['High', 'Low', 'Close']:
-                    if data_for_atr[col].isnull().any():
-                        logger.warning(
-                            f"NaN values found in {col} for {ticker}, cleaning before ATR calculation")
-                        data_for_atr[col] = data_for_atr[col].ffill()
+        if len(data) >= 14 and all(col in data.columns for col in ['High', 'Low', 'Close']):
+            atr = ATR(data['High'], data['Low'],
+                      data['Close'], timeperiod=14)
 
-                # Use talib for more reliable ATR calculation
-                atr_values = talib.ATR(data_for_atr['High'].values, data_for_atr['Low'].values,
-                                       data_for_atr['Close'].values, timeperiod=14)
+            if np.isnan(atr.iloc[-1]):
+                error_msg = f"ATR calculation returned NaN for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
 
-                if np.isnan(atr_values[-1]):
-                    logger.warning(
-                        f"ATR calculation returned NaN for {ticker}, using manual method")
-                    # Manual calculation as fallback
-                    data_for_atr['tr1'] = abs(
-                        data_for_atr['High'] - data_for_atr['Low'])
-                    data_for_atr['tr2'] = abs(
-                        data_for_atr['High'] - data_for_atr['Close'].shift(1))
-                    data_for_atr['tr3'] = abs(
-                        data_for_atr['Low'] - data_for_atr['Close'].shift(1))
-                    data_for_atr['true_range'] = data_for_atr[[
-                        'tr1', 'tr2', 'tr3']].max(axis=1)
-                    data_for_atr['atr'] = data_for_atr['true_range'].rolling(
-                        window=14).mean()
-                    atr = float(data_for_atr['atr'].dropna().iloc[-1])
-                else:
-                    atr = float(atr_values[-1])
-
-                # Calculate ATR as percentage of current price
-                if current_price > 0:
-                    atr_percent = (atr / current_price) * 100
-
-                    # Sanity check - ATR% is usually 0.5-5% for most stocks
-                    if atr_percent > 10:
-                        logger.warning(
-                            f"Unusually high ATR% calculated: {atr_percent:.2f}% for {ticker}")
-                        if atr_percent > 30:  # Extremely unlikely to be valid
-                            logger.error(
-                                f"ATR% value of {atr_percent:.2f}% appears to be an error, capping at 10%")
-                            atr_percent = 10.0  # Cap at a reasonable maximum
-
-                logger.debug(
-                    f"ATR for {ticker}: {atr:.4f} ({atr_percent:.2f}%)")
-            except Exception as e:
-                logger.error(f"Error calculating ATR for {ticker}: {str(e)}")
-                atr = 0
-                atr_percent = 0
+            atr = float(atr.iloc[-1])
+            atr_percent = (atr / current_price) * 100
         else:
-            logger.warning(
-                f"Insufficient data for ATR calculation for {ticker}")
+            error_msg = f"Insufficient data for ATR calculation for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
-        # Calculate Volume Weighted Average Price (VWAP) if volume data is available
-        vwap = 0
-        if 'Volume' in data.columns and 'Open' in data.columns and 'Close' in data.columns:
-            try:
-                if data['Volume'].sum() > 0:  # Ensure we have actual volume data
-                    data['vwap'] = (data['Volume'] * (data['Open'] + data['High'] +
-                                    data['Low'] + data['Close'])/4).cumsum() / data['Volume'].cumsum()
-                    vwap_series = data['vwap'].iloc[-1]
-                    vwap = float(vwap_series.iloc[0]) if hasattr(
-                        vwap_series, 'iloc') else float(vwap_series)
-                    logger.debug(f"VWAP for {ticker}: {vwap:.4f}")
-                else:
-                    logger.warning(
-                        f"Zero volume data for {ticker}, cannot calculate VWAP")
-            except Exception as e:
-                logger.error(f"Error calculating VWAP for {ticker}: {str(e)}")
+        # Calculate ADX (Average Directional Index)
+        if len(data) >= 14 and all(col in data.columns for col in ['High', 'Low', 'Close']):
+            adx = ADX(data['High'], data['Low'],
+                      data['Close'], timeperiod=14)
 
-        # Calculate volume metrics if available
-        volume = 0
-        avg_volume = 0
-        volume_change = 0
-        if 'Volume' in data.columns and len(data) > 0:
-            try:
-                volume_series = data['Volume'].iloc[-1]
-                volume = float(volume_series.iloc[0]) if hasattr(
-                    volume_series, 'iloc') else float(volume_series)
+            if np.isnan(adx.iloc[-1]):
+                error_msg = f"ADX calculation returned NaN for {ticker}. Application stopped for debugging."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
 
-                avg_volume_series = data['Volume'].mean()
-                avg_volume = float(avg_volume_series.iloc[0]) if hasattr(
-                    avg_volume_series, 'iloc') else float(avg_volume_series)
-
-                if len(data) > 1:
-                    volume_series_prev = data['Volume'].iloc[-2]
-                    prev_volume = float(volume_series_prev.iloc[0]) if hasattr(
-                        volume_series_prev, 'iloc') else float(volume_series_prev)
-                    if prev_volume > 0:
-                        volume_change = (volume - prev_volume) / \
-                            prev_volume * 100
-
-                logger.debug(
-                    f"Volume for {ticker}: {volume:.0f}, Avg: {avg_volume:.0f}, Change: {volume_change:.2f}%")
-            except Exception as e:
-                logger.error(
-                    f"Error calculating volume metrics for {ticker}: {str(e)}")
-
-        # Calculate standard moving averages if possible
-        ema9, ema21, sma50, sma200 = 0, 0, 0, 0
-        ema9_dist, ema21_dist, sma50_dist, sma200_dist = 0, 0, 0, 0
-
-        if 'Close' in data.columns and len(data) > 0:
-            try:
-                # Check if we have enough data for each MA
-                has_ema9 = len(data) >= 9
-                has_ema21 = len(data) >= 21
-                has_sma50 = len(data) >= 50
-                has_sma200 = len(data) >= 200
-
-                # Calculate EMAs
-                if has_ema9:
-                    data['ema9'] = data['Close'].ewm(span=9).mean()
-                    ema9_series = data['ema9'].iloc[-1]
-                    ema9 = float(ema9_series.iloc[0]) if hasattr(
-                        ema9_series, 'iloc') else float(ema9_series)
-                    ema9_dist = ((current_price - ema9) /
-                                 ema9 * 100) if ema9 > 0 else 0
-                else:
-                    logger.warning(
-                        f"Insufficient data for EMA9 calculation for {ticker}")
-
-                if has_ema21:
-                    data['ema21'] = data['Close'].ewm(span=21).mean()
-                    ema21_series = data['ema21'].iloc[-1]
-                    ema21 = float(ema21_series.iloc[0]) if hasattr(
-                        ema21_series, 'iloc') else float(ema21_series)
-                    ema21_dist = ((current_price - ema21) /
-                                  ema21 * 100) if ema21 > 0 else 0
-                else:
-                    logger.warning(
-                        f"Insufficient data for EMA21 calculation for {ticker}")
-
-                # Calculate SMAs
-                if has_sma50:
-                    data['sma50'] = data['Close'].rolling(window=50).mean()
-                    sma50_series = data['sma50'].iloc[-1]
-                    sma50 = float(sma50_series.iloc[0]) if hasattr(
-                        sma50_series, 'iloc') else float(sma50_series)
-                    sma50_dist = ((current_price - sma50) /
-                                  sma50 * 100) if sma50 > 0 else 0
-                else:
-                    logger.warning(
-                        f"Insufficient data for SMA50 calculation for {ticker}")
-
-                if has_sma200:
-                    data['sma200'] = data['Close'].rolling(window=200).mean()
-                    sma200_series = data['sma200'].iloc[-1]
-                    sma200 = float(sma200_series.iloc[0]) if hasattr(
-                        sma200_series, 'iloc') else float(sma200_series)
-                    sma200_dist = ((current_price - sma200) /
-                                   sma200 * 100) if sma200 > 0 else 0
-                else:
-                    logger.warning(
-                        f"Insufficient data for SMA200 calculation for {ticker}")
-
-                logger.debug(
-                    f"Moving averages for {ticker} - EMA9: {ema9:.2f}, EMA21: {ema21:.2f}, SMA50: {sma50:.2f}, SMA200: {sma200:.2f}")
-            except Exception as e:
-                logger.error(
-                    f"Error calculating moving averages for {ticker}: {str(e)}")
-
-        # Calculate advanced technical indicators for pattern recognition
-        rsi = 50  # Default neutral
-        macd_value = None  # Will be explicitly None if not available
-        macd_signal_value = None
-        macd_hist_value = None
-        bb_width = 0
-        adx = 0
-
-        try:
-            # Calculate RSI
-            if len(data) >= 14 and 'Close' in data.columns:
-                # Clean data before calculation
-                clean_close = data['Close'].ffill()
-
-                # Calculate RSI
-                rsi_values = talib.RSI(clean_close.values, timeperiod=14)
-
-                if np.isnan(rsi_values[-1]):
-                    logger.warning(
-                        f"RSI calculation returned NaN for {ticker}")
-                else:
-                    rsi = float(rsi_values[-1])
-                    logger.debug(f"RSI for {ticker}: {rsi:.2f}")
-            else:
-                logger.warning(
-                    f"Insufficient data for RSI calculation for {ticker}: {len(data)} points (need 14)")
-
-            # Calculate MACD
-            if len(data) >= 26 and 'Close' in data.columns:
-                # Clean data before calculation
-                clean_close = data['Close'].ffill()
-
-                # Calculate MACD
-                macd, macd_signal, macd_hist = talib.MACD(
-                    clean_close.values, fastperiod=12, slowperiod=26, signalperiod=9)
-
-                # Verify MACD calculation succeeded
-                if np.isnan(macd[-1]):
-                    logger.error(
-                        f"MACD calculation returned NaN for {ticker} despite sufficient data length {len(data)}")
-                    logger.debug(
-                        f"Close data sample: {data['Close'].tail(3).values}")
-                else:
-                    data['macd'] = macd
-                    data['macd_signal'] = macd_signal
-                    data['macd_hist'] = macd_hist
-
-                    macd_value = float(macd[-1])
-                    macd_signal_value = float(macd_signal[-1])
-                    macd_hist_value = float(macd_hist[-1])
-                    logger.debug(
-                        f"MACD for {ticker}: {macd_value:.4f}, Signal: {macd_signal_value:.4f}, Hist: {macd_hist_value:.4f}")
-            else:
-                logger.warning(
-                    f"Insufficient data for MACD calculation for {ticker}: {len(data)} points (need 26)")
-
-            # Calculate Bollinger Bands
-            if len(data) >= 20 and 'Close' in data.columns:
-                # Clean data before calculation
-                clean_close = data['Close'].ffill()
-
-                # Calculate BB
-                upper, middle, lower = talib.BBANDS(
-                    clean_close.values, timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
-
-                if np.isnan(upper[-1]) or np.isnan(middle[-1]) or np.isnan(lower[-1]):
-                    logger.warning(
-                        f"Bollinger Bands calculation returned NaN for {ticker}")
-                else:
-                    data['bb_upper'] = upper
-                    data['bb_middle'] = middle
-                    data['bb_lower'] = lower
-
-                    # Calculate Bollinger Band width (normalized)
-                    bb_width = (upper[-1] - lower[-1]) / middle[-1]
-                    logger.debug(f"BB Width for {ticker}: {bb_width:.4f}")
-            else:
-                logger.warning(
-                    f"Insufficient data for Bollinger Bands calculation for {ticker}: {len(data)} points (need 20)")
-
-            # Calculate ADX (Average Directional Index) for trend strength
-            if len(data) >= 14 and all(col in data.columns for col in ['High', 'Low', 'Close']):
-                # Clean data before calculation
-                for col in ['High', 'Low', 'Close']:
-                    data[col] = data[col].ffill()
-
-                # Calculate ADX
-                adx_values = talib.ADX(data['High'].values, data['Low'].values,
-                                       data['Close'].values, timeperiod=14)
-
-                if np.isnan(adx_values[-1]):
-                    logger.warning(
-                        f"ADX calculation returned NaN for {ticker}")
-                else:
-                    adx = float(adx_values[-1])
-                    logger.debug(f"ADX for {ticker}: {adx:.2f}")
-            else:
-                logger.warning(
-                    f"Insufficient data for ADX calculation for {ticker}")
-
-        except Exception as e:
-            logger.error(
-                f"Error calculating advanced indicators for {ticker}: {str(e)}")
-            logger.exception(e)
-
-        # Get start and end dates
-        start_date = data.index[0].strftime(
-            "%Y-%m-%d") if hasattr(data.index[0], 'strftime') else str(data.index[0])
-        end_date = data.index[-1].strftime("%Y-%m-%d") if hasattr(
-            data.index[-1], 'strftime') else str(data.index[-1])
+            adx = float(adx.iloc[-1])
+        else:
+            error_msg = f"Insufficient data for ADX calculation for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         # Return formatted data with enhanced indicators
         result = {
@@ -448,10 +335,10 @@ def format_stock_data_for_analysis(historical_data, ticker, date_str, min_data_p
             "volume": volume,
             "avg_volume": avg_volume,
             "volume_change": volume_change,
-            "ema9": ema9,
-            "ema21": ema21,
-            "sma50": sma50,
-            "sma200": sma200,
+            "ema9": ema9_value,
+            "ema21": ema21_value,
+            "sma50": sma50_value,
+            "sma200": sma200_value,
             "ema9_dist": ema9_dist,
             "ema21_dist": ema21_dist,
             "sma50_dist": sma50_dist,
@@ -469,28 +356,17 @@ def format_stock_data_for_analysis(historical_data, ticker, date_str, min_data_p
             "has_pattern_data": len(data) >= min_data_points
         }
 
-        # Check for important missing data
-        if macd_value is None:
-            result["macd_available"] = False
-            result["macd_error"] = f"Insufficient data for MACD ({len(data)} points)"
-        else:
-            result["macd_available"] = True
-
         # Log summary of calculation results
         logger.info(f"Formatted data for {ticker} - Price: {current_price:.2f}, Change: {percent_change:.2f}%, " +
-                    f"ATR: {atr:.4f} ({atr_percent:.2f}%), RSI: {rsi:.1f}" +
-                    (f", MACD: {macd_value:.4f}" if macd_value is not None else ", MACD: unavailable"))
+                    f"ATR: {atr:.4f} ({atr_percent:.2f}%), RSI: {rsi:.1f}, MACD: {macd_value:.4f}")
 
         return result
 
     except Exception as e:
-        logger.error(f"Error formatting stock data for {ticker}: {e}")
+        error_msg = f"Error formatting stock data for {ticker}: {e}. Application stopped for debugging."
+        logger.error(error_msg)
         logger.exception(e)
-        return {
-            "ticker": ticker,
-            "date": date_str,
-            "error": str(e)
-        }
+        raise ValueError(error_msg)
 
 
 def process_options_data(options_data):
@@ -1108,3 +984,123 @@ def format_credit_spread_data(data, ticker, date=None, include_intraday=False):
             )
 
     return result
+
+
+def check_for_fallbacks(data, ticker, strict_mode=True):
+    """
+    Check if any critical data points are using fallback values
+
+    Parameters:
+    - data: Dictionary with the formatted data
+    - ticker: Stock symbol
+    - strict_mode: If True, raise errors when fallbacks are detected
+
+    Returns:
+    - Dictionary with fallback information
+
+    Raises:
+    - ValueError: If strict_mode is True and fallbacks are detected
+    """
+    fallbacks = {
+        'detected': False,
+        'missing_indicators': [],
+        'fallback_values': {}
+    }
+
+    # Check for NaN or None values in critical indicators
+    critical_indicators = [
+        'macd', 'macd_signal', 'macd_hist',
+        'rsi', 'adx', 'atr',
+        'sma50', 'sma200',
+        'ema9', 'ema21'
+    ]
+
+    for indicator in critical_indicators:
+        if indicator not in data or data[indicator] is None or (hasattr(data[indicator], 'dtype') and np.isnan(data[indicator])):
+            fallbacks['detected'] = True
+            fallbacks['missing_indicators'].append(indicator)
+            fallbacks['fallback_values'][indicator] = None
+
+            # Log and raise error in strict mode
+            error_msg = f"Missing critical indicator {indicator} for {ticker}. Application stopped for debugging."
+            logger.error(error_msg)
+
+            if strict_mode:
+                raise ValueError(error_msg)
+
+    # Check for placeholder values that might indicate fallbacks
+    if 'macd' in data and data['macd'] == 0 and 'macd_signal' in data and data['macd_signal'] == 0:
+        # This pattern of both MACD and signal being exactly 0 is highly unlikely in real data
+        fallbacks['detected'] = True
+        fallbacks['missing_indicators'].append('macd (suspect fallback)')
+        fallbacks['fallback_values']['macd'] = 0
+
+        error_msg = f"Suspected fallback value detected for MACD ({data['macd']}) for {ticker}. Application stopped for debugging."
+        logger.error(error_msg)
+
+        if strict_mode:
+            raise ValueError(error_msg)
+
+    # Check for unreasonable volatility values
+    if 'atr_percent' in data and data['atr_percent'] == 0:
+        # ATR% is never exactly 0 in real data
+        fallbacks['detected'] = True
+        fallbacks['missing_indicators'].append(
+            'atr_percent (suspect fallback)')
+        fallbacks['fallback_values']['atr_percent'] = 0
+
+        error_msg = f"Suspected fallback value detected for ATR% ({data['atr_percent']}) for {ticker}. Application stopped for debugging."
+        logger.error(error_msg)
+
+        if strict_mode:
+            raise ValueError(error_msg)
+
+    # If fallbacks were detected but we're not in strict mode, log a warning
+    if fallbacks['detected'] and not strict_mode:
+        logger.warning(
+            f"Fallbacks detected for {ticker}: {', '.join(fallbacks['missing_indicators'])}")
+
+    return fallbacks
+
+
+def enforce_strict_validation(func):
+    """
+    Decorator to enforce strict validation on data processing functions.
+    Will check the returned data for fallbacks and raise ValueError if found.
+
+    Parameters:
+    - func: The function to decorate
+
+    Returns:
+    - Decorated function that validates no fallbacks are present
+
+    Example:
+    @enforce_strict_validation
+    def process_data(data, ticker):
+        # Process data
+        return processed_data
+    """
+    import functools
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        # Get the ticker parameter - could be a positional or keyword argument
+        ticker = None
+        # Check if ticker is a keyword arg
+        if 'ticker' in kwargs:
+            ticker = kwargs['ticker']
+        # If not found, try to get it from the positional args
+        # Most data processing functions take ticker as the second argument after data
+        elif len(args) >= 2 and isinstance(args[1], str):
+            ticker = args[1]
+
+        # Call the original function
+        result = func(*args, **kwargs)
+
+        # If the result is a dictionary and we have a ticker, check for fallbacks
+        if isinstance(result, dict) and ticker:
+            check_for_fallbacks(result, ticker, strict_mode=True)
+
+        return result
+
+    return wrapper

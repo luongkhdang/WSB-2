@@ -1,8 +1,8 @@
 {
   "ticker": "BND",
   "pretraining_period": "2025-01-24 to 2025-01-24",
-  "last_update": "2025-03-26 19:29:23",
-  "analyses_count": 5,
+  "last_update": "2025-03-26 21:53:05",
+  "analyses_count": 2,
   "accuracy_rate": 0,
   "memory_context": {
     "ticker": "BND",
@@ -44,57 +44,63 @@
       }
     },
     "volatility_history": [
-      {
-        "date": "2025-03-20",
-        "iv": 0.2363280763375528,
-        "hv": 0.18906246107004224,
-        "adjustment": "no change"
-      },
-      {
-        "date": "2025-03-21",
-        "iv": 0.23627923256141434,
-        "hv": 0.18902338604913146,
-        "adjustment": "no change"
-      },
-      {
-        "date": "2025-03-24",
-        "iv": 0.20656998329862755,
-        "hv": 0.16525598663890204,
-        "adjustment": "no change"
-      },
       0
     ],
     "spread_performance": {
       "bull_put": {
         "wins": 0,
-        "total": 3,
-        "win_rate": 0.0
+        "total": 0,
+        "win_rate": 0
       },
       "bear_call": {
+        "wins": 0,
+        "total": 1,
+        "win_rate": 0
+      },
+      "iron_condor": {
         "wins": 0,
         "total": 0,
         "win_rate": 0
       },
-      "iron_condor": {
-        "wins": 1,
-        "total": 1,
-        "win_rate": 1.0
+      "directional": {
+        "long_call": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "long_put": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "call_debit_spread": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "put_debit_spread": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        }
       }
     },
     "weight_adjustments": [
       0
     ],
     "multi_timeframe": {
-      "daily_trend": "neutral",
+      "daily_trend": "bearish",
       "weekly_trend": "neutral"
     },
     "secret": {
-      "baseline_trend": "neutral",
-      "trend_confidence": 60,
-      "volatility_anchor": 1.0,
+      "baseline_trend": "bearish",
+      "trend_confidence": 64.15744025488269,
+      "volatility_anchor": 0.4116492638228041,
       "core_levels": {
         "support": [],
-        "resistance": []
+        "resistance": [
+          73.0
+        ]
       }
     }
   },

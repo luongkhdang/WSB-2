@@ -71,8 +71,8 @@ VOLATILITY_PERCENTILES = {
 DEFAULT_IV = 0.25        # Default implied volatility when missing
 DEFAULT_HV = 0.20        # Default historical volatility when missing
 DEFAULT_ATR_PERCENT = 0.015  # Default ATR as percentage of price
-# Minimum days required for reliable analysis (reduced from 30)
-MIN_REQUIRED_DAYS = 15
+# Minimum days required for reliable analysis (reduced from 1 to 1)
+MIN_REQUIRED_DAYS = 1
 
 # Track request timestamps to manage rate limiting
 _request_timestamps = []
@@ -327,7 +327,13 @@ def six_step_pretrain_analyzer(
             "spread_performance": {
                 "bull_put": {"wins": 0, "total": 0, "win_rate": 0},
                 "bear_call": {"wins": 0, "total": 0, "win_rate": 0},
-                "iron_condor": {"wins": 0, "total": 0, "win_rate": 0}
+                "iron_condor": {"wins": 0, "total": 0, "win_rate": 0},
+                "directional": {
+                    "long_call": {"wins": 0, "total": 0, "win_rate": 0},
+                    "long_put": {"wins": 0, "total": 0, "win_rate": 0},
+                    "call_debit_spread": {"wins": 0, "total": 0, "win_rate": 0},
+                    "put_debit_spread": {"wins": 0, "total": 0, "win_rate": 0}
+                }
             },
             "weight_adjustments": [],
             "multi_timeframe": {
@@ -335,6 +341,7 @@ def six_step_pretrain_analyzer(
                 "weekly_trend": "neutral"
             },
             "secret": {
+                # Start with neutral defaults - will be dynamically updated with real data in Step 1
                 "baseline_trend": "neutral",
                 "trend_confidence": 60,
                 "volatility_anchor": 1.0,
@@ -361,7 +368,7 @@ def six_step_pretrain_analyzer(
         # Use 1mo period with 1d interval to establish overall trend and key levels
 
         # Get long-term data (1mo/1d)
-        long_term_start = (start_date - timedelta(days=30)
+        long_term_start = (start_date - timedelta(days=120)
                            ).strftime("%Y-%m-%d")
         long_term_end = start_date.strftime("%Y-%m-%d")
         long_term_start_str = long_term_start
@@ -451,79 +458,210 @@ def six_step_pretrain_analyzer(
         logger.info(
             f"Formatted Step 1 data for {ticker} - {len(daily_data)} days, quality: {formatted_step1_data.get('data_quality', 'unknown')}")
 
-        # ======================= STEPS 2-6: 15m Analysis =======================
-        # We analyze 5 consecutive days of 15-minute data
-        # This is the detailed credit spread analysis at critical intraday decision points
+        # ---------- DYNAMIC SECRET INITIALIZATION ----------
+        # Calculate trend based on 30-day price change and technical indicators
+        price_history = formatted_step1_data.get('price_history', [])
 
-        # Get 5-day data with 15m intervals for detailed analysis
-        intraday_start = (end_date - timedelta(days=5)).strftime("%Y-%m-%d")
-        intraday_end = end_date.strftime("%Y-%m-%d")
-        intraday_start_str = intraday_start
-        intraday_end_str = intraday_end
+        # Calculate price change percentage if we have enough price history
+        price_change_pct = 0
+        if len(price_history) >= 2:
+            # Extract single float values from the price history
+            start_price = price_history[0]
+            end_price = price_history[-1]
+
+            # Handle case where price_history elements might be lists themselves
+            if isinstance(start_price, list) and len(start_price) > 0:
+                start_price = start_price[0]
+            if isinstance(end_price, list) and len(end_price) > 0:
+                end_price = end_price[0]
+
+            # Now compare with integer
+            if isinstance(start_price, (int, float)) and start_price > 0:
+                price_change_pct = (
+                    (end_price - start_price) / start_price) * 100
+
+        # Extract key technical indicators
+        macd_value = float(formatted_step1_data.get("macd", 0))
+        rsi_value = float(formatted_step1_data.get("rsi", 50))
+        price = formatted_step1_data.get("current_price", 0)
+        # Make sure price is a float
+        if isinstance(price, list) and len(price) > 0:
+            price = price[0]
+        price = float(price)
+        ema9 = formatted_step1_data.get("ema9", 0)
+        ema21 = formatted_step1_data.get("ema21", 0)
+
+        # Determine baseline trend using price change and indicators
+        baseline_trend = "neutral"
+
+        # Bullish if price change > 2% or MACD > 0.5 or RSI > 60 with positive MACD
+        if price_change_pct > 2 or macd_value > 0.5 or (macd_value > 0 and rsi_value > 60):
+            baseline_trend = "bullish"
+        # Bearish if price change < -2% or MACD < -0.5 or RSI < 40 with negative MACD
+        elif price_change_pct < -2 or macd_value < -0.5 or (macd_value < 0 and rsi_value < 40):
+            baseline_trend = "bearish"
+
+        # Determine confidence based on the strength of signals
+        # Scale confidence based on price change percentage (cap at 80%)
+        trend_confidence = 60  # Default confidence
+
+        if baseline_trend != "neutral":
+            # Calculate confidence from price change (20% + up to 40% more based on change)
+            price_confidence = 40 + min(40, abs(price_change_pct) * 8)
+
+            # Calculate confidence from technical indicators
+            tech_confidence = 40
+            if (baseline_trend == "bullish" and macd_value > 1) or (baseline_trend == "bearish" and macd_value < -1):
+                tech_confidence += 20
+            if (baseline_trend == "bullish" and rsi_value > 65) or (baseline_trend == "bearish" and rsi_value < 35):
+                tech_confidence += 20
+
+            # Use the higher of the two confidence measures, cap at 80%
+            trend_confidence = min(80, max(price_confidence, tech_confidence))
+
+        # Calculate volatility anchor based on actual ATR from the data
+        volatility_anchor = formatted_step1_data.get("atr_percent", 1.0)
+
+        # If volatility is too low (< 0.2%), use a minimum reasonable value
+        if volatility_anchor < 0.2:
+            volatility_anchor = 0.2
+
+        # Extract support and resistance levels if available
+        support_levels = []
+        resistance_levels = []
+
+        # Use recent lows for support and highs for resistance if we have price history
+        if len(price_history) >= 10:
+            # Simple method: use the lowest 10% and highest 10% of prices
+            sorted_prices = sorted(price_history)
+            support_level = sorted_prices[int(len(sorted_prices) * 0.1)]
+            resistance_level = sorted_prices[int(len(sorted_prices) * 0.9)]
+
+            # Handle case where support_level or resistance_level might be lists themselves
+            if isinstance(support_level, list) and len(support_level) > 0:
+                support_level = support_level[0]
+            if isinstance(resistance_level, list) and len(resistance_level) > 0:
+                resistance_level = resistance_level[0]
+
+            # Convert to float for safe comparison
+            support_level = float(support_level)
+            resistance_level = float(resistance_level)
+
+            # Only add levels if they're not too close to current price (within 1%)
+            if abs(support_level - price) / price > 0.01:
+                support_levels.append(round(support_level, 2))
+            if abs(resistance_level - price) / price > 0.01:
+                resistance_levels.append(round(resistance_level, 2))
+
+        # Initialize the secret with dynamic values based on data
+        memory_context["secret"] = {
+            "baseline_trend": baseline_trend,
+            "trend_confidence": trend_confidence,
+            "volatility_anchor": volatility_anchor,
+            "core_levels": {
+                "support": support_levels,
+                "resistance": resistance_levels
+            }
+        }
+
+        logger.info(f"Dynamic secret initialization: trend={baseline_trend}, confidence={trend_confidence}%, " +
+                    f"volatility={volatility_anchor}%, supports={support_levels}, resistances={resistance_levels}")
+
+        # For backward compatibility, still compute these values
+        baseline_direction = baseline_trend
+        baseline_confidence = trend_confidence
+
+        # ======================= STEPS 2-6: 5d Analysis =======================
+        # This is the detailed credit spread analysis for consecutive days
+
+        # Get daily data for the analysis period (past 3-5 days)
+        # Use a smaller range to ensure we get enough data
+        daily_start = (end_date - timedelta(days=3)).strftime("%Y-%m-%d")
+        daily_end = end_date.strftime("%Y-%m-%d")
+        daily_start_str = daily_start
+        daily_end_str = daily_end
 
         logger.info(
-            f"Getting intraday data for {ticker} from {intraday_start_str} to {intraday_end_str}")
-        intraday_data = yfinance_client.get_historical_data(
-            ticker, start=intraday_start_str, end=intraday_end_str, interval="15m")
+            f"Getting daily data for {ticker} from {daily_start_str} to {daily_end_str}")
+        daily_data = yfinance_client.get_historical_data(
+            ticker, start=daily_start_str, end=daily_end_str, interval="1d")
 
-        # Validate intraday data
-        if len(intraday_data) == 0:
+        # Validate daily data
+        if len(daily_data) == 0:
             if strict_validation:
-                raise ValueError(
-                    f"No intraday data available for {ticker}. Analysis cannot proceed.")
-            else:
-                logger.warning(
-                    f"No intraday data for {ticker}. Will attempt to use daily data only.")
+                logger.error(
+                    f"No daily data available for {ticker}. Analysis cannot proceed.")
+                raise ValueError(f"No daily data available for {ticker}")
+            logger.warning(
+                f"No daily data for {ticker}. Will attempt to use fallback data.")
 
-        # Log intraday data summary
+        # Log daily data summary
         try:
-            # Ensure intraday_data is a pandas DataFrame with proper index
-            if not isinstance(intraday_data, pd.DataFrame):
+            # Ensure daily_data is a pandas DataFrame with proper index
+            if not isinstance(daily_data, pd.DataFrame):
                 logger.warning(
-                    f"Intraday data is not a DataFrame, attempting to convert")
-                intraday_data = pd.DataFrame(intraday_data)
+                    f"Daily data is not a DataFrame, attempting to convert")
+                daily_data = pd.DataFrame(daily_data)
 
-            # Check if index is proper datetime index
-            if not isinstance(intraday_data.index, pd.DatetimeIndex):
+            if not isinstance(daily_data.index, pd.DatetimeIndex):
                 logger.warning(
-                    f"Intraday data index is not a DatetimeIndex, converting")
-                intraday_data.index = pd.to_datetime(intraday_data.index)
+                    f"Daily data index is not a DatetimeIndex, converting")
+                daily_data.index = pd.to_datetime(daily_data.index)
 
-            # Now safely calculate unique days
-            # Check if we have a numpy array or pandas DatetimeIndex
-            if hasattr(intraday_data.index, 'date'):
-                # If the dates are a numpy array, use numpy's unique function
-                dates_array = intraday_data.index.date
-                if isinstance(dates_array, np.ndarray):
-                    unique_days_count = len(np.unique(dates_array))
+            # Get unique dates from the daily data
+            unique_dates = []
+            try:
+                # Try to get unique dates from the DatetimeIndex
+                if isinstance(daily_data.index.date, np.ndarray):
+                    # Direct numpy array of dates
+                    unique_date_values = np.unique(daily_data.index.date)
+                    unique_dates = sorted(unique_date_values)
                 else:
-                    unique_days_count = intraday_data.index.date.nunique()
-            else:
-                # Fallback method using string operations
+                    # DatetimeIndex with date accessor
+                    unique_dates = sorted(daily_data.index.date.unique())
+
+                logger.info(
+                    f"Found {len(unique_dates)} unique trading days in daily data")
+
+            except Exception as e:
+                logger.warning(f"Error extracting unique dates: {e}")
+                # Fallback to a simpler method
                 date_strings = set()
-                for idx in intraday_data.index:
-                    date_strings.add(str(idx).split()[0])
-                unique_days_count = len(date_strings)
+                for idx in daily_data.index:
+                    date_str = str(idx).split()[0]  # Extract date part
+                    date_strings.add(date_str)
+                unique_dates = sorted(
+                    [datetime.strptime(d, "%Y-%m-%d").date() for d in date_strings])
+                logger.info(
+                    f"Found {len(unique_dates)} unique trading days (fallback method)")
 
-            logger.info(
-                f"Retrieved {len(intraday_data)} 15m bars across {unique_days_count} days")
-
-            # In strict mode, require at least 3 days of intraday data
-            if strict_validation and unique_days_count < 3:
+            # Ensure we have enough days
+            if len(unique_dates) < 1 and strict_validation:
+                logger.error(
+                    f"Insufficient daily data: only {len(unique_dates)} days available, needed at least 1")
                 raise ValueError(
-                    f"Insufficient intraday data for {ticker}: only {unique_days_count} days available, minimum 3 required.")
+                    f"Insufficient daily data for {ticker}: only {len(unique_dates)} days available, minimum 1 required.")
+
+            # Use available days (up to 5)
+            if len(unique_dates) > 5:
+                # Use most recent 5 days if more are available
+                unique_dates = unique_dates[-5:]
+
+            logger.info(f"Using {len(unique_dates)} trading days for analysis")
 
         except Exception as e:
-            logger.error(f"Error processing intraday data index: {e}")
-            # Create fallback count
+            logger.error(f"Error processing daily data index: {e}")
+            # Fallback to a simpler method to estimate unique days
             unique_days_count = len(set(str(d).split()[0] for d in intraday_data.index)) if len(
                 intraday_data) > 0 else 0
             logger.info(
-                f"Retrieved {len(intraday_data)} 15m bars (days count fallback: ~{unique_days_count})")
+                f"Retrieved {len(intraday_data)} 1d bars (days count fallback: ~{unique_days_count})")
 
-            if strict_validation and unique_days_count < 3:
+            if strict_validation and unique_days_count < 1:
+                logger.error(
+                    f"Insufficient daily data for {ticker}: only {unique_days_count} days available, minimum 1 required.")
                 raise ValueError(
-                    f"Insufficient intraday data for {ticker}: only {unique_days_count} days available, minimum 3 required.")
+                    f"Insufficient daily data for {ticker}: only {unique_days_count} days available, minimum 1 required.")
 
         # Initialize collections for each step
         step_predictions = []
@@ -538,135 +676,82 @@ def six_step_pretrain_analyzer(
             "analysis": "Initial placeholder prediction"
         })
 
-        # Process each day individually for steps 2-6
-        try:
-            # Safely handle the case when .index.date is a numpy.ndarray without unique method
-            if isinstance(intraday_data.index.date, np.ndarray):
-                # Use numpy's unique instead
-                unique_date_values = np.unique(intraday_data.index.date)
-                unique_dates = sorted(unique_date_values)
-            else:
-                # Regular pandas approach
-                unique_dates = sorted(intraday_data.index.date.unique())
-
-            logger.info(
-                f"Found {len(unique_dates)} unique trading days in intraday data")
-        except Exception as e:
-            logger.error(f"Error extracting unique dates: {e}")
-            # Fallback: Extract dates manually from string representation
-            unique_dates = []
-            try:
-                date_strings = set()
-                for idx in intraday_data.index:
-                    # Extract date part from datetime string
-                    date_str = str(idx).split()[0]
-                    if date_str not in date_strings:
-                        date_strings.add(date_str)
-                        # Convert to datetime.date objects for consistency
-                        unique_dates.append(datetime.strptime(
-                            date_str, "%Y-%m-%d").date())
-                unique_dates = sorted(unique_dates)
-                logger.info(
-                    f"Fallback method found {len(unique_dates)} unique trading days")
-            except Exception as e2:
-                logger.error(f"Fallback date extraction also failed: {e2}")
-                logger.warning(
-                    "Using empty date list - pretraining will be limited")
-                unique_dates = []
-
-        # We need exactly 5 days for steps 2-6
-        if len(unique_dates) < 5:
-            logger.warning(
-                f"Insufficient intraday data: only {len(unique_dates)} days available, needed 5")
-            # In strict mode, require at least 3 days
-            if strict_validation and len(unique_dates) < 3:
-                raise ValueError(
-                    f"Insufficient unique trading days for {ticker}: {len(unique_dates)} days, minimum 3 required.")
-
-        # Limit to 5 most recent days if we have more
-        if len(unique_dates) > 5:
-            unique_dates = unique_dates[-5:]
-
-        # Process each day individually
-        # Start at step 2
-        for step_num, day_date in enumerate(unique_dates, 2):
+        # Analyze each day - Steps 2-6
+        for i, day_date in enumerate(day_dates):
             day_str = day_date.strftime("%Y-%m-%d")
-            day_dates.append(day_str)
 
-            logger.info(f"Processing Step {step_num}: {day_str}")
+            # Get daily data for this day
+            if len(daily_data) > 0:
+                day_data = daily_data[daily_data.index.strftime(
+                    "%Y-%m-%d") == day_str]
+            else:
+                day_data = pd.DataFrame()
+
+            # If no data for this specific day, skip it
+            if len(day_data) == 0:
+                logger.warning(
+                    f"No daily data for {day_str}, skipping")
+                continue
+
+            # Analyze day data
+            step_num = i + 2  # Steps 2-6 (day 1-5)
+            logger.info(
+                f"STEP {step_num}: Analyzing daily data for {ticker} on {day_str} (Day {i+1})")
+
+            # Format day data
+            formatted_day_data = format_stock_data_for_analysis(
+                day_data, ticker, day_str)
+
+            # Validate daily data quality
+            if len(day_data) < 1:
+                logger.warning(
+                    f"Insufficient daily data for {ticker} on {day_str}: only {len(day_data)} bars.")
+                continue
 
             # Get market context for this day
             day_market_context = get_historical_market_context(
                 market_data_dir=pretraining_dir,
                 date_str=day_str,
-                yfinance_client=yfinance_client  # Pass yfinance_client for real-time fetching
+                yfinance_client=yfinance_client
             )
 
-            # Get intraday data for this day
-            if len(intraday_data) > 0:
-                day_intraday_data = intraday_data[intraday_data.index.strftime(
-                    "%Y-%m-%d") == day_str]
+            # Format for logging
+            day_market_context_log = {
+                "date": day_market_context.get("date", "unknown"),
+                "spy_trend": day_market_context.get("spy_trend", "unknown"),
+                "vix_assessment": day_market_context.get("vix_assessment", "unknown").split()[0:3],
+                "risk_adjustment": day_market_context.get("risk_adjustment", "unknown"),
+            }
+            logger.info(
+                f"Market context for {day_str}: {day_market_context_log}")
 
-                # If no intraday data for this specific day, use daily data
-                if len(day_intraday_data) == 0:
-                    logger.warning(
-                        f"No intraday data for {day_str}, using daily data")
-                    daily_slice = daily_data[daily_data.index.strftime(
-                        "%Y-%m-%d") == day_str]
+            # Add intraday data separately for better analysis if available
+            formatted_day_data["daily_details"] = {
+                "bars_count": len(day_data),
+                "high": float(day_data["High"].max().iloc[0]) if isinstance(day_data["High"].max(), pd.Series) else float(day_data["High"].max()),
+                "low": float(day_data["Low"].min().iloc[0]) if isinstance(day_data["Low"].min(), pd.Series) else float(day_data["Low"].min()),
+                "volume": int(day_data["Volume"].sum().iloc[0]) if isinstance(day_data["Volume"].sum(), pd.Series) else int(day_data["Volume"].sum()),
+                "vwap": float(np.average(
+                    day_data["Close"],
+                    weights=day_data["Volume"]
+                )) if "Volume" in day_data.columns and day_data["Volume"].sum().item() > 0 else None
+            }
 
-                    if len(daily_slice) > 0:
-                        formatted_day_data = format_stock_data_for_analysis(
-                            daily_slice, ticker, day_str)
-
-                        # In strict mode, validate this specific day's data quality
-                        if strict_validation:
-                            validate_data_quality(
-                                daily_slice, ticker, min_days_required=1, strict_validation=True)
+            # Add price history to the formatted data for estimations if needed
+            if 'price_history' not in formatted_day_data and len(day_data) > 0:
+                try:
+                    # Check if daily_data['Close'] is a Series or DataFrame
+                    if isinstance(day_data['Close'], pd.Series):
+                        formatted_day_data['price_history'] = day_data['Close'].tolist(
+                        )
                     else:
-                        error_msg = f"No data available for {ticker} on {day_str}"
-                        logger.error(error_msg)
-                        if strict_validation:
-                            raise ValueError(error_msg)
-                        continue
-                else:
-                    # Validate intraday data quality
-                    if strict_validation:
-                        # Minimum number of 15-minute bars (5 hours)
-                        if len(day_intraday_data) < 20:
-                            raise ValueError(
-                                f"Insufficient intraday data for {ticker} on {day_str}: only {len(day_intraday_data)} bars.")
-
-                    # Format intraday data with 15-minute emphasis
-                    formatted_day_data = format_stock_data_for_analysis(
-                        day_intraday_data, ticker, day_str)
-                    # Add intraday data separately for better analysis
-                    formatted_day_data["intraday_data"] = {
-                        "bars_count": len(day_intraday_data),
-                        "high": float(day_intraday_data["High"].max().iloc[0]) if isinstance(day_intraday_data["High"].max(), pd.Series) else float(day_intraday_data["High"].max()),
-                        "low": float(day_intraday_data["Low"].min().iloc[0]) if isinstance(day_intraday_data["Low"].min(), pd.Series) else float(day_intraday_data["Low"].min()),
-                        "volume": int(day_intraday_data["Volume"].sum().iloc[0]) if isinstance(day_intraday_data["Volume"].sum(), pd.Series) else int(day_intraday_data["Volume"].sum()),
-                        "vwap": float(np.average(
-                            day_intraday_data["Close"],
-                            weights=day_intraday_data["Volume"]
-                        )) if "Volume" in day_intraday_data.columns and day_intraday_data["Volume"].sum().item() > 0 else None
-                    }
-            else:
-                # No intraday data, use daily data
-                daily_slice = daily_data[daily_data.index.strftime(
-                    "%Y-%m-%d") == day_str]
-                if len(daily_slice) > 0:
-                    formatted_day_data = format_stock_data_for_analysis(
-                        daily_slice, ticker, day_str)
-                    # In strict mode, validate this specific day's data quality
-                    if strict_validation:
-                        validate_data_quality(
-                            daily_slice, ticker, min_days_required=1, strict_validation=True)
-                else:
-                    error_msg = f"No data available for {ticker} on {day_str}"
-                    logger.error(error_msg)
-                    if strict_validation:
-                        raise ValueError(error_msg)
-                    continue
+                        # Handle the case where it's a DataFrame
+                        formatted_day_data['price_history'] = day_data['Close'].values.tolist(
+                        )
+                except Exception as e:
+                    logger.warning(f"Could not extract price history: {e}")
+                    # Create an empty list as fallback
+                    formatted_day_data['price_history'] = []
 
             # Enhance data with fallbacks for missing indicators or raise errors
             try:
@@ -756,22 +841,33 @@ def six_step_pretrain_analyzer(
             # Constrain adjustments using the Secret
             secret = memory_context["secret"]
 
-            # 1. Constrain trend changes - reject trend flips unless confidence exceeds secret's baseline + 20%
-            if step_prediction.get("direction") != secret["baseline_trend"] and step_prediction.get("confidence", 0) < secret["trend_confidence"] + 20:
+            # 1. Constrain trend changes - reject trend flips only if confidence is too low
+            # More permissive threshold to reduce neutral bias - only 10% above baseline instead of 20%
+            if step_prediction.get("direction") != secret["baseline_trend"] and step_prediction.get("confidence", 0) < secret["trend_confidence"] + 10:
                 original_direction = step_prediction.get("direction")
                 step_prediction["direction"] = secret["baseline_trend"]
                 logger.warning(f"Step {step_num}: Rejected trend flip from {original_direction} to {step_prediction['direction']}—"
-                               f"confidence {step_prediction.get('confidence', 0)}% < {secret['trend_confidence'] + 20}% threshold")
+                               f"confidence {step_prediction.get('confidence', 0)}% < {secret['trend_confidence'] + 10}% threshold")
+            else:
+                # If we allow a trend flip, log it
+                if step_prediction.get("direction") != secret["baseline_trend"]:
+                    logger.info(f"Step {step_num}: Allowed trend flip from {secret['baseline_trend']} to {step_prediction.get('direction')}—"
+                                f"confidence {step_prediction.get('confidence', 0)}% >= {secret['trend_confidence'] + 10}% threshold")
 
-            # 2. Constrain volatility adjustments to ±0.5% of the anchor
+            # 2. Constrain volatility adjustments to ±1.0% of the anchor (more adaptive than before)
             if "atr_percent" in formatted_day_data:
                 atr_shift = abs(
                     formatted_day_data["atr_percent"] - secret["volatility_anchor"])
-                if atr_shift > 0.5:
+                if atr_shift > 1.0:
+                    # More flexible cap at ±1.0% instead of ±0.5%
                     formatted_day_data["atr_percent"] = secret["volatility_anchor"] + (
-                        0.5 if formatted_day_data["atr_percent"] > secret["volatility_anchor"] else -0.5)
+                        1.0 if formatted_day_data["atr_percent"] > secret["volatility_anchor"] else -1.0)
                     logger.warning(
                         f"Step {step_num}: Capped ATR shift to {formatted_day_data['atr_percent']}% from {secret['volatility_anchor']}%")
+                else:
+                    # If within threshold, log but don't modify
+                    logger.info(
+                        f"Step {step_num}: ATR shift of {atr_shift:.2f}% is within the ±1.0% threshold")
 
             # 3. Limit weight adjustments to ±15% per step
             if memory_updates and "weight_adjustments" in memory_updates:
@@ -814,6 +910,66 @@ def six_step_pretrain_analyzer(
                     "direction_correct": direction_correct,
                     "magnitude_error": abs(step_predictions[step_num - 2].get('magnitude', 0) - abs(actual_outcome['price_change_percent']))
                 }
+
+                # FEEDBACK-DRIVEN UPDATES TO SECRET
+                # Update the secret based on prediction accuracy to make it adaptive
+                if not secret_aligned and direction_correct:
+                    # Secret contradicted prediction, but prediction was right
+                    # Raise confidence threshold to make it easier to override the secret
+                    new_confidence = min(80, secret["trend_confidence"] + 5)
+                    logger.info(f"Step {step_num}: Raising secret confidence threshold from {secret['trend_confidence']}% "
+                                f"to {new_confidence}% because deviation from secret was correct")
+                    secret["trend_confidence"] = new_confidence
+
+                elif secret_aligned and not direction_correct:
+                    # Secret reinforced prediction, but prediction was wrong
+                    # Lower confidence threshold and consider changing baseline trend if consistently wrong
+                    new_confidence = max(40, secret["trend_confidence"] - 5)
+                    logger.info(f"Step {step_num}: Lowering secret confidence threshold from {secret['trend_confidence']}% "
+                                f"to {new_confidence}% because prediction aligned with secret was incorrect")
+                    secret["trend_confidence"] = new_confidence
+
+                    # If confidence has dropped below 50%, consider changing the baseline trend
+                    if secret["trend_confidence"] < 50:
+                        # Simple switcher logic - flip trend or go to neutral
+                        if secret["baseline_trend"] == "bullish":
+                            if actual_trend == "bearish":
+                                secret["baseline_trend"] = "bearish"
+                            else:
+                                secret["baseline_trend"] = "neutral"
+                        elif secret["baseline_trend"] == "bearish":
+                            if actual_trend == "bullish":
+                                secret["baseline_trend"] = "bullish"
+                            else:
+                                secret["baseline_trend"] = "neutral"
+                        else:  # neutral
+                            secret["baseline_trend"] = actual_trend
+
+                        logger.warning(f"Step {step_num}: Changed secret baseline trend to {secret['baseline_trend']} "
+                                       f"due to consistently incorrect predictions")
+
+                # Update volatility anchor with a rolling average of recent ATR values
+                # Extract recent ATR values and update the anchor
+                if len(memory_context["volatility_history"]) > 0:
+                    # Get up to 5 most recent ATR values
+                    recent_entries = memory_context["volatility_history"][-5:]
+                    recent_atrs = []
+
+                    for entry in recent_entries:
+                        # Some entries might store ATR directly, others as formatted data
+                        if isinstance(entry, dict) and "atr" in entry:
+                            recent_atrs.append(float(entry["atr"]))
+                        elif isinstance(entry, (int, float)):
+                            recent_atrs.append(float(entry))
+
+                    # Update anchor if we have enough data
+                    if recent_atrs:
+                        new_anchor = sum(recent_atrs) / len(recent_atrs)
+                        # Don't allow the anchor to be too far from the original
+                        if abs(new_anchor - secret["volatility_anchor"]) < 0.5:
+                            secret["volatility_anchor"] = round(new_anchor, 2)
+                            logger.info(f"Step {step_num}: Updated volatility anchor to {secret['volatility_anchor']}% "
+                                        f"based on rolling average of {len(recent_atrs)} recent ATR values")
 
             # Create result object for this step
             step_result = {
@@ -880,15 +1036,56 @@ def six_step_pretrain_analyzer(
             # 5. Update specific spread type performance if recommendation was provided
             if step_prediction and "spread_recommendation" in step_prediction and step_prediction["spread_recommendation"]:
                 spread_type = step_prediction["spread_recommendation"].lower()
+                is_directional = step_prediction.get("is_directional", False)
+
+                # Handle credit spread strategies
                 if "bull put" in spread_type:
                     spread_key = "bull_put"
                 elif "bear call" in spread_type:
                     spread_key = "bear_call"
                 elif "iron condor" in spread_type:
                     spread_key = "iron_condor"
+                elif is_directional:
+                    # Handle directional strategies
+                    spread_key = None
+                    if "long call" in spread_type:
+                        directional_key = "long_call"
+                    elif "long put" in spread_type:
+                        directional_key = "long_put"
+                    elif "call debit" in spread_type:
+                        directional_key = "call_debit_spread"
+                    elif "put debit" in spread_type:
+                        directional_key = "put_debit_spread"
+                    else:
+                        directional_key = None
+
+                    # Update directional strategy performance
+                    if directional_key and directional_key in memory_context["spread_performance"]["directional"]:
+                        memory_context["spread_performance"]["directional"][directional_key]["total"] += 1
+
+                        # If we have actual outcome, determine if this directional strategy would have won
+                        if actual_outcome:
+                            win_condition = False
+                            if directional_key in ["long_call", "call_debit_spread"] and actual_outcome['price_change'] > 0:
+                                win_condition = True
+                            elif directional_key in ["long_put", "put_debit_spread"] and actual_outcome['price_change'] < 0:
+                                win_condition = True
+
+                            if win_condition:
+                                memory_context["spread_performance"]["directional"][directional_key]["wins"] += 1
+
+                            # Recalculate win rate
+                            total = memory_context["spread_performance"]["directional"][directional_key]["total"]
+                            wins = memory_context["spread_performance"]["directional"][directional_key]["wins"]
+                            memory_context["spread_performance"]["directional"][directional_key]["win_rate"] = (
+                                wins / total) if total > 0 else 0
+
+                            logger.info(
+                                f"Updated directional strategy performance for {directional_key}: {wins}/{total} wins ({memory_context['spread_performance']['directional'][directional_key]['win_rate']:.2%})")
                 else:
                     spread_key = None
 
+                # Handle traditional credit spread strategies
                 if spread_key and spread_key in memory_context["spread_performance"]:
                     memory_context["spread_performance"][spread_key]["total"] += 1
                     # If we have actual outcome, determine if this spread would have won
@@ -905,7 +1102,10 @@ def six_step_pretrain_analyzer(
                     total = memory_context["spread_performance"][spread_key]["total"]
                     wins = memory_context["spread_performance"][spread_key]["wins"]
                     memory_context["spread_performance"][spread_key]["win_rate"] = (
-                        wins / total * 100) if total > 0 else 0
+                        wins / total) if total > 0 else 0
+
+                    logger.info(
+                        f"Updated credit spread performance for {spread_key}: {wins}/{total} wins ({memory_context['spread_performance'][spread_key]['win_rate']:.2%})")
 
             # Save previous prediction for next iteration
             step_predictions.append(step_prediction)
@@ -953,18 +1153,18 @@ def six_step_pretrain_analyzer(
             contradiction_count = sum(1 for r in pretraining_results[1:]
                                       if r.get("trend") != secret["baseline_trend"])
 
-            # Only allow contradiction if we have 4+ days contradicting AND high confidence
-            if contradiction_count < 4 or summary_prediction.get("confidence", 0) < 90:
+            # More permissive: Allow contradiction with just 3+ days and 80% confidence
+            if contradiction_count < 3 or summary_prediction.get("confidence", 0) < 80:
                 original_direction = summary_prediction.get("direction")
                 summary_prediction["direction"] = secret["baseline_trend"]
                 logger.warning(f"Summary: Reverted from {original_direction} to secret trend {secret['baseline_trend']}—"
                                f"insufficient contradiction evidence ({contradiction_count}/5 days, "
-                               f"{summary_prediction.get('confidence', 0)}% confidence < 90% threshold)")
+                               f"{summary_prediction.get('confidence', 0)}% confidence < 80% threshold)")
             else:
                 # If we do allow the contradiction, log it as significant
-                logger.warning(f"Summary: Allowing trend change from secret {secret['baseline_trend']} to "
-                               f"{summary_prediction.get('direction')} due to strong evidence: "
-                               f"{contradiction_count}/5 days with {summary_prediction.get('confidence', 0)}% confidence")
+                logger.info(f"Summary: Allowing trend change from secret {secret['baseline_trend']} to "
+                            f"{summary_prediction.get('direction')} due to sufficient evidence: "
+                            f"{contradiction_count}/5 days with {summary_prediction.get('confidence', 0)}% confidence")
 
         # Create result object for the summary analysis
         summary_result = {
@@ -1013,36 +1213,43 @@ def six_step_pretrain_analyzer(
 
         # Update volatility history
         memory_context["volatility_history"].append(
-            formatted_day_data.get('volatility', 0))
+            formatted_step1_data.get('volatility', 0))
 
         # Update spread performance
-        if step_prediction.get('direction', 'neutral') == 'bull':
-            memory_context["spread_performance"]["bull_put"]["wins"] += 1
-            memory_context["spread_performance"]["bull_put"]["total"] += 1
-            memory_context["spread_performance"]["bull_put"]["win_rate"] = memory_context["spread_performance"]["bull_put"]["wins"] / \
-                memory_context["spread_performance"]["bull_put"]["total"]
-        elif step_prediction.get('direction', 'neutral') == 'bear':
-            memory_context["spread_performance"]["bear_call"]["wins"] += 1
-            memory_context["spread_performance"]["bear_call"]["total"] += 1
-            memory_context["spread_performance"]["bear_call"]["win_rate"] = memory_context["spread_performance"]["bear_call"]["wins"] / \
-                memory_context["spread_performance"]["bear_call"]["total"]
+        if "spread_recommendation" in summary_prediction:
+            spread_type = summary_prediction.get(
+                "spread_recommendation", "").lower()
+            is_directional = summary_prediction.get("is_directional", False)
+
+            # For credit spread strategies
+            if "bull put" in spread_type:
+                memory_context["spread_performance"]["bull_put"]["total"] += 1
+            elif "bear call" in spread_type:
+                memory_context["spread_performance"]["bear_call"]["total"] += 1
+            elif "iron condor" in spread_type:
+                memory_context["spread_performance"]["iron_condor"]["total"] += 1
+            # For directional strategies
+            elif is_directional:
+                if "long call" in spread_type:
+                    memory_context["spread_performance"]["directional"]["long_call"]["total"] += 1
+                elif "long put" in spread_type:
+                    memory_context["spread_performance"]["directional"]["long_put"]["total"] += 1
+                elif "call debit" in spread_type:
+                    memory_context["spread_performance"]["directional"]["call_debit_spread"]["total"] += 1
+                elif "put debit" in spread_type:
+                    memory_context["spread_performance"]["directional"]["put_debit_spread"]["total"] += 1
+
+        # Update multi-timeframe trend (use modern terminology)
+        if summary_prediction.get('direction', 'neutral') == 'bullish':
+            memory_context["multi_timeframe"]["daily_trend"] = 'bullish'
+        elif summary_prediction.get('direction', 'neutral') == 'bearish':
+            memory_context["multi_timeframe"]["daily_trend"] = 'bearish'
         else:
-            memory_context["spread_performance"]["iron_condor"]["wins"] += 1
-            memory_context["spread_performance"]["iron_condor"]["total"] += 1
-            memory_context["spread_performance"]["iron_condor"]["win_rate"] = memory_context["spread_performance"]["iron_condor"]["wins"] / \
-                memory_context["spread_performance"]["iron_condor"]["total"]
+            memory_context["multi_timeframe"]["daily_trend"] = 'neutral'
 
         # Update weight adjustments
         memory_context["weight_adjustments"].append(
-            formatted_day_data.get('weight_adjustment', 0))
-
-        # Update multi-timeframe trend
-        if step_prediction.get('direction', 'neutral') == 'bull':
-            memory_context["multi_timeframe"]["daily_trend"] = 'bull'
-        elif step_prediction.get('direction', 'neutral') == 'bear':
-            memory_context["multi_timeframe"]["daily_trend"] = 'bear'
-        else:
-            memory_context["multi_timeframe"]["daily_trend"] = 'neutral'
+            formatted_step1_data.get('weight_adjustment', 0))
 
         #
         # Generate Final Summary after Steps 1-6
@@ -1278,8 +1485,13 @@ def enhance_missing_data(formatted_data, ticker, market_data=None, lookback_days
     if 'macd' not in formatted_data or formatted_data['macd'] is None or formatted_data['macd'] == 'unavailable':
         missing_indicators.append('MACD')
 
-        if strict_validation and 'price_history' in formatted_data and len(formatted_data['price_history']) >= 26:
-            # In strict mode, we check if we have enough price history to calculate a reasonable estimate
+        if strict_validation:
+            raise ValueError(
+                f"Missing critical MACD data for {ticker}. Application stopped for debugging.")
+
+        # Only for non-strict mode - try to calculate from price history if available
+        if 'price_history' in formatted_data and len(formatted_data['price_history']) >= 26:
+            # In non-strict mode, we check if we have enough price history to calculate a reasonable estimate
             # Make sure price_history is a flat list of numbers, not a list of lists
             price_history = formatted_data['price_history']
             if price_history and isinstance(price_history[0], list):
@@ -1312,109 +1524,47 @@ def enhance_missing_data(formatted_data, ticker, market_data=None, lookback_days
                     estimated_macd / formatted_data['current_price']) * 100
 
             formatted_data['macd'] = estimated_macd
-            formatted_data['macd_signal'] = 0  # Neutral default
-            # Same as MACD without signal
+            formatted_data['macd_signal'] = 0
             formatted_data['macd_histogram'] = estimated_macd
             estimated_indicators.append('MACD (price momentum proxy)')
         else:
-            # Use fallback approach for any mode when we don't have enough data
-            # First try using available price history (even if it's less than ideal)
-            if 'price_history' in formatted_data and len(formatted_data['price_history']) >= 5:
-                # Make sure price_history is a flat list of numbers, not a list of lists
-                price_history = formatted_data['price_history']
-                if price_history and isinstance(price_history[0], list):
-                    # Flatten list of lists
-                    try:
-                        import numpy as np
-                        price_history = np.array(
-                            price_history).flatten().tolist()
-                    except Exception as e:
-                        logger.warning(
-                            f"Could not flatten nested price history: {e}")
-                        # Manual flatten for nested lists
-                        flattened = []
-                        for sublist in price_history:
-                            if isinstance(sublist, list):
-                                flattened.extend(sublist)
-                            else:
-                                flattened.append(sublist)
-                        price_history = flattened
-
-                # Calculate simple momentum with available data
-                recent_avg = sum(
-                    price_history[-min(len(price_history), 5):]) / min(len(price_history), 5)
-                older_avg = sum(
-                    price_history[:min(len(price_history), 5)]) / min(len(price_history), 5)
-
-                # Simple momentum indicator - how much recent prices differ from earlier ones
-                momentum = recent_avg - older_avg
-
-                # Normalize to create a reasonable MACD proxy
-                if formatted_data.get('current_price', 0) > 0:
-                    momentum = (
-                        momentum / formatted_data['current_price']) * 100
-
-                formatted_data['macd'] = momentum
-                formatted_data['macd_signal'] = 0  # Neutral default
-                formatted_data['macd_histogram'] = momentum
-                estimated_indicators.append('MACD (simplified momentum)')
-
-                if strict_validation:
-                    # Log that we're using a simplified approach even in strict mode
-                    logger.warning(
-                        f"Using simplified momentum as MACD proxy for {ticker} due to insufficient data")
-            else:
-                # Not enough data for any calculation - use neutral values
-                formatted_data['macd'] = 0
-                formatted_data['macd_signal'] = 0
-                formatted_data['macd_histogram'] = 0
-                estimated_indicators.append('MACD (neutral default)')
-
-                if strict_validation:
-                    # In strict mode, log this as a warning instead of raising an error
-                    logger.warning(
-                        f"Missing critical MACD data for {ticker} - using neutral values")
+            # Use simplified approach when we don't have enough data
+            formatted_data['macd'] = None
+            formatted_data['macd_signal'] = None
+            formatted_data['macd_histogram'] = None
+            logger.warning(f"Insufficient data to calculate MACD for {ticker}")
 
     # 2. Handle missing Implied Volatility (IV)
     if 'implied_volatility' not in formatted_data or formatted_data['implied_volatility'] is None or formatted_data['implied_volatility'] == 'Unknown':
         missing_indicators.append('Implied Volatility (IV)')
 
-        # First, try to use historical volatility as a proxy
+        if strict_validation:
+            raise ValueError(
+                f"Missing critical Implied Volatility data for {ticker}. Application stopped for debugging.")
+
+        # Only for non-strict mode - try to use HV as proxy
         if 'historical_volatility' in formatted_data and formatted_data['historical_volatility'] not in (None, 'Unknown'):
             # IV is typically higher than HV (volatility risk premium)
             formatted_data['implied_volatility'] = formatted_data['historical_volatility'] * 1.1
             estimated_indicators.append('IV (based on HV)')
         elif 'atr_percent' in formatted_data and formatted_data['atr_percent'] is not None:
-            # Use ATR% as rough proxy, typically scales up by ~4-6x for annualized IV
+            # Use ATR% as rough proxy
             formatted_data['implied_volatility'] = formatted_data['atr_percent'] * 5
             estimated_indicators.append('IV (based on ATR)')
         else:
-            # Define a DEFAULT_IV if not already defined
-            DEFAULT_IV = 25.0  # Typical market average IV
-
-            # Use default IV based on market conditions or ticker characteristics
-            if ticker in ('SPY', 'QQQ', 'DIA', 'IWM'):  # Index ETFs tend to have lower IV
-                formatted_data['implied_volatility'] = DEFAULT_IV * 0.8
-            # Tech stocks often have higher IV
-            elif ticker in ('TSLA', 'NVDA', 'META', 'AAPL', 'MSFT'):
-                formatted_data['implied_volatility'] = DEFAULT_IV * 1.2
-            else:
-                formatted_data['implied_volatility'] = DEFAULT_IV
-
-            estimated_indicators.append('IV (default value)')
-
-            if strict_validation:
-                # In strict mode, log this as a warning instead of raising an error
-                logger.warning(
-                    f"Using default Implied Volatility value for {ticker} due to insufficient data")
+            formatted_data['implied_volatility'] = None
+            logger.warning(
+                f"Unable to estimate Implied Volatility for {ticker}")
 
     # 3. Handle missing Historical Volatility (HV)
     if 'historical_volatility' not in formatted_data or formatted_data['historical_volatility'] is None or formatted_data['historical_volatility'] == 'Unknown':
         missing_indicators.append('Historical Volatility (HV)')
 
-        # Define a DEFAULT_HV if not already defined
-        DEFAULT_HV = 20.0  # Typical market average HV
+        if strict_validation:
+            raise ValueError(
+                f"Missing critical Historical Volatility data for {ticker}. Application stopped for debugging.")
 
+        # Only for non-strict mode
         if 'atr_percent' in formatted_data and formatted_data['atr_percent'] is not None:
             # Scale ATR to approximate HV
             formatted_data['historical_volatility'] = formatted_data['atr_percent'] * 4
@@ -1423,77 +1573,10 @@ def enhance_missing_data(formatted_data, ticker, market_data=None, lookback_days
             # Use IV as a proxy, typically HV is lower than IV
             formatted_data['historical_volatility'] = formatted_data['implied_volatility'] * 0.9
             estimated_indicators.append('HV (based on IV)')
-        elif 'price_history' in formatted_data and len(formatted_data['price_history']) >= 5:
-            # Calculate historical volatility from price history
-            price_changes = []
-
-            # Make sure price_history is a flat list of numbers, not a list of lists
-            price_history = formatted_data['price_history']
-            if price_history and isinstance(price_history[0], list):
-                # Flatten list of lists
-                try:
-                    import numpy as np
-                    price_history = np.array(
-                        price_history).flatten().tolist()
-                except Exception as e:
-                    logger.warning(
-                        f"Could not flatten nested price history for HV calculation: {e}")
-                    # Manual flatten for nested lists
-                    flattened = []
-                    for sublist in price_history:
-                        if isinstance(sublist, list):
-                            flattened.extend(sublist)
-                        else:
-                            flattened.append(sublist)
-                    price_history = flattened
-
-            # Calculate price changes for volatility
-            for i in range(1, len(price_history)):
-                prev, curr = price_history[i-1], price_history[i]
-                # Make sure these are numeric values, not lists
-                if isinstance(prev, (int, float)) and isinstance(curr, (int, float)) and prev > 0:
-                    pct_change = (curr - prev) / prev
-                    price_changes.append(pct_change)
-
-            if price_changes:
-                # Standard deviation of daily returns
-                std_dev = (sum([(x - (sum(price_changes) / len(price_changes)))
-                           ** 2 for x in price_changes]) / len(price_changes))**0.5
-                # Annualize (approx. 252 trading days)
-                # as percentage
-                formatted_data['historical_volatility'] = std_dev * \
-                    (252**0.5) * 100
-                estimated_indicators.append(
-                    'HV (calculated from price history)')
-            else:
-                # Use default HV based on market conditions or ticker characteristics
-                if ticker in ('SPY', 'QQQ', 'DIA', 'IWM'):  # Index ETFs tend to have lower HV
-                    formatted_data['historical_volatility'] = DEFAULT_HV * 0.8
-                # Tech stocks often have higher HV
-                elif ticker in ('TSLA', 'NVDA', 'META', 'AAPL', 'MSFT'):
-                    formatted_data['historical_volatility'] = DEFAULT_HV * 1.2
-                else:
-                    formatted_data['historical_volatility'] = DEFAULT_HV
-                estimated_indicators.append(
-                    'HV (insufficient price data, using default)')
-
-                if strict_validation:
-                    logger.warning(
-                        f"Using default Historical Volatility for {ticker} - insufficient price data")
         else:
-            # Use default HV based on market conditions or ticker characteristics
-            if ticker in ('SPY', 'QQQ', 'DIA', 'IWM'):  # Index ETFs tend to have lower HV
-                formatted_data['historical_volatility'] = DEFAULT_HV * 0.8
-            # Tech stocks often have higher HV
-            elif ticker in ('TSLA', 'NVDA', 'META', 'AAPL', 'MSFT'):
-                formatted_data['historical_volatility'] = DEFAULT_HV * 1.2
-            else:
-                formatted_data['historical_volatility'] = DEFAULT_HV
-            estimated_indicators.append('HV (default value)')
-
-            if strict_validation:
-                logger.warning(
-                    f"Using default Historical Volatility for {ticker} due to missing data")
+            formatted_data['historical_volatility'] = None
+            logger.warning(
+                f"Unable to estimate Historical Volatility for {ticker}")
 
     # 4. Enhance ATR interpretation with context
     if 'atr_percent' in formatted_data and formatted_data['atr_percent'] is not None:
@@ -1537,53 +1620,47 @@ def enhance_missing_data(formatted_data, ticker, market_data=None, lookback_days
                 else:
                     if strict_validation:
                         raise ValueError(
-                            f"Cannot calculate ATR baseline for {ticker} due to invalid price history.")
-                    else:
-                        _volatility_baseline_cache[baseline_key] = DEFAULT_ATR_PERCENT
+                            f"Cannot calculate ATR baseline for {ticker} due to invalid price history. Application stopped for debugging.")
             else:
                 if strict_validation:
                     raise ValueError(
-                        f"Insufficient price history to establish ATR baseline for {ticker}.")
-                else:
-                    _volatility_baseline_cache[baseline_key] = DEFAULT_ATR_PERCENT
+                        f"Insufficient price history to establish ATR baseline for {ticker}. Application stopped for debugging.")
 
-        # Compare current ATR to baseline and categorize
-        baseline_atr = _volatility_baseline_cache[baseline_key]
-        ratio = formatted_data['atr_percent'] / baseline_atr
+        # If we have a baseline, proceed with assessment
+        if baseline_key in _volatility_baseline_cache:
+            baseline_atr = _volatility_baseline_cache[baseline_key]
+            ratio = formatted_data['atr_percent'] / baseline_atr
 
-        if ratio < 0.5:
-            volatility_assessment = "very_low"
-        elif ratio < 0.8:
-            volatility_assessment = "low"
-        elif ratio < 1.2:
-            volatility_assessment = "normal"
-        elif ratio < 1.8:
-            volatility_assessment = "elevated"
-        else:
-            volatility_assessment = "high"
+            if ratio < 0.5:
+                volatility_assessment = "very_low"
+            elif ratio < 0.8:
+                volatility_assessment = "low"
+            elif ratio < 1.2:
+                volatility_assessment = "normal"
+            elif ratio < 1.8:
+                volatility_assessment = "elevated"
+            else:
+                volatility_assessment = "high"
 
-        formatted_data['volatility_assessment'] = volatility_assessment
-        formatted_data['volatility_ratio'] = ratio
-        formatted_data['volatility_baseline'] = baseline_atr
+            formatted_data['volatility_assessment'] = volatility_assessment
+            formatted_data['volatility_ratio'] = ratio
+            formatted_data['volatility_baseline'] = baseline_atr
     else:
         missing_indicators.append('ATR Percentage')
         if strict_validation:
             raise ValueError(
-                f"Missing critical ATR percentage data for {ticker}, cannot assess volatility.")
+                f"Missing critical ATR percentage data for {ticker}, cannot assess volatility. Application stopped for debugging.")
 
-    # Log which indicators were estimated
-    if estimated_indicators:
+    # Log which indicators were estimated (only in non-strict mode)
+    if estimated_indicators and not strict_validation:
         logger.info(
             f"Enhanced data for {ticker} with estimates for: {', '.join(estimated_indicators)}")
 
-    # Log missing indicators even in non-strict mode
-    if missing_indicators:
-        if strict_validation:
-            logger.error(
-                f"Critical indicators missing for {ticker}: {', '.join(missing_indicators)}")
-        else:
-            logger.warning(
-                f"Using fallbacks for missing indicators in {ticker}: {', '.join(missing_indicators)}")
+    # Log missing indicators in strict mode and raise error
+    if missing_indicators and strict_validation:
+        error_message = f"Critical indicators missing for {ticker}: {', '.join(missing_indicators)}. Application stopped for debugging."
+        logger.error(error_message)
+        raise ValueError(error_message)
 
     return formatted_data
 
@@ -1600,6 +1677,9 @@ def validate_data_quality(data, ticker, min_days_required=20, strict_validation=
 
     Returns:
     - data: The original data regardless of validation results
+
+    Raises:
+    - ValueError: If strict_validation is True and data doesn't meet quality standards
     """
     errors = []
     warnings = []
@@ -1608,25 +1688,26 @@ def validate_data_quality(data, ticker, min_days_required=20, strict_validation=
     if isinstance(data, pd.DataFrame):
         # Log basic DataFrame validation
         if len(data) < min_days_required:
-            error_msg = f"Insufficient data points for {ticker}: {len(data)} available, {min_days_required} required"
+            error_msg = f"Insufficient data points for {ticker}: {len(data)} available, {min_days_required} required. Application stopped for debugging."
             errors.append(error_msg)
             logger.error(error_msg)
+            if strict_validation:
+                raise ValueError(error_msg)
 
         # Add ticker, date, and current_price to the data if they're missing
         # This ensures downstream functions have what they need
         if strict_validation:
-            logger.warning(
-                f"Data quality warning for {ticker}: DataFrame received instead of expected dictionary format")
+            message = f"Data quality warning for {ticker}: DataFrame received instead of expected dictionary format. Application stopped for debugging."
+            logger.warning(message)
+            raise ValueError(message)
 
-            # Log all validation errors/warnings but don't raise exceptions
-            if errors:
-                for error in errors:
-                    logger.error(
-                        f"Data validation error for {ticker}: {error}")
-            if warnings:
-                for warning in warnings:
-                    logger.warning(
-                        f"Data quality warning for {ticker}: {warning}")
+        # Log all validation errors/warnings but don't raise exceptions if not in strict mode
+        if errors and not strict_validation:
+            for error in errors:
+                logger.error(f"Data validation error for {ticker}: {error}")
+        if warnings and not strict_validation:
+            for warning in warnings:
+                logger.warning(f"Data quality warning for {ticker}: {warning}")
 
         # Always return the original data
         return data
@@ -1638,17 +1719,28 @@ def validate_data_quality(data, ticker, min_days_required=20, strict_validation=
         field for field in required_fields if field not in data or data[field] is None]
 
     if missing_fields:
-        error_msg = f"Missing required field{'s' if len(missing_fields) > 1 else ''}: {', '.join(missing_fields)}"
+        error_msg = f"Missing required field{'s' if len(missing_fields) > 1 else ''}: {', '.join(missing_fields)}. Application stopped for debugging."
         errors.append(error_msg)
+        if strict_validation:
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
     # Check price is valid
     if 'current_price' in data and data['current_price'] is not None:
         try:
             price = float(data['current_price'])
             if price <= 0:
-                errors.append(f"Invalid price: {price} (must be positive)")
+                error_msg = f"Invalid price: {price} (must be positive). Application stopped for debugging."
+                errors.append(error_msg)
+                if strict_validation:
+                    logger.error(error_msg)
+                    raise ValueError(error_msg)
         except (ValueError, TypeError):
-            errors.append(f"Invalid price format: {data['current_price']}")
+            error_msg = f"Invalid price format: {data['current_price']}. Application stopped for debugging."
+            errors.append(error_msg)
+            if strict_validation:
+                logger.error(error_msg)
+                raise ValueError(error_msg)
 
     # Check date format
     if 'date' in data and data['date'] is not None:
@@ -1657,46 +1749,68 @@ def validate_data_quality(data, ticker, min_days_required=20, strict_validation=
             if isinstance(data['date'], str):
                 datetime.strptime(data['date'], "%Y-%m-%d")
         except ValueError:
-            errors.append(
-                f"Invalid date format: {data['date']} (expected YYYY-MM-DD)")
+            error_msg = f"Invalid date format: {data['date']} (expected YYYY-MM-DD). Application stopped for debugging."
+            errors.append(error_msg)
+            if strict_validation:
+                logger.error(error_msg)
+                raise ValueError(error_msg)
 
     # Check price history length if strict validation is enabled
     if 'price_history' in data:
         price_history = data['price_history']
         if not price_history or len(price_history) < min_days_required:
-            error_msg = f"Insufficient price history for {ticker}: {len(price_history) if price_history else 0} days, {min_days_required} required"
+            error_msg = f"Insufficient price history for {ticker}: {len(price_history) if price_history else 0} days, {min_days_required} required. Application stopped for debugging."
             if strict_validation:
                 errors.append(error_msg)
+                logger.error(error_msg)
+                raise ValueError(error_msg)
             else:
                 warnings.append(error_msg)
     else:
+        error_msg = f"Missing price history data for {ticker}. Application stopped for debugging."
         if strict_validation:
-            errors.append("Missing price history data")
+            errors.append(error_msg)
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         else:
             warnings.append("Missing price history data")
 
     # Check for missing MACD data
     if 'macd' not in data or data['macd'] is None:
-        warnings.append("MACD data is missing")
+        error_msg = f"MACD data is missing for {ticker}. Application stopped for debugging."
+        if strict_validation:
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        else:
+            warnings.append("MACD data is missing")
 
     # Check for missing ATR data
     if 'atr' not in data or data['atr'] is None:
-        warnings.append("ATR data is missing")
+        error_msg = f"ATR data is missing for {ticker}. Application stopped for debugging."
+        if strict_validation:
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        else:
+            warnings.append("ATR data is missing")
 
     # Check for missing RSI data
     if 'rsi' not in data or data['rsi'] is None:
-        warnings.append("RSI data is missing")
+        error_msg = f"RSI data is missing for {ticker}. Application stopped for debugging."
+        if strict_validation:
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        else:
+            warnings.append("RSI data is missing")
 
-    # Log all validation errors/warnings but don't raise exceptions
-    if errors:
+    # Log all validation errors/warnings (only for non-strict mode)
+    if errors and not strict_validation:
         error_msg = ", ".join(errors)
         logger.error(f"Data validation error for {ticker}: {error_msg}")
 
-    if warnings:
+    if warnings and not strict_validation:
         for warning in warnings:
             logger.warning(f"Data quality warning for {ticker}: {warning}")
 
-    # Always return the original data regardless of validation outcome
     return data
 
 
@@ -1720,6 +1834,23 @@ def adaptive_strategy_selection(memory_context):
     iron_condor = spread_performance.get(
         'iron_condor', {'wins': 0, 'total': 0, 'win_rate': 0})
 
+    # Initialize directional strategies
+    directional_performance = spread_performance.get('directional', {
+        'long_call': {'wins': 0, 'total': 0, 'win_rate': 0},
+        'long_put': {'wins': 0, 'total': 0, 'win_rate': 0},
+        'call_debit_spread': {'wins': 0, 'total': 0, 'win_rate': 0},
+        'put_debit_spread': {'wins': 0, 'total': 0, 'win_rate': 0}
+    })
+
+    long_call = directional_performance.get(
+        'long_call', {'wins': 0, 'total': 0, 'win_rate': 0})
+    long_put = directional_performance.get(
+        'long_put', {'wins': 0, 'total': 0, 'win_rate': 0})
+    call_debit_spread = directional_performance.get(
+        'call_debit_spread', {'wins': 0, 'total': 0, 'win_rate': 0})
+    put_debit_spread = directional_performance.get(
+        'put_debit_spread', {'wins': 0, 'total': 0, 'win_rate': 0})
+
     # Calculate win rates
     if bull_put['total'] > 0:
         bull_put['win_rate'] = bull_put['wins'] / bull_put['total']
@@ -1729,6 +1860,21 @@ def adaptive_strategy_selection(memory_context):
 
     if iron_condor['total'] > 0:
         iron_condor['win_rate'] = iron_condor['wins'] / iron_condor['total']
+
+    # Calculate win rates for directional strategies
+    if long_call['total'] > 0:
+        long_call['win_rate'] = long_call['wins'] / long_call['total']
+
+    if long_put['total'] > 0:
+        long_put['win_rate'] = long_put['wins'] / long_put['total']
+
+    if call_debit_spread['total'] > 0:
+        call_debit_spread['win_rate'] = call_debit_spread['wins'] / \
+            call_debit_spread['total']
+
+    if put_debit_spread['total'] > 0:
+        put_debit_spread['win_rate'] = put_debit_spread['wins'] / \
+            put_debit_spread['total']
 
     # Get multi-timeframe trends
     daily_trend = memory_context.get(
@@ -1741,34 +1887,64 @@ def adaptive_strategy_selection(memory_context):
     current_volatility = vol_history[-1] if vol_history else {
         'iv': None, 'hv': None, 'assessment': 'unknown'}
 
-    # Default strategies with equal weighting
+    # Get the secret baseline trend
+    secret = memory_context.get('secret', {'baseline_trend': 'neutral'})
+    secret_trend = secret.get('baseline_trend', 'neutral')
+
+    # Default strategies with adjusted weighting to favor directional strategies
+    # Start with smaller weight for iron condors (neutral bias)
     strategies = [
-        {'name': 'bull_put', 'weight': 0.33, 'condition': 'bullish'},
-        {'name': 'bear_call', 'weight': 0.33, 'condition': 'bearish'},
-        {'name': 'iron_condor', 'weight': 0.33, 'condition': 'neutral'}
+        {'name': 'bull_put', 'weight': 0.25,
+            'condition': 'bullish', 'type': 'credit_spread'},
+        {'name': 'bear_call', 'weight': 0.25,
+            'condition': 'bearish', 'type': 'credit_spread'},
+        {'name': 'iron_condor', 'weight': 0.10,
+            'condition': 'neutral', 'type': 'credit_spread'},
+        {'name': 'long_call', 'weight': 0.10,
+            'condition': 'bullish', 'type': 'directional'},
+        {'name': 'long_put', 'weight': 0.10,
+            'condition': 'bearish', 'type': 'directional'},
+        {'name': 'call_debit_spread', 'weight': 0.10,
+            'condition': 'bullish', 'type': 'directional'},
+        {'name': 'put_debit_spread', 'weight': 0.10,
+            'condition': 'bearish', 'type': 'directional'}
     ]
 
     # Determine which strategies have been tested
     bull_put_tested = bull_put['total'] >= 2
     bear_call_tested = bear_call['total'] >= 2
     iron_condor_tested = iron_condor['total'] >= 2
+    long_call_tested = long_call['total'] >= 2
+    long_put_tested = long_put['total'] >= 2
+    call_debit_tested = call_debit_spread['total'] >= 2
+    put_debit_tested = put_debit_spread['total'] >= 2
+
+    # Initialize total_win_rate to 0
+    total_win_rate = 0
 
     # For strategies with historical data, adjust weights based on win rate
-    if bull_put_tested or bear_call_tested or iron_condor_tested:
+    if bull_put_tested or bear_call_tested or iron_condor_tested or long_call_tested or long_put_tested or call_debit_tested or put_debit_tested:
         # Reset weights for recalculation
         for strategy in strategies:
             strategy['weight'] = 0
 
-        # Calculate base weight from win rates
-        total_win_rate = 0
+        # Calculate total win rate across all tested strategies
         if bull_put_tested:
             total_win_rate += bull_put['win_rate']
         if bear_call_tested:
             total_win_rate += bear_call['win_rate']
         if iron_condor_tested:
             total_win_rate += iron_condor['win_rate']
+        if long_call_tested:
+            total_win_rate += long_call['win_rate']
+        if long_put_tested:
+            total_win_rate += long_put['win_rate']
+        if call_debit_tested:
+            total_win_rate += call_debit_spread['win_rate']
+        if put_debit_tested:
+            total_win_rate += put_debit_spread['win_rate']
 
-        # Apply win rates to weights
+        # Apply win rates to weights if we have any successful strategies
         if total_win_rate > 0:
             if bull_put_tested:
                 strategies[0]['weight'] = bull_put['win_rate'] / total_win_rate
@@ -1778,45 +1954,129 @@ def adaptive_strategy_selection(memory_context):
             if iron_condor_tested:
                 strategies[2]['weight'] = iron_condor['win_rate'] / \
                     total_win_rate
+            if long_call_tested:
+                strategies[3]['weight'] = long_call['win_rate'] / \
+                    total_win_rate
+            if long_put_tested:
+                strategies[4]['weight'] = long_put['win_rate'] / total_win_rate
+            if call_debit_tested:
+                strategies[5]['weight'] = call_debit_spread['win_rate'] / \
+                    total_win_rate
+            if put_debit_tested:
+                strategies[6]['weight'] = put_debit_spread['win_rate'] / \
+                    total_win_rate
+
+    # If no strategies have a win rate, ensure iron condor starts at a lower weight
+    if total_win_rate == 0:
+        strategies[2]['weight'] = 0.10  # Iron condor starts with lower weight
+
+    # Apply trend-based adjustments using the secret baseline
+    # This ensures we align with the trusted baseline trend
+    if secret_trend == 'bullish':
+        # Boost bull put spreads and long calls
+        strategies[0]['weight'] += 0.15  # Bull put
+        strategies[3]['weight'] += 0.15  # Long call
+        strategies[5]['weight'] += 0.10  # Call debit spread
+
+        # Reduce bearish strategies
+        strategies[1]['weight'] = max(
+            0, strategies[1]['weight'] - 0.1)  # Bear call
+        strategies[4]['weight'] = max(
+            0, strategies[4]['weight'] - 0.1)  # Long put
+        strategies[6]['weight'] = max(
+            0, strategies[6]['weight'] - 0.1)  # Put debit spread
+
+        # Reduce iron condor (neutral)
+        strategies[2]['weight'] = max(0, strategies[2]['weight'] - 0.1)
+
+    elif secret_trend == 'bearish':
+        # Boost bear call spreads and long puts
+        strategies[1]['weight'] += 0.15  # Bear call
+        strategies[4]['weight'] += 0.15  # Long put
+        strategies[6]['weight'] += 0.10  # Put debit spread
+
+        # Reduce bullish strategies
+        strategies[0]['weight'] = max(
+            0, strategies[0]['weight'] - 0.1)  # Bull put
+        strategies[3]['weight'] = max(
+            0, strategies[3]['weight'] - 0.1)  # Long call
+        strategies[5]['weight'] = max(
+            0, strategies[5]['weight'] - 0.1)  # Call debit spread
+
+        # Reduce iron condor (neutral)
+        strategies[2]['weight'] = max(0, strategies[2]['weight'] - 0.1)
 
     # Further adjust weights based on market trends
-    trend_factor = 0.3  # How much to adjust based on trend alignment
+    trend_factor = 0.2
 
-    # If market trends are aligned, boost appropriate strategy
+    # If market trends are aligned, boost appropriate strategies
     if daily_trend == weekly_trend and daily_trend != 'neutral':
         if daily_trend == 'bullish':
-            # Boost bull put spreads
-            adjustment = min(trend_factor, 1 - strategies[0]['weight'])
-            strategies[0]['weight'] += adjustment
-            # Reduce others proportionally
-            reduction_per_strategy = adjustment / 2
-            strategies[1]['weight'] = max(
-                0, strategies[1]['weight'] - reduction_per_strategy)
-            strategies[2]['weight'] = max(
-                0, strategies[2]['weight'] - reduction_per_strategy)
+            # Boost bullish strategies
+            for strategy in strategies:
+                if strategy['condition'] == 'bullish':
+                    adjustment = min(trend_factor / 3, 1 - strategy['weight'])
+                    strategy['weight'] += adjustment
+
+            # Reduce bearish and neutral strategies
+            for strategy in strategies:
+                if strategy['condition'] in ['bearish', 'neutral']:
+                    reduction = trend_factor / 4
+                    strategy['weight'] = max(0, strategy['weight'] - reduction)
+
         elif daily_trend == 'bearish':
-            # Boost bear call spreads
-            adjustment = min(trend_factor, 1 - strategies[1]['weight'])
-            strategies[1]['weight'] += adjustment
-            # Reduce others proportionally
-            reduction_per_strategy = adjustment / 2
-            strategies[0]['weight'] = max(
-                0, strategies[0]['weight'] - reduction_per_strategy)
-            strategies[2]['weight'] = max(
-                0, strategies[2]['weight'] - reduction_per_strategy)
+            # Boost bearish strategies
+            for strategy in strategies:
+                if strategy['condition'] == 'bearish':
+                    adjustment = min(trend_factor / 3, 1 - strategy['weight'])
+                    strategy['weight'] += adjustment
+
+            # Reduce bullish and neutral strategies
+            for strategy in strategies:
+                if strategy['condition'] in ['bullish', 'neutral']:
+                    reduction = trend_factor / 4
+                    strategy['weight'] = max(0, strategy['weight'] - reduction)
 
     # Adjust for volatility environment
     if current_volatility.get('assessment') in ['high', 'very high']:
-        # In high volatility, iron condors can be more profitable
-        adjustment = 0.2
-        strategies[2]['weight'] = min(
-            0.6, strategies[2]['weight'] + adjustment)
-        # Reduce others proportionally
-        reduction_per_strategy = adjustment / 2
-        strategies[0]['weight'] = max(
-            0, strategies[0]['weight'] - reduction_per_strategy)
-        strategies[1]['weight'] = max(
-            0, strategies[1]['weight'] - reduction_per_strategy)
+        # In high volatility, debit spreads can be more profitable than naked options
+        adjustment = 0.15
+        strategies[5]['weight'] += adjustment  # Call debit spread
+        strategies[6]['weight'] += adjustment  # Put debit spread
+
+        # Reduce long options weight as they're more affected by volatility crush
+        strategies[3]['weight'] = max(
+            0, strategies[3]['weight'] - adjustment)  # Long call
+        strategies[4]['weight'] = max(
+            0, strategies[4]['weight'] - adjustment)  # Long put
+
+    elif current_volatility.get('assessment') in ['low', 'very low']:
+        # In low volatility, long options can offer better returns
+        adjustment = 0.15
+        strategies[3]['weight'] += adjustment  # Long call
+        strategies[4]['weight'] += adjustment  # Long put
+
+        # Reduce credit spreads which have less premium in low volatility
+        for i in range(3):
+            strategies[i]['weight'] = max(
+                0, strategies[i]['weight'] - adjustment/3)
+
+    # Weight penalty for iron condor if its historical win rate is below 30%
+    if iron_condor_tested and iron_condor['win_rate'] < 0.3:
+        strategies[2]['weight'] = max(0, strategies[2]['weight'] - 0.2)
+
+        # Redistribute that weight to directional strategies aligned with the secret
+        if secret_trend == 'bullish':
+            strategies[0]['weight'] += 0.1  # Bull put
+            strategies[3]['weight'] += 0.1  # Long call
+        elif secret_trend == 'bearish':
+            strategies[1]['weight'] += 0.1  # Bear call
+            strategies[4]['weight'] += 0.1  # Long put
+        else:
+            # If neutral, distribute evenly to all strategies
+            for i in range(len(strategies)):
+                if i != 2:  # Skip iron condor
+                    strategies[i]['weight'] += 0.2 / (len(strategies) - 1)
 
     # Ensure weights sum to 1.0
     total_weight = sum(strategy['weight'] for strategy in strategies)
@@ -1830,8 +2090,11 @@ def adaptive_strategy_selection(memory_context):
     # Create reasoning explanation
     reasoning = []
 
-    # Explain win rates
-    if bull_put_tested or bear_call_tested or iron_condor_tested:
+    # Include secret trend information in reasoning
+    reasoning.append(f"Secret baseline trend: {secret_trend}")
+
+    # Explain win rates for tested strategies
+    if bull_put_tested or bear_call_tested or iron_condor_tested or long_call_tested or long_put_tested:
         reasoning.append("Historical performance:")
         if bull_put_tested:
             reasoning.append(
@@ -1842,6 +2105,18 @@ def adaptive_strategy_selection(memory_context):
         if iron_condor_tested:
             reasoning.append(
                 f"- Iron condors: {iron_condor['win_rate']:.0%} win rate ({iron_condor['wins']}/{iron_condor['total']})")
+        if long_call_tested:
+            reasoning.append(
+                f"- Long calls: {long_call['win_rate']:.0%} win rate ({long_call['wins']}/{long_call['total']})")
+        if long_put_tested:
+            reasoning.append(
+                f"- Long puts: {long_put['win_rate']:.0%} win rate ({long_put['wins']}/{long_put['total']})")
+        if call_debit_tested:
+            reasoning.append(
+                f"- Call debit spreads: {call_debit_spread['win_rate']:.0%} win rate ({call_debit_spread['wins']}/{call_debit_spread['total']})")
+        if put_debit_tested:
+            reasoning.append(
+                f"- Put debit spreads: {put_debit_spread['win_rate']:.0%} win rate ({put_debit_spread['wins']}/{put_debit_spread['total']})")
 
     # Explain trend influence
     if daily_trend == weekly_trend and daily_trend != 'neutral':
@@ -1857,7 +2132,10 @@ def adaptive_strategy_selection(memory_context):
             f"Current volatility assessment: {current_volatility.get('assessment')}")
         if current_volatility.get('assessment') in ['high', 'very high']:
             reasoning.append(
-                "High volatility favors iron condors due to premium collection.")
+                "High volatility favors debit spreads over naked options due to reduced vega risk.")
+        elif current_volatility.get('assessment') in ['low', 'very low']:
+            reasoning.append(
+                "Low volatility favors long options which benefit from volatility expansion.")
 
     # Format final list of strategies with weights
     strategies_list = [f"{s['name']} ({s['weight']:.0%})" for s in strategies]

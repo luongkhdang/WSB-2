@@ -1,8 +1,8 @@
 {
   "ticker": "QQQ",
   "pretraining_period": "2025-01-24 to 2025-01-24",
-  "last_update": "2025-03-26 19:17:10",
-  "analyses_count": 5,
+  "last_update": "2025-03-26 21:49:11",
+  "analyses_count": 2,
   "accuracy_rate": 0,
   "memory_context": {
     "ticker": "QQQ",
@@ -44,31 +44,13 @@
       }
     },
     "volatility_history": [
-      {
-        "date": "2025-03-20",
-        "iv": 1.704194296687814,
-        "hv": 1.3633554373502512,
-        "adjustment": "no change"
-      },
-      {
-        "date": "2025-03-21",
-        "iv": 1.5243451062989162,
-        "hv": 1.2194760850391329,
-        "adjustment": "no change"
-      },
-      {
-        "date": "2025-03-24",
-        "iv": 0.8256768502034595,
-        "hv": 0.6605414801627676,
-        "adjustment": "no change"
-      },
       0
     ],
     "spread_performance": {
       "bull_put": {
         "wins": 0,
-        "total": 2,
-        "win_rate": 0.0
+        "total": 1,
+        "win_rate": 0
       },
       "bear_call": {
         "wins": 0,
@@ -76,25 +58,51 @@
         "win_rate": 0
       },
       "iron_condor": {
-        "wins": 1,
-        "total": 2,
-        "win_rate": 0.5
+        "wins": 0,
+        "total": 0,
+        "win_rate": 0
+      },
+      "directional": {
+        "long_call": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "long_put": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "call_debit_spread": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "put_debit_spread": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        }
       }
     },
     "weight_adjustments": [
       0
     ],
     "multi_timeframe": {
-      "daily_trend": "neutral",
+      "daily_trend": "bullish",
       "weekly_trend": "neutral"
     },
     "secret": {
-      "baseline_trend": "neutral",
-      "trend_confidence": 60,
-      "volatility_anchor": 1.0,
+      "baseline_trend": "bullish",
+      "trend_confidence": 80,
+      "volatility_anchor": 1.5758357449833262,
       "core_levels": {
-        "support": [],
-        "resistance": []
+        "support": [
+          485.92
+        ],
+        "resistance": [
+          524.87
+        ]
       }
     }
   },

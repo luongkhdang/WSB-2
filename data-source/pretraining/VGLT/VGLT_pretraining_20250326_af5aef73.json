@@ -1,0 +1,268 @@
+{
+  "ticker": "VGLT",
+  "start_date": "2025-01-24",
+  "end_date": "2025-01-24",
+  "processing_time": 141.04490971565247,
+  "analyses_count": 5,
+  "accuracy_rate": 0,
+  "total_predictions": 0,
+  "correct_predictions": 0,
+  "results": [
+    {
+      "ticker": "VGLT",
+      "date": "2025-03-20",
+      "step": 2,
+      "analysis_type": "5d/15m_analysis",
+      "price": 57.720001220703125,
+      "trend": "[bullish]",
+      "next_day_prediction": {
+        "direction": "[bullish]",
+        "magnitude": 0.5,
+        "timeframe": "[next_day]",
+        "confidence": 70,
+        "specific_levels": [
+          57.0,
+          57.5,
+          58.0,
+          58.26
+        ],
+        "spread_recommendation": "[bull put spread]",
+        "strike_recommendation": "[Sell 57.50 put, Buy 57.00 put - capitalizing on oversold RSI and potential bounce]",
+        "risk_reward_ratio": "1:0.25",
+        "stop_loss": "[57.00]",
+        "profit_target": "[Collect 50% of premium]",
+        "invalidation": "[Price breaks below 57.00]",
+        "is_directional": false
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## VGLT Intraday Analysis - 2025-03-20 (15-Minute Data)\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe secret establishes a neutral baseline trend with a volatility anchor of 0.9086%. Today\u2019s price of 57.72 is within the established support (53.69) and resistance (55.16) levels, reinforcing the initial neutral assessment. The 30-day ATR is significantly higher than the current intraday ATR (0.0619 vs 0.9086), suggesting a period of consolidation *within* a broader range. The mixed daily/weekly trends further support the neutral outlook, but the RSI of 30.13 is a warning sign. This data doesn\u2019t contradict the prior analysis but introduces a potential for short-term bearish momentum. The lack of historical data in memory necessitates a cautious approach.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a range of 57.64 to 58.26 with a vwap of 57.87. The bars_count of 26 indicates a relatively active session. The RSI of 30.13 suggests the asset is currently oversold on the 15-minute timeframe. The MACD at 0 indicates no strong momentum, but the RSI suggests a potential for a bounce. Volume (1793805) is moderate, not indicating a strong directional conviction. There's a slight tendency towards lower highs and lower lows within the 15-minute timeframe, hinting at short-term bearish pressure, but it's not definitive. No clear chart patterns (e.g., head and shoulders, triangles) are immediately apparent.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nThe implied volatility (0.5363) is lower than the historical volatility (0.4290), which is unusual. This suggests that options are currently *underpriced* relative to recent price movements. The intraday ATR is significantly lower than the 30-day ATR, indicating a period of reduced volatility. This lower volatility environment is favorable for credit spread strategies, but the oversold RSI suggests a potential volatility expansion if the price bounces. Ideal entry timing would be after a confirmed bounce from the intraday low, capitalizing on potential premium contraction as volatility decreases. A potential for premium expansion exists if the price breaks below the intraday low, but the risk is higher.\n\n**4. KEY LEVEL INTERACTION:**\n\nThe price (57.72) is currently trading above the intraday low (57.64) but below the vwap (57.87). The established support/resistance levels from the secret (53.69/55.16) are currently distant. New intraday support is forming around 57.65-57.70, and intraday resistance is around 57.90-58.00. These levels are critical for strike selection. The price is testing the intraday support, and a break below could lead to further downside.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the oversold RSI and potential for a short-term bounce, a **bull put spread** is the most appropriate strategy. While the secret baseline is neutral, the RSI and intraday price action suggest a tactical bullish bias. A bear call spread is less attractive due to the resistance levels being further away. An iron condor is too conservative given the potential for a bounce.\n\n*   **Strike Selection:** Sell a put at 57.50 and buy a put at 57.00. The 57.50 strike is slightly below the current price and intraday support, offering a reasonable probability of success. The 57.00 strike provides a buffer against a larger downside move.\n*   **Entry Timing:** Enter the spread after a confirmed bounce from the intraday low (57.64), ideally when the price breaks above 57.75.\n*   **Probability of Success:** 65% (based on the oversold RSI and potential for a short-term bounce).\n*   **Risk/Reward Profile:** Risk is limited to the difference between the strikes minus the premium received ($0.50), while the reward is the premium received. Assuming a premium of $0.10, the risk is $0.40 and the reward is $0.10, resulting in a 1:0.25 risk/reward ratio. This is acceptable given the limited risk and potential for a quick profit.\n*   **Targets & Stops:** Target: Collect 50% of the premium. Stop Loss: If the price breaks below 57.00.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: [bullish]\nmagnitude: [0.5%]\ntimeframe: [next_day]\nconfidence: [70]\nspecific_levels: [57.00, 57.50, 58.00, 58.26]\nspread_recommendation: [bull put spread]\nstrike_recommendation: [Sell 57.50 put, Buy 57.00 put - capitalizing on oversold RSI and potential bounce]\nrisk_reward_ratio: [1:0.25]\nstop_loss: [57.00]\nprofit_target: [Collect 50% of premium]\ninvalidation: [Price breaks below 57.00]\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"RSI_oversold_bounce\": {\n            \"accuracy\": [70], \n            \"correct\": [1],\n            \"total\": [1]\n        }\n   }\nvolatility_adjustment: [no change]\nkey_level_update: [Intraday Support: 57.65-57.70, Intraday Resistance: 57.90-58.00]\nupdated_confidence: [75]\n```\n"
+    },
+    {
+      "ticker": "VGLT",
+      "date": "2025-03-21",
+      "step": 3,
+      "analysis_type": "5d/15m_analysis",
+      "price": 57.439998626708984,
+      "trend": "[neutral]",
+      "next_day_prediction": {
+        "direction": "[neutral]",
+        "magnitude": 0.5,
+        "timeframe": "[next_day]",
+        "confidence": 70,
+        "specific_levels": [
+          57.0,
+          57.5,
+          57.8
+        ],
+        "spread_recommendation": "[bull put spread]",
+        "strike_recommendation": "[Sell 57.00 put, Buy 56.50 put - capitalizing on slight bearish momentum and potential bounce]",
+        "risk_reward_ratio": "1:2.0",
+        "stop_loss": "[56.50]",
+        "profit_target": "[50% of max profit]",
+        "invalidation": "[Price breaks below 56.50 with significant volume]",
+        "is_directional": false
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## VGLT Intraday Analysis - 2025-03-21\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe baseline trend remains neutral (60% confidence) as per the secret. Yesterday\u2019s IV (0.5363) was higher than today\u2019s (0.4605), suggesting a slight decrease in fear. Historical volatility (0.3684) continues to lag implied volatility, indicating a premium is priced into options. The 30-day ATR (0.9086%) provides a volatility anchor, while the current intraday ATR (0.0529%) is significantly lower, suggesting a period of consolidation. The prior analysis identified no key levels, and this remains the case. Today\u2019s data confirms the neutral outlook, but the lower IV and intraday ATR suggest potential for a directional move if a catalyst emerges.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute chart shows a relatively tight trading range between 57.39 and 57.83. The vwap (57.5399) is near the midpoint of this range. Volume (1550559) is moderate, not indicating a strong directional push. The MACD being at 0 suggests indecision. The RSI at 32.35 is approaching oversold territory, but not yet confirming a reversal. There's a slight tendency towards lower highs within the 15-minute bars, hinting at potential bearish pressure, but it's not conclusive. No clear chart patterns (e.g., head and shoulders, triangles) are forming.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility, as measured by the ATR%, is 0.0921%, significantly lower than the 30-day ATR%. This suggests a period of low volatility and potentially attractive pricing for premium selling strategies. The decrease in IV from yesterday indicates a cooling of short-term fear. Credit spreads could benefit from this continued low volatility, but the risk of a volatility spike remains. Ideal entry timing would be on a slight dip towards the lower end of the intraday range, anticipating a bounce. Premium contraction is more likely than expansion given the current environment.\n\n**4. KEY LEVEL INTERACTION:**\n\nPrice is currently trading above the secret baseline support of 53.69 and below the resistance of 55.16. However, these levels are broad and based on longer-term data. Intraday, the high of 57.83 and low of 57.39 act as immediate resistance and support, respectively. A break above 57.83 could signal a short-term bullish move, while a break below 57.39 could indicate further downside. Critical zones for strike selection are around 57.75 (slightly above the intraday high) and 57.40 (near the current price and vwap).\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the slightly bearish intraday momentum (lower highs) and RSI approaching oversold, a **bull put spread** appears most suitable. While the baseline is neutral, the RSI and intraday price action suggest a potential for a small bounce. This strategy allows for profiting from continued consolidation or a slight upward move while limiting risk.\n\n*   **Strike Selection:** Sell a put at 57.00 and buy a put at 56.50. This provides a buffer against a larger downside move and aligns with the potential for a bounce. The 57.00 strike is slightly below the current price, offering a reasonable premium.\n*   **Entry Timing:** Enter the spread when the price tests the 57.40 level, ideally with a slight bounce off it.\n*   **Probability of Success Estimate:** 65% (based on the expectation of continued consolidation or a small upward move).\n*   **Risk/Reward Profile:** Risk is limited to $0.50 (difference between strikes minus net premium received). Potential reward is the net premium received. Aim for a 1:2 risk/reward ratio.\n*   **Targets and Stops:** Target: 50% of the maximum profit. Stop-loss: If the price breaks below 56.50, exit the spread.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: [neutral]\nmagnitude: [0.5%]\ntimeframe: [next_day]\nconfidence: [70]\nspecific_levels: [57.00, 57.50, 57.80]\nspread_recommendation: [bull put spread]\nstrike_recommendation: [Sell 57.00 put, Buy 56.50 put - capitalizing on slight bearish momentum and potential bounce]\nrisk_reward_ratio: [1:2]\nstop_loss: [56.50]\nprofit_target: [50% of max profit]\ninvalidation: [Price breaks below 56.50 with significant volume]\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"pattern_type\": {\n            \"accuracy\": [0.0], \n            \"correct\": [0],\n            \"total\": [1]\n        }\n   }\nvolatility_adjustment: [decrease]\nkey_level_update: [Intraday Support: 57.40, Intraday Resistance: 57.80]\nupdated_confidence: [75]\n```\n"
+    },
+    {
+      "ticker": "VGLT",
+      "date": "2025-03-24",
+      "step": 4,
+      "analysis_type": "5d/15m_analysis",
+      "price": 56.845001220703125,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.5,
+        "timeframe": "[next_day]",
+        "confidence": 65,
+        "specific_levels": [
+          56.75,
+          56.25,
+          57.15
+        ],
+        "spread_recommendation": "[bull put spread]",
+        "strike_recommendation": "[Sell 56.75 put, Buy 56.25 put - slight bullish bias, limited downside risk]",
+        "risk_reward_ratio": "1:2.0",
+        "stop_loss": "[56.75]",
+        "profit_target": "[0.125]",
+        "invalidation": "[Price breaks below 56.75]",
+        "is_directional": false
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## VGLT Intraday Analysis - 2025-03-24\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe baseline trend remains neutral (60% confidence) as per the secret. However, the critical trend instruction necessitates a re-evaluation. While the daily and weekly trends are neutral, the RSI at 30.49 is edging towards oversold territory. The MACD is precisely at 0, indicating a lack of strong momentum but not necessarily a neutral stance. The slight decrease in IV from 0.5363 to 0.4605 over the past few trading days suggests decreasing fear, but HV remains lower, indicating a potential for IV expansion if a directional move occurs. The secret\u2019s core levels (53.69 support, 55.16 resistance) remain relevant, but the current price of 56.84 is approaching the upper end of the recent range. This suggests a potential for a test of resistance or a pullback.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a narrow range today (56.83 low, 57.15 high) with moderate volume (1846517). The vwap at 56.93 is slightly below the current price, suggesting short-term selling pressure. There's no clear pattern formation visible in the limited 26 bars. The lack of significant volume spikes indicates no major institutional activity. The intraday low is very close to the current price, suggesting a potential for a short-term bounce. The RSI is low, but not yet indicating strong oversold conditions.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility (ATR 0.0519, ATR% 0.0914) is lower than the 30-day ATR (0.9086). This suggests a period of consolidation. Implied volatility (0.4569) is also relatively low compared to historical volatility (0.3655), creating a potential opportunity for selling volatility. However, the difference isn\u2019t substantial enough to aggressively pursue strategies reliant on IV crush. A breakout above 57.15 could trigger an IV expansion, while a move below 56.83 could lead to further IV contraction. Ideal entry timing for a credit spread would be after a confirmed direction, ideally near the highs or lows of the intraday range.\n\n**4. KEY LEVEL INTERACTION:**\n\nThe price is currently trading above the secret\u2019s baseline support (53.69) and below the resistance (55.16). Intraday, the high of 57.15 and low of 56.83 act as immediate resistance and support, respectively. A break above 57.15 would signal bullish momentum, while a break below 56.83 would suggest bearish pressure. The vwap at 56.93 is a potential level for short-term consolidation.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the RSI approaching oversold territory and the MACD at 0, a slightly bullish bias is warranted, despite the secret\u2019s neutral baseline. While the historical performance of bull put spreads is poor (0%), the current conditions suggest a potential for a small bounce. Therefore, a **bull put spread** is the most appropriate strategy, but with a very conservative approach.\n\n*   **Strike Selection:** Sell a put at 56.75 and buy a put at 56.25. The 56.75 strike is slightly below the intraday low and offers a reasonable premium. The 56.25 strike provides a buffer against a larger downside move.\n*   **Entry Timing:** Enter the spread after a confirmed bounce off the 56.83 intraday low.\n*   **Probability of Success:** 65% (based on the potential for a short-term bounce and the limited downside risk).\n*   **Risk/Reward Profile:** 1:2.  Maximum loss: $0.50 per share. Maximum profit: $0.25 per share.\n*   **Stop Loss:** If the price breaks below 56.75, exit the spread immediately.\n*   **Profit Target:** Take profit at 50% of the maximum profit ($0.125 per share).\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: [bullish]\nmagnitude: [0.5%]\ntimeframe: [next_day]\nconfidence: [65]\nspecific_levels: [56.75, 56.25, 57.15]\nspread_recommendation: [bull put spread]\nstrike_recommendation: [Sell 56.75 put, Buy 56.25 put - slight bullish bias, limited downside risk]\nrisk_reward_ratio: [1:2]\nstop_loss: [56.75]\nprofit_target: [0.125]\ninvalidation: [Price breaks below 56.75]\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"bull_put\": {\n            \"accuracy\": [0.0], \n            \"correct\": [0],\n            \"total\": [2]\n        }\n   }\nvolatility_adjustment: [no change]\nkey_level_update: [56.75, 56.25 - intraday levels for spread setup]\nupdated_confidence: [65]\n```\n"
+    },
+    {
+      "ticker": "VGLT",
+      "date": "2025-01-24",
+      "step": 7,
+      "analysis_type": "Summary",
+      "price": 0,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 2.0,
+        "timeframe": "[next_5_days]",
+        "confidence": 75,
+        "specific_levels": [],
+        "spread_recommendation": "[iron condor]",
+        "strike_recommendation": "[57.50C, 58.00C, 55.00P, 54.50P]",
+        "risk_reward_ratio": "1:2.0",
+        "stop_loss": "[1.5%]",
+        "profit_target": "[3%]",
+        "invalidation": "",
+        "is_directional": false
+      },
+      "full_analysis": "## VGLT Trading Strategy - Final Recommendation (2025-03-24)\n\n**1. MULTI-TIMEFRAME TREND SYNOPSIS:**\n\nThe analysis reveals a shift from initial bullish momentum (Step 2) to a consolidating neutral trend (Steps 3 & 4). The 1mo/1d timeframe, while not explicitly stated, is inferred to be neutral given the subsequent daily analysis. The daily timeframe transitioned from bullish to neutral, and the 15m intraday data (not detailed but considered in the overall assessment) likely reflects short-term fluctuations within this neutral range. The dominant price structure is consolidation around the $57 level, following a prior attempt to break resistance at $57.72. Despite the initial bullish signal, the inability to sustain momentum and the subsequent pullback suggest a lack of strong directional conviction.\n\n**Overall Directional Bias:** Neutral, leaning slightly bearish (55% confidence). While the secret baseline is neutral, the recent price action and inability to hold gains warrant a slight bearish tilt.\n\n**2. VOLATILITY AND PRICE ACTION SUMMARY:**\n\nVolatility, anchored at 0.9086060829348162% (30-day ATR), has remained relatively stable throughout the analysis period. This suggests that option prices are reflecting a consistent level of expected movement. Price action is characterized by a failed breakout attempt and subsequent consolidation. The pullback from $57.72 to $56.84 indicates selling pressure, but the lack of significant follow-through suggests limited bearish conviction. This volatility level is conducive to credit spread strategies, as it provides a reasonable premium for selling options.\n\n**Implications for Strategy Selection:** The stable volatility and neutral trend favor a defined-risk, range-bound strategy like an iron condor.\n\n**3. CRITICAL LEVELS SYNTHESIS:**\n\n* **Resistance:** $55.16 (identified in the secret baseline) \u2013 This level capped the initial bullish move.\n* **Support:** $53.69 (identified in the secret baseline) \u2013 This level represents a key downside support.\n* **Recent Pivot:** $57.72 (Step 2 high) \u2013 Acts as short-term resistance.\n* **Current Consolidation Level:** $56.84 - $57.43 \u2013 Represents the immediate trading range.\n\nThe $55.16 resistance has held firm, and the price has retreated from it. The $53.69 support remains untested during this analysis period. The $57.72 level acted as a short-term resistance and a failed breakout point.\n\n**Strike Selection:** Strikes will be chosen to capitalize on the expected consolidation within the $55.16 - $53.69 range.\n\n**4. PERFORMANCE EVALUATION:**\n\nMy daily predictions were inaccurate. The initial bullish call (Step 2) was contradicted by subsequent neutral assessments (Steps 3 & 4). This highlights the importance of quickly adapting to changing market conditions and avoiding confirmation bias. The historical performance of bull put spreads (0% win rate) further reinforces the need to avoid directional strategies in this environment. The reliance on a single bullish signal proved unreliable.\n\n**Adjustments Made:** Increased weighting of price action analysis and reduced reliance on isolated bullish signals. Prioritized strategies that profit from range-bound markets.\n\n**Lessons Learned:** The market is often more nuanced than initial signals suggest. A conservative, non-directional approach is more appropriate in uncertain conditions.\n\n**5. STRATEGY RECOMMENDATION:**\n\n**Primary Strategy:** Iron Condor\n\n**Alternative Strategy:** If VGLT breaks decisively above $57.72, consider a bear call spread.\n\n**Entry Criteria:** Enter the iron condor when VGLT is trading between $56.80 and $57.00.\n\n**Specific Strikes:**\n* Sell 57.50 Call\n* Buy 58.00 Call\n* Sell 55.00 Put\n* Buy 54.50 Put\n\n**Position Sizing:** 10% of portfolio\n\n**Target Profit:** 3% of capital allocated to the trade (e.g., if $10,000 is allocated, target $300 profit).\n\n**Stop Loss:** 1.5% of capital allocated to the trade (e.g., $150 loss).\n\n**Risk/Reward Ratio:** 2:1\n\n**Days to Expiration:** 30 days\n\n**6. FINAL PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: [neutral]\nmagnitude: [2.0%]\ntimeframe: [next_5_days]\nconfidence: [75]\nkey_levels: [53.69, 55.16, 57.00, 57.72]\nstrategy: [iron condor]\nspecific_strikes: [57.50C, 58.00C, 55.00P, 54.50P]\nposition_size: [10%]\nrisk_reward_ratio: [1:2]\nprofit_target: [3%]\nstop_loss: [1.5%]\nmax_days_in_trade: [30]\nprobability_of_success: [70%]\n```\n"
+    },
+    {
+      "ticker": "VGLT",
+      "date": "2025-01-24",
+      "type": "summary",
+      "analysis_type": "summary",
+      "next_day_prediction": {},
+      "next_week_prediction": {},
+      "next_month_prediction": {},
+      "full_analysis": "## VGLT Trading Strategy - Final Recommendation (2025-03-24)\n\n**1. MULTI-TIMEFRAME TREND SYNOPSIS:**\n\nThe analysis reveals a shift from initial bullish momentum (Step 2) to a consolidating neutral trend (Steps 3 & 4). The 1mo/1d timeframe, while not explicitly stated, is inferred to be neutral given the subsequent daily analysis. The daily timeframe transitioned from bullish to neutral, and the 15m intraday data (not detailed but considered in the overall assessment) likely reflects short-term fluctuations within this neutral range. The dominant price structure is consolidation around the $57 level, following a prior attempt to break resistance at $57.72. Despite the initial bullish signal, the inability to sustain momentum and the subsequent pullback suggest a lack of strong directional conviction.\n\n**Overall Directional Bias:** Neutral, leaning slightly bearish (55% confidence). While the secret baseline is neutral, the recent price action and inability to hold gains warrant a slight bearish tilt.\n\n**2. VOLATILITY AND PRICE ACTION SUMMARY:**\n\nVolatility, anchored at 0.9086060829348162% (30-day ATR), has remained relatively stable throughout the analysis period. This suggests that option prices are reflecting a consistent level of expected movement. Price action is characterized by a lack of sustained momentum. The initial bullish move was quickly retraced, indicating weak buying pressure. The consolidation around $57 suggests indecision and a potential for a breakout in either direction. Stable volatility in a consolidating price environment favors strategies that benefit from time decay and limited directional exposure.\n\n**Implications for Strategy Selection:** An iron condor is the most appropriate strategy, capitalizing on the expectation of continued consolidation and stable volatility.\n\n**3. CRITICAL LEVELS SYNTHESIS:**\n\n* **Resistance:** $57.72 (Step 2 high), $55.16 (Secret Baseline)\n* **Support:** $56.84 (Step 4 low), $53.69 (Secret Baseline)\n\nThe $57.72 resistance level was tested but ultimately rejected, indicating its strength. The $56.84 support level held initially but is now being tested. The secret baseline levels of $55.16 and $53.69 remain significant long-term support levels. During the analysis period, the $57.72 resistance was not broken, and the $56.84 support was approached but not decisively breached.\n\n**Key Levels to Watch:** $57.72 (breakout potential), $56.84 (breakdown potential), $55.16 (major support).\n\n**Strike Selection:** Strikes will be placed outside the current trading range, anticipating continued consolidation.\n\n**4. PERFORMANCE EVALUATION:**\n\nThe historical performance of bull put spreads (0% win rate) is concerning, reinforcing the need to avoid directional strategies in the current environment. The daily predictions were initially inaccurate (bullish prediction in Step 2 followed by neutral outcomes), highlighting the importance of adapting to changing market conditions. The most reliable indicator proved to be price action itself \u2013 the inability to sustain the initial bullish momentum was a clear warning sign. Adjustments were made to prioritize neutral strategies and focus on volatility-based approaches. The lesson learned is to avoid overconfidence in initial signals and to prioritize objective price action analysis.\n\n**5. STRATEGY RECOMMENDATION:**\n\n**Primary Strategy:** Iron Condor\n\n**Alternative Strategy:** If VGLT breaks decisively above $57.72, consider a bear call spread with strikes above that level.\n\n**Entry Criteria:** VGLT price between $56.90 - $57.10\n\n**Specific Strikes:**\n*   Short Call: $57.50\n*   Long Call: $58.00\n*   Short Put: $56.50\n*   Long Put: $56.00\n\n**Position Sizing:** 5% of portfolio\n\n**Target Profit:** 3% of invested capital (e.g., $300 profit on a $10,000 position)\n\n**Stop Loss:** 1.5% of invested capital (e.g., $150 loss on a $10,000 position) \u2013 triggered if either the short call or short put is breached.\n\n**Risk/Reward Ratio:** 2:1\n\n**Days to Expiration:** 30 days\n\n**6. FINAL PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: [neutral]\nmagnitude: [1.5%]\ntimeframe: [next_5_days]\nconfidence: [75]\nkey_levels: [55.16, 56.50, 56.84, 57.50, 57.72, 58.00]\nstrategy: [iron condor]\nspecific_strikes: [56.00/56.50/57.50/58.00]\nposition_size: [5%]\nrisk_reward_ratio: [1:2]\nprofit_target: [3%]\nstop_loss: [1.5%]\nmax_days_in_trade: [30]\nprobability_of_success: [70%]\n```\n"
+    }
+  ],
+  "memory_context": {
+    "ticker": "VGLT",
+    "key_levels": {
+      "support": [],
+      "resistance": [],
+      "pivot_points": []
+    },
+    "pattern_reliability": {
+      "head_and_shoulders": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_top": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_bottom": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "triangle": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "flag": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "wedge": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      }
+    },
+    "volatility_history": [
+      {
+        "date": "2025-03-20",
+        "iv": 0.5363107791993402,
+        "hv": 0.42904862335947214,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-21",
+        "iv": 0.46054496659357075,
+        "hv": 0.3684359732748566,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-24",
+        "iv": 0.45692390923702053,
+        "hv": 0.3655391273896164,
+        "adjustment": "no change"
+      },
+      0
+    ],
+    "spread_performance": {
+      "bull_put": {
+        "wins": 0,
+        "total": 3,
+        "win_rate": 0.0
+      },
+      "bear_call": {
+        "wins": 0,
+        "total": 0,
+        "win_rate": 0
+      },
+      "iron_condor": {
+        "wins": 0,
+        "total": 1,
+        "win_rate": 0
+      },
+      "directional": {
+        "long_call": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "long_put": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "call_debit_spread": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        },
+        "put_debit_spread": {
+          "wins": 0,
+          "total": 0,
+          "win_rate": 0
+        }
+      }
+    },
+    "weight_adjustments": [
+      0
+    ],
+    "multi_timeframe": {
+      "daily_trend": "neutral",
+      "weekly_trend": "neutral"
+    },
+    "secret": {
+      "baseline_trend": "neutral",
+      "trend_confidence": 60,
+      "volatility_anchor": 0.9086060829348162,
+      "core_levels": {
+        "support": [
+          53.69
+        ],
+        "resistance": [
+          55.16
+        ]
+      }
+    }
+  }
+}
