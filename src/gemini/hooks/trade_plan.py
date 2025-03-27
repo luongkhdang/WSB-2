@@ -46,4 +46,42 @@ def get_trade_plan_prompt(spy_analysis, options_analysis, stock_analysis, spread
     - Position monitoring schedule
     
     Make this extremely actionable for a trader with a $20,000 account targeting 40-60% annual returns.
-    ''' 
+    '''
+
+def get_trade_plan_prompt_from_context(context):
+    """
+    Wrapper function that takes a context dictionary and extracts the parameters
+    needed for the get_trade_plan_prompt function.
+    
+    Parameters:
+    - context: Dictionary containing trade context information
+    
+    Returns:
+    - Formatted prompt for trade plan
+    """
+    # Extract values from context
+    ticker = context.get("symbol", "UNKNOWN")
+    
+    # Get stock analysis from context
+    stock_analysis = context.get("stock_analysis", {})
+    
+    # Get options analysis from context
+    options_analysis = context.get("options_data", {})
+    
+    # Extract market trend for SPY analysis 
+    market_trend = context.get("market_trend", {})
+    spy_analysis = market_trend.get("full_analysis", "No SPY analysis available")
+    
+    # For spread analysis, we'll use current price and ATR%
+    current_price = context.get("current_price", 0)
+    atr_percent = context.get("atr_percent", 0)
+    spread_analysis = f"Current Price: ${current_price}, ATR%: {atr_percent}%"
+    
+    # Call the original function with the extracted parameters
+    return get_trade_plan_prompt(
+        spy_analysis=spy_analysis,
+        options_analysis=options_analysis,
+        stock_analysis=stock_analysis,
+        spread_analysis=spread_analysis,
+        ticker=ticker
+    ) 

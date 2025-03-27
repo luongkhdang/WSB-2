@@ -1,0 +1,217 @@
+[
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "low",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% rangebound (50% confidence); 7-day: 1-2% rangebound (45% confidence); 14-day: 2-3% rangebound (40% confidence)",
+    "options_implications": "**",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "rangebound",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "1-2",
+        "direction": "rangebound",
+        "confidence": 45
+      },
+      "14_day": {
+        "magnitude": "2-3",
+        "direction": "rangebound",
+        "confidence": 40
+      }
+    },
+    "summary": "## SPY Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 0\n\n**Analysis:** The provided data presents a significant challenge.",
+    "date": "2025-03-19",
+    "price": 0,
+    "atr_percent": 0,
+    "analysis_type": "daily_1mo",
+    "full_analysis": "## SPY Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 0\n\n**Analysis:** The provided data presents a significant challenge. The stock data is flagged with an error and contains mostly zero values for key indicators (EMAs, ATR, MACD, Volume). The RSI is at 50, indicating a neutral momentum. Given the lack of directional signals from the technical indicators, the stock trend is assessed as neutral.\n\n*   **Price vs EMAs:** Unable to assess due to EMA values being 0.\n*   **RSI:** Neutral at 50.\n*   **MACD:** Unable to assess due to MACD and Signal values being 0.\n*   **Volume:** Unable to assess due to volume values being 0.\n\n**3. Sentiment Score:** 0\n\n**Analysis:** No fundamental data (earnings, news) is provided. Therefore, the sentiment score remains neutral.\n\n**4. Risk assessment:** normal\n\n**Analysis:** The VIX is at 20.0 and is stable, indicating a standard risk environment. The ATR is 1.50% of the price, placing it within the moderate volatility range. Risk adjustment is also set to 'standard' in the market context.\n\n**5. Market Alignment:** neutral\n\n**Analysis:** The SPY trend is neutral, and the stock trend is also neutral.\n\n**6. Movement Prediction:** 1-day: 0-0.5% rangebound (50% confidence); 7-day: 1-2% rangebound (45% confidence); 14-day: 2-3% rangebound (40% confidence)\n\n**Analysis:** Given the neutral technicals and market context, a rangebound movement is expected. The confidence levels are low due to the lack of clear signals.\n\n**7. Options Implications:**\n\nGiven the neutral forecast and moderate volatility, a strategy focusing on premium collection is appropriate. Credit spreads with 7-15 DTE are viable. \n\n*   **Ideal Strike Distance:** Given the expected 2-3% range over the next 14 days, consider selling credit spreads with strikes approximately 1-2% OTM (Out-of-the-Money) in either direction. For example, if SPY is at $100, a 98/99 or 101/102 credit spread could be considered.\n*   **Risk Management:** Tighten stop-loss orders due to the potential for unexpected volatility, even though the VIX is stable. Monitor the VIX closely for any significant changes.\n*   **Theta Decay:** Focus on maximizing theta decay by selecting expiration dates within the 7-15 DTE range.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "accuracy": "low",
+    "key_learning": "I need to prioritize market context (SPY trend, VIX stability) and assign a higher probability to continued stagnation when these factors indicate indecision.",
+    "weight_adjustment": "Increase the weight of SPY trend and VIX stability by 20% each. Decrease the weight of technical indicators (EMAs, support/resistance) by 10% when market context is strongly neutral.",
+    "quantified_error": "Predicted 0-0.5% rangebound, actual was 0.00% change - Overestimated potential movement by 0-0.5%.",
+    "credit_spread_strategy_refinement": "In strongly neutral market conditions (SPY flat, VIX stable), avoid selling credit spreads. If a trade is necessary, select strikes extremely far OTM to minimize potential losses from time decay and lack of directional movement.",
+    "accuracy_score": 2,
+    "error_magnitude": 0.0,
+    "date": "2025-03-20",
+    "analysis_type": "reflection_daily",
+    "full_reflection": "## Pretraining Reflection - 2025-03-19/20 Analysis\n\nThis was a remarkably static day, and my prediction, while not *wrong*, lacked precision. The market context indicated a neutral SPY trend and stable VIX, which should have signaled a higher probability of continued stagnation rather than a rangebound *potential* for movement.\n\n**1. Trend Prediction Accuracy Assessment:**\n\n*   **1-day:** My prediction of a 0-0.5% rangebound movement was accurate in that the price did not move. However, predicting a range when the actual outcome was *no* movement is a subtle but important distinction. The error margin is effectively the entire predicted range, as any movement within that range didn't occur.\n*   **7-day/14-day:** These predictions are currently invalidated by the 1-day outcome. A flat day doesn't contribute to establishing a trend, so the longer-term predictions are essentially reset.\n*   **Reliable Indicators:** Given the lack of movement, no technical indicators proved particularly reliable. The neutral market context was the most accurate signal, but wasn't weighted heavily enough in the prediction.\n\n**2. Volatility Assessment:**\n\n*   I did not correctly predict volatility changes. I anticipated a rangebound movement, implying *some* volatility, even if minimal. The actual outcome was zero volatility.\n*   Factors missed: The stable VIX (at 20) and neutral SPY trend strongly suggested a lack of directional conviction in the broader market. This should have translated to a higher probability of continued low volatility. I underestimated the power of market indecision.\n\n**3. Technical Analysis Review:**\n\n*   **Helpful/Misleading Indicators:** EMAs and support/resistance levels were irrelevant given the lack of price movement. They provided no signal.\n*   **Support/Resistance:** Support and resistance levels were not tested.\n*   **EMAs:** Price action around EMAs was non-existent.\n\n**4. Market Alignment Impact:**\n\n*   The broader market (neutral SPY) heavily influenced this stock's movement \u2013 or rather, *lack* of movement. The stock mirrored the SPY\u2019s indecision.\n*   Aligned movement to SPY mattered significantly. The stock didn\u2019t deviate from the broader market\u2019s neutral stance. A contrary movement was never a realistic possibility given the market conditions.\n\n**5. Options Implications:**\n\n*   My analysis would *not* have correctly positioned credit spreads for this movement. Any credit spread would have been a losing trade due to time decay and the lack of price movement.\n*   Optimal strike selection: Given the actual movement, the optimal strike selection would have been to *avoid* selling credit spreads altogether. If forced to trade, strikes far OTM on both sides would have minimized losses, but still likely resulted in a loss.\n*   7-15 DTE Credit Spread Strategy: This movement would have been detrimental to a 7-15 DTE credit spread strategy. Time decay would erode the premium, and the lack of price movement would prevent the spread from becoming profitable.\n\n\n\n1. Prediction Accuracy: **low**\n2. Quantified Error: Predicted 0-0.5% rangebound, actual was 0.00% change - Overestimated potential movement by 0-0.5%.\n3. Key Learning: I need to prioritize market context (SPY trend, VIX stability) and assign a higher probability to continued stagnation when these factors indicate indecision.\n4. Weight Adjustment: Increase the weight of SPY trend and VIX stability by 20% each. Decrease the weight of technical indicators (EMAs, support/resistance) by 10% when market context is strongly neutral.\n5. Credit Spread Strategy Refinement: In strongly neutral market conditions (SPY flat, VIX stable), avoid selling credit spreads. If a trade is necessary, select strikes extremely far OTM to minimize potential losses from time decay and lack of directional movement.\n"
+  },
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "normal",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% movement (50% confidence); 7-day: 1-2% movement (50% confidence); 14-day: 2-4% movement (40% confidence)",
+    "options_implications": "** Given the neutral forecast and moderate volatility (VIX at 20), credit spreads with 7-15 DTE are viable. Ideal strike distances would be 1-2% out-of-the-money (OTM) for both calls and puts, aiming for a credit of 0.10-0.20 per share. The neutral outlook suggests a higher probability of time decay benefiting the spread, but the potential for a 2-4% move within 14 days necessitates careful position sizing and monitoring. A wider strike distance could be considered to increase the credit received, but would also increase the risk of assignment.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "1-2",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "2-4",
+        "direction": "movement",
+        "confidence": 40
+      }
+    },
+    "summary": "## SPY Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3.",
+    "date": "2025-03-19",
+    "price": 0,
+    "atr_percent": 0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## SPY Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% movement (50% confidence); 7-day: 1-2% movement (50% confidence); 14-day: 2-4% movement (40% confidence)\n\n**7. Options Implications:** Given the neutral forecast and moderate volatility (VIX at 20), credit spreads with 7-15 DTE are viable. Ideal strike distances would be 1-2% out-of-the-money (OTM) for both calls and puts, aiming for a credit of 0.10-0.20 per share. The neutral outlook suggests a higher probability of time decay benefiting the spread, but the potential for a 2-4% move within 14 days necessitates careful position sizing and monitoring. A wider strike distance could be considered to increase the credit received, but would also increase the risk of assignment.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "accuracy": "low",
+    "key_learning": "I will prioritize a \"no movement\" scenario when the VIX is stable and the broader market trend is neutral, recognizing that sometimes the most accurate prediction is for continued stability.",
+    "weight_adjustment": "Increase the weight given to VIX stability and neutral SPY trends. Decrease the weight given to indicators suggesting even slight directional movement when these factors are present.",
+    "quantified_error": "Predicted 0-0.5% movement, actual was 0.00% - Overestimated by 0-0.5%.",
+    "credit_spread_strategy_refinement": "In situations with stable VIX and neutral market trends, avoid credit spreads unless extremely wide strikes can be sold to capitalize on time decay with minimal risk of assignment. Consider strategies like iron condors with very wide wingspans.",
+    "accuracy_score": 2,
+    "error_magnitude": 0.0,
+    "date": "2025-03-20",
+    "analysis_type": "reflection_intraday",
+    "full_reflection": "## Pretraining Reflection - 2025-03-19/20 Analysis\n\nThis analysis reflects on the prediction made on 2025-03-19 for the period ending 2025-03-20. The actual outcome was a completely neutral movement, a significant deviation from the predicted potential for movement, even within the stated ranges.\n\n**1. Trend Prediction Accuracy Assessment:**\n\n*   **1-day Prediction:** The prediction of 0-0.5% movement was highly inaccurate. The actual movement was 0.00%, falling squarely outside the predicted range. The error margin is substantial \u2013 a complete miss.\n*   **7-day & 14-day Predictions:** These predictions are currently irrelevant as only one day has passed since the initial forecast. However, the complete lack of movement suggests these longer-term predictions are also likely to be inaccurate.\n*   **Reliable Indicators:** Given the neutral outcome, it's difficult to identify *reliable* indicators. The market context suggested a neutral SPY trend and stable VIX, which aligned with the outcome, but the prediction still anticipated *some* movement. This suggests the indicators weren't weighted appropriately to favor a truly flat outcome.\n\n**2. Volatility Assessment:**\n\n*   **Volatility Prediction:** The prediction implicitly assumed some volatility, even within the small movement ranges. The actual volatility remained steady (0.00% change in ATR), indicating a misjudgment.\n*   **Missed Factors:** The VIX being stable at 20.0 *should* have been a stronger signal for low expected volatility. The analysis likely didn't give enough weight to a stable VIX as a predictor of continued stability. The market trend score of 10, while not strongly bullish or bearish, didn't sufficiently indicate a lack of directional impetus.\n\n**3. Technical Analysis Review:**\n\n*   **Helpful/Misleading Indicators:** Without specific indicators used in the original prediction, it's difficult to pinpoint. However, the fact that no movement occurred suggests any indicators leaning towards even slight bullish or bearish signals were misleading.\n*   **Support/Resistance:** Support and resistance levels weren't tested, so their reliability is unknown.\n*   **EMAs:** EMA analysis is irrelevant given the lack of price movement.\n\n**4. Market Alignment Impact:**\n\n*   **Broader Market Influence:** The neutral SPY trend strongly influenced the stock's movement, reinforcing the lack of directional pressure.\n*   **SPY Alignment:** The stock moved *exactly* in line with the SPY (neutral). This suggests a high degree of correlation and that the stock is heavily influenced by broader market sentiment. The analysis should have prioritized this alignment more.\n\n**5. Options Implications:**\n\n*   **Credit Spread Positioning:** The analysis would *not* have correctly positioned credit spreads. Predicting even a small movement would have led to strike selection that would have resulted in losses.\n*   **Optimal Strike Selection:** Given the actual movement, the optimal strategy would have been to avoid credit spreads altogether or to sell strangles/straddles with very wide strikes, capitalizing on time decay with minimal risk of assignment.\n*   **7-15 DTE Strategy:** A 7-15 DTE credit spread strategy would have been highly unfavorable. The lack of movement would have resulted in the spread expiring worthless, leading to maximum loss.\n\n\n\n1. Prediction Accuracy: **low**\n2. Quantified Error: Predicted 0-0.5% movement, actual was 0.00% - Overestimated by 0-0.5%.\n3. Key Learning: I will prioritize a \"no movement\" scenario when the VIX is stable and the broader market trend is neutral, recognizing that sometimes the most accurate prediction is for continued stability.\n4. Weight Adjustment: Increase the weight given to VIX stability and neutral SPY trends. Decrease the weight given to indicators suggesting even slight directional movement when these factors are present.\n5. Credit Spread Strategy Refinement: In situations with stable VIX and neutral market trends, avoid credit spreads unless extremely wide strikes can be sold to capitalize on time decay with minimal risk of assignment. Consider strategies like iron condors with very wide wingspans.\n"
+  },
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "normal",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% movement (50% confidence); 7-day: 0.5-1.5% movement (50% confidence); 14-day: 1-3% movement (40% confidence)",
+    "options_implications": "** Given the neutral forecast and low confidence, a strategy focusing on time decay would be most appropriate. Credit spreads with 7-15 DTE are viable. Ideal strike distances would be 1-2% OTM (Out-of-the-Money) calls or puts, aiming for a small premium collection. The VIX at 20 suggests relatively normal volatility, so premium will be moderate. Avoid deep OTM options due to the limited potential for profit and increased risk of assignment.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "0.5-1.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "1-3",
+        "direction": "movement",
+        "confidence": 40
+      }
+    },
+    "summary": "## SPY Analysis - 2025-03-20\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3.",
+    "date": "2025-03-20",
+    "price": 0,
+    "atr_percent": 0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## SPY Analysis - 2025-03-20\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% movement (50% confidence); 7-day: 0.5-1.5% movement (50% confidence); 14-day: 1-3% movement (40% confidence)\n\n**7. Options Implications:** Given the neutral forecast and low confidence, a strategy focusing on time decay would be most appropriate. Credit spreads with 7-15 DTE are viable. Ideal strike distances would be 1-2% OTM (Out-of-the-Money) calls or puts, aiming for a small premium collection. The VIX at 20 suggests relatively normal volatility, so premium will be moderate. Avoid deep OTM options due to the limited potential for profit and increased risk of assignment.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "accuracy": "high",
+    "key_learning": "I need to incorporate a probability assessment for *complete* stagnation, especially when the broader market shows neutral trends and volatility is stable.",
+    "weight_adjustment": "Increase the weight given to VIX stability and SPY trend when assessing potential price movement. Reduce the weight given to technical indicators in extremely neutral market conditions.",
+    "quantified_error": "Predicted 0-0.5% movement, actual was 0.00% - Accurate to within 0.5%.",
+    "credit_spread_strategy_refinement": "In situations with a neutral SPY trend, stable VIX, and low market trend score, avoid initiating 7-15 DTE credit spread strategies unless extremely wide strikes are used to account for the possibility of zero movement. Focus on strategies that profit from time decay in stable markets, rather than directional movement.",
+    "accuracy_score": 8,
+    "date": "2025-03-21",
+    "analysis_type": "reflection_intraday",
+    "full_reflection": "## Pretraining Reflection - 2025-03-20/21 Analysis\n\nThis analysis reflects on the prediction made on 2025-03-20 for the period ending 2025-03-21. The actual outcome was a completely neutral movement, a scenario that highlights the challenges of short-term price prediction.\n\n**1. Trend Prediction Accuracy Assessment:**\n\n*   **1-day Prediction:** My prediction of 0-0.5% movement was highly accurate. The actual movement was 0.00%. The error margin is essentially zero.\n*   **7-day & 14-day Predictions:** These predictions are still open, but the initial day\u2019s outcome suggests a high probability of remaining within the predicted ranges (0.5-1.5% for 7-day, 1-3% for 14-day) *if* the neutral trend continues. However, the lack of any movement on day one significantly reduces the likelihood of substantial movement within those timeframes.\n*   **Reliable Indicators:** Given the lack of movement, no technical indicators proved particularly reliable in predicting direction. The stability of the VIX (20.0, stable) was a good indicator of expected low volatility, aligning with the outcome.\n\n**2. Volatility Assessment:**\n\n*   I did correctly predict low volatility. The prediction implied a narrow movement range, and the actual volatility (0.00% change in ATR) confirmed this.\n*   Factors missed: While the VIX indicated stability, I didn\u2019t explicitly factor in the possibility of *complete* stagnation. The market context showed a 'standard' risk adjustment, which didn't push me to consider a scenario of zero movement. Perhaps a more nuanced assessment of market sentiment beyond the VIX is needed.\n\n**3. Technical Analysis Review:**\n\n*   **Helpful/Misleading Indicators:** In this case, most indicators were neutral and didn\u2019t provide strong signals. EMAs, support/resistance levels (not explicitly mentioned in the initial analysis, but assumed to be considered) were irrelevant as there was no price action to interact with them.\n*   **Support/Resistance:** Not applicable, as there was no price movement to test these levels.\n*   **EMAs:** Not applicable, as there was no price action to interact with them.\n\n**4. Market Alignment Impact:**\n\n*   The broader market (SPY trend: neutral, market trend score: 10) strongly influenced the stock\u2019s movement. The stock mirrored the SPY\u2019s neutrality.\n*   Aligned movement to SPY mattered significantly. The neutral SPY trend was a strong indicator of a likely neutral movement in the target stock. This suggests a strong correlation in the current market environment.\n\n**5. Options Implications:**\n\n*   **Credit Spreads:** My analysis would *not* have correctly positioned credit spreads for optimal profit. A credit spread strategy would have been a poor choice given the zero movement. The premium collected would likely have been eaten up by trading costs.\n*   **Strike Selection:** Optimal strike selection would have been to avoid initiating any credit spread positions. If forced to trade, extremely wide strikes would have been necessary to avoid assignment, resulting in minimal premium.\n*   **7-15 DTE Strategy:** A 7-15 DTE credit spread strategy would have been a losing proposition. The lack of movement would have resulted in the spread expiring worthless, leading to a loss of the premium received.\n\n\n\n1. Prediction Accuracy: high\n2. Quantified Error: Predicted 0-0.5% movement, actual was 0.00% - Accurate to within 0.5%.\n3. Key Learning: I need to incorporate a probability assessment for *complete* stagnation, especially when the broader market shows neutral trends and volatility is stable.\n4. Weight Adjustment: Increase the weight given to VIX stability and SPY trend when assessing potential price movement. Reduce the weight given to technical indicators in extremely neutral market conditions.\n5. Credit Spread Strategy Refinement: In situations with a neutral SPY trend, stable VIX, and low market trend score, avoid initiating 7-15 DTE credit spread strategies unless extremely wide strikes are used to account for the possibility of zero movement. Focus on strategies that profit from time decay in stable markets, rather than directional movement."
+  },
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "normal",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% movement (50% confidence); 7-day: 0.5-1.5% movement (50% confidence); 14-day: 1-3% movement (40% confidence)",
+    "options_implications": "** Given the neutral forecast and low confidence, a strategy focusing on time decay is preferable. Credit spreads with 7-15 DTE are suitable. Given the RSI of 50, strikes should be at-the-money (ATM) or slightly out-of-the-money (OTM) to maximize premium collection. A call spread (selling a call and buying a higher strike call) or a put spread (selling a put and buying a lower strike put) would be appropriate. Ideal strike distance would be 1-2% from the current price, aiming for a credit of 0.10-0.20 per share. Manage risk by being prepared to close the spread if the price moves significantly in either direction.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "0.5-1.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "1-3",
+        "direction": "movement",
+        "confidence": 40
+      }
+    },
+    "summary": "## SPY Analysis - 2025-03-21\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3.",
+    "date": "2025-03-21",
+    "price": 0,
+    "atr_percent": 0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## SPY Analysis - 2025-03-21\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% movement (50% confidence); 7-day: 0.5-1.5% movement (50% confidence); 14-day: 1-3% movement (40% confidence)\n\n**7. Options Implications:** Given the neutral forecast and low confidence, a strategy focusing on time decay is preferable. Credit spreads with 7-15 DTE are suitable. Given the RSI of 50, strikes should be at-the-money (ATM) or slightly out-of-the-money (OTM) to maximize premium collection. A call spread (selling a call and buying a higher strike call) or a put spread (selling a put and buying a lower strike put) would be appropriate. Ideal strike distance would be 1-2% from the current price, aiming for a credit of 0.10-0.20 per share. Manage risk by being prepared to close the spread if the price moves significantly in either direction.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "normal",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% movement (50% confidence); 7-day: 0.5-1.5% movement (50% confidence); 14-day: 1-3% movement (40% confidence)",
+    "options_implications": "** Given the neutral forecast and low confidence, a strategy focusing on time decay is preferable. Credit spreads with 7-15 DTE are suitable. Given the RSI of 50, strikes should be at-the-money (ATM) or slightly out-of-the-money (OTM) to maximize premium collection. A call spread (selling a call and buying a higher strike call) or a put spread (selling a put and buying a lower strike put) would be appropriate. Ideal strike distance would be 1-2% from the current price, aiming for a credit of 0.10-0.20 per share. Manage risk by being prepared to close the spread if the price moves significantly in either direction.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "0.5-1.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "1-3",
+        "direction": "movement",
+        "confidence": 40
+      }
+    },
+    "summary": "## SPY Analysis - 2025-03-24\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3.",
+    "date": "2025-03-24",
+    "price": 0,
+    "atr_percent": 0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## SPY Analysis - 2025-03-24\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 5\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% movement (50% confidence); 7-day: 0.5-1.5% movement (50% confidence); 14-day: 1-3% movement (40% confidence)\n\n**7. Options Implications:** Given the neutral forecast and low confidence, a strategy focusing on time decay is preferable. Credit spreads with 7-15 DTE are suitable. Given the RSI of 50, strikes should be at-the-money (ATM) or slightly out-of-the-money (OTM) to maximize premium collection. A call spread (selling a call and buying a higher strike call) or a put spread (selling a put and buying a lower strike put) would be appropriate. Ideal strike distance would be 1-2% from the current price, aiming for a credit of 0.10-0.20 per share. Manage risk by being prepared to close the spread if the price moves significantly in either direction.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  }
+]

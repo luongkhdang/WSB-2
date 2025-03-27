@@ -1,0 +1,26 @@
+PRETRAINING INSIGHTS:
+
+2. 2025-03-20 (reflection_daily) - Accuracy: moderate
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.66% upside - Underestimated by 0.16-0.66%.
+   Learning: I need to incorporate a wider range of potential movement, even with stable market conditions, and increase the weighting of potential upside when the SPY is neutral.
+
+4. 2025-03-20 (reflection_intraday) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% upside, actual was -0.53% downside - Underestimated the downside by 1.03%.
+   Learning: I need to improve my ability to identify subtle bearish signals and assess the potential for directional moves even in stable volatility environments.
+
+6. 2025-03-21 (reflection_intraday) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% upside, actual was 1.97% upside - Underestimated by 1.47-1.97%.
+   Learning: I need to prioritize identifying potential catalysts for significant price movements, even in a seemingly neutral market environment.
+
+
+CONCLUSIONS FROM PRETRAINING:
+- Overall prediction accuracy: 3.0/10
+- Key insights:
+  * I need to incorporate a wider range of potential movement, even with stable market conditions, and increase the weighting of potential upside when the SPY is neutral.
+  * I need to improve my ability to identify subtle bearish signals and assess the potential for directional moves even in stable volatility environments.
+  * I need to prioritize identifying potential catalysts for significant price movements, even in a seemingly neutral market environment.
+
+CREDIT SPREAD STRATEGY IMPLICATIONS:
+1. When the SPY is neutral and volatility is low, widen the strike selection for 7-15 DTE credit spreads to account for the possibility of a larger-than-expected move, prioritizing premium capture over a higher probability of max profit.
+2. In neutral market conditions, prioritize credit spreads with a slightly bearish bias (selling puts) or tighter strike widths to reduce risk exposure to unexpected directional moves. Consider reducing DTE to 7 days to minimize exposure to longer-term trends.
+3. In situations with even moderate bullish signals, favor wider call spread strike selections to capture larger potential upside, even if it increases the risk of early assignment. Prioritize identifying potential catalysts before establishing credit spreads.

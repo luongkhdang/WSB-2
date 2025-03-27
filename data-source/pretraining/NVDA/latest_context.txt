@@ -1,0 +1,113 @@
+{
+  "ticker": "NVDA",
+  "pretraining_period": "2025-01-24 to 2025-01-24",
+  "last_update": "2025-03-26 19:31:53",
+  "analyses_count": 5,
+  "accuracy_rate": 0,
+  "memory_context": {
+    "ticker": "NVDA",
+    "key_levels": {
+      "support": [],
+      "resistance": [],
+      "pivot_points": []
+    },
+    "pattern_reliability": {
+      "head_and_shoulders": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_top": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_bottom": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "triangle": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "flag": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "wedge": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      }
+    },
+    "volatility_history": [
+      {
+        "date": "2025-03-20",
+        "iv": 3.228542002761443,
+        "hv": 2.5828336022091545,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-21",
+        "iv": 2.536031131677032,
+        "hv": 2.0288249053416254,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-24",
+        "iv": 2.022851201639477,
+        "hv": 1.6182809613115814,
+        "adjustment": "no change"
+      },
+      0
+    ],
+    "spread_performance": {
+      "bull_put": {
+        "wins": 0,
+        "total": 1,
+        "win_rate": 0.0
+      },
+      "bear_call": {
+        "wins": 0,
+        "total": 1,
+        "win_rate": 0.0
+      },
+      "iron_condor": {
+        "wins": 1,
+        "total": 2,
+        "win_rate": 0.5
+      }
+    },
+    "weight_adjustments": [
+      0
+    ],
+    "multi_timeframe": {
+      "daily_trend": "neutral",
+      "weekly_trend": "neutral"
+    },
+    "secret": {
+      "baseline_trend": "neutral",
+      "trend_confidence": 60,
+      "volatility_anchor": 1.0,
+      "core_levels": {
+        "support": [],
+        "resistance": []
+      }
+    }
+  },
+  "next_day_direction": "neutral",
+  "next_day_magnitude": 0,
+  "next_day_confidence": 0,
+  "next_day_spread": "",
+  "next_week_direction": "neutral",
+  "next_week_magnitude": 0,
+  "next_week_confidence": 0,
+  "next_week_spread": "",
+  "next_month_direction": "neutral",
+  "next_month_magnitude": 0,
+  "next_month_confidence": 0,
+  "next_month_spread": ""
+}

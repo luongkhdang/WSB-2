@@ -1,0 +1,26 @@
+PRETRAINING INSIGHTS:
+
+2. 2025-03-20 (reflection_daily) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Accurate within 0.5%.
+   Learning: I need to prioritize strategies that capitalize on extremely low volatility environments, even if the potential profit is smaller.
+
+4. 2025-03-20 (reflection_intraday) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Accurate within the predicted range, but low confidence initially.
+   Learning: I need to more aggressively prioritize market context (especially SPY trend and VIX stability) over technical indicators when the market context is strongly neutral.
+
+6. 2025-03-21 (reflection_intraday) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Accurate within the range, but confidence level was too high.
+   Learning: I need to prioritize broader market indicators (VIX, SPY trend) and assign higher probability to continued neutrality when these indicators suggest low volatility and a lack of directional bias.
+
+
+CONCLUSIONS FROM PRETRAINING:
+- Overall prediction accuracy: 2.0/10
+- Key insights:
+  * I need to prioritize strategies that capitalize on extremely low volatility environments, even if the potential profit is smaller.
+  * I need to more aggressively prioritize market context (especially SPY trend and VIX stability) over technical indicators when the market context is strongly neutral.
+  * I need to prioritize broader market indicators (VIX, SPY trend) and assign higher probability to continued neutrality when these indicators suggest low volatility and a lack of directional bias.
+
+CREDIT SPREAD STRATEGY IMPLICATIONS:
+1. In extremely low volatility scenarios, focus on tighter strike selection for 7-15 DTE credit spreads, prioritizing theta decay over directional profit. Consider strategies beyond traditional credit spreads, such as straddles/strangles with narrow strikes, or even naked options with careful risk management.
+2. In strongly neutral market conditions (SPY neutral, stable VIX), avoid initiating credit spreads unless strikes are extremely far out-of-the-money, accepting minimal profit for high probability of success. Focus on strategies that benefit from time decay *only* when directional movement is highly improbable.
+3. In situations with stable VIX and neutral SPY, avoid initiating credit spread strategies unless extremely tight strike selection is possible to maximize theta decay, and even then, position size should be significantly reduced.

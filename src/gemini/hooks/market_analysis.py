@@ -7,6 +7,7 @@ by automatically splitting them into multiple messages when sent to Discord,
 which has a 2000 character limit per message.
 """
 
+
 def get_market_trend_prompt(market_data):
     today_date = datetime.now().strftime("%d-%m-%Y")
     """Get prompt template for analyzing comprehensive market trend with multiple indices."""
@@ -80,20 +81,17 @@ def get_market_trend_prompt(market_data):
        - SPY vs. IWM: Large vs. small-cap leadership.
        - SPY vs. VTV: Growth vs. value rotation.
        - SPY vs. VGLT: Risk-on (equities up, bonds down) vs. risk-off.
-
-    8. Real-Time Catalysts (use web/X search):
-       - Policy Watch: Latest statements from Trump, Fed, or Treasury (e.g., tariff news, rate cut calls).
-       - Economic Calendar: Key releases (e.g., PCE, PMI) from sites like Investing.com.
-       - X Sentiment: Search posts for "market trend" or "SPY" to gauge retail mood.
+ 
     !IMPORTANT: Credit Spread Trading Outlook:
        - Trend alignment: Bullish (sell put spreads), bearish (sell call spreads), neutral (iron condors).
        - Strike selection: Use support/resistance and IV to pick OTM strikes with >70% POP.
        - Risk management: VIX >30 (half size), max loss <2% of account.
        
-    Return a structured analysis with the following EXACT sections:
+    Return a structured analysis with the following EXACT sections and FORMAT:
     
     Market Trend: [bullish/bearish/neutral]
-    Market Trend Score: [number out of 30]
+    Market Trend Score: [number out of 30] 
+    (IMPORTANT: You MUST include this exact label "Market Trend Score:" followed by a numeric value based on your analysis)
     
     VIX Analysis: 
     [Your assessment of VIX implications]
@@ -126,7 +124,7 @@ def get_market_trend_prompt(market_data):
     !IMPORTANT: YOU , THE AI AGENT, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
     !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE.
-    !IMPORTANT: TODAY IS {today_date}. UP-TO-DATA INFORMATION IS DETRIMENTAL TO THE ANALYSIS.
+ 
     ANALYZER FULL OPINION: [Experience-Based Insight: "In my experience…" ties the analysis to real-world patterns I've traded, grounding the decision in practical know-how.
 Frequency Observation: "This happens a lot/rarely happens…" flags how common or unique the setup is, setting expectations for reliability or surprise.
 Comparative Nuance: "This looks like X but not exactly…" draws parallels to past trades, highlighting subtle differences that matter.
@@ -137,6 +135,7 @@ Actionable Gut: A final yes/no with reasoning—why I'd trade it, what could go 
     
     
     '''
+
 
 def get_spy_options_prompt(options_data):
     """Get prompt template for analyzing SPY options data."""
@@ -164,6 +163,7 @@ def get_spy_options_prompt(options_data):
     4. Confidence level (high/medium/low)
     '''
 
+
 def get_market_data_prompt(market_data):
     """Get prompt template for analyzing general market data."""
     today_date = datetime.now().strftime("%d-%m-%Y")
@@ -176,4 +176,4 @@ def get_market_data_prompt(market_data):
     1. Key market trends
     2. Potential trading opportunities
     3. Risk factors to consider
-    ''' 
+    '''

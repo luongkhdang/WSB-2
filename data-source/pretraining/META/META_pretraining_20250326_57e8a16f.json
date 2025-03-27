@@ -1,0 +1,256 @@
+{
+  "ticker": "META",
+  "start_date": "2025-01-24",
+  "end_date": "2025-01-24",
+  "processing_time": 142.1750831604004,
+  "analyses_count": 5,
+  "accuracy_rate": 0,
+  "total_predictions": 0,
+  "correct_predictions": 0,
+  "results": [
+    {
+      "ticker": "META",
+      "date": "2025-03-20",
+      "step": 2,
+      "analysis_type": "5d/15m_analysis",
+      "price": 585.97998046875,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.5,
+        "timeframe": "next_day",
+        "confidence": 75,
+        "specific_levels": [
+          580.0,
+          585.0,
+          595.0,
+          600.0,
+          605.0
+        ],
+        "spread_recommendation": "iron condor",
+        "strike_recommendation": "Sell 585P, Buy 580P, Sell 600C, Buy 605C - Rationale: Captures range-bound trading, benefits from IV expansion.",
+        "invalidation": "Breakout above 605 or below 580."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## META Intraday Analysis - 2025-03-20 (15-Minute Data)\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe baseline trend remains neutral (60% confidence) as per the secret. Today\u2019s data doesn\u2019t contradict this. The neutral SPY trend and market score of 50 further support this assessment. The 30-day ATR of 1.0% provides a volatility anchor. The current intraday range (579.51 - 609.81) is relatively wide, suggesting some intraday volatility, but the implied volatility (3.10%) is still below the historical volatility (2.48%) and ATR (0.62%). This discrepancy suggests potential for IV expansion, but not a dramatic shift. No key levels were previously identified, so this remains a blank slate.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute chart shows a volatile session, with a wide range established early. The price action appears to be ranging, bouncing between roughly 585 and 595 for the majority of the 26 bars. The MACD crossing at 0 suggests a potential shift in momentum, but it's too early to confirm a trend. Volume (20.55M) is moderate, indicating reasonable participation. The VWAP (597.63) is slightly above the current price (585.98), suggesting a potential for a short-term pullback towards the VWAP. There's no clear bullish or bearish pattern forming; it's largely choppy.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility, as indicated by the range, is higher than the implied volatility. This suggests that options are currently underpricing the potential for movement. This creates an opportunity for selling volatility through credit spreads. The discrepancy between IV and HV suggests a potential for IV expansion if the price continues to fluctuate within a range or breaks out. Ideal entry timing would be near the VWAP (597.63) or after a brief pullback towards the lower end of the intraday range (around 585-587) to capitalize on potential IV contraction after the initial move. Premium expansion is possible if a clear breakout occurs above 605 or below 580.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, there are no pre-defined key levels. However, based on intraday data, we can identify potential levels:\n\n*   **Intraday Support:** 585 (recent low) and 580 (psychological level)\n*   **Intraday Resistance:** 595 (multiple touches) and 600 (psychological level) and 609.81 (intraday high)\n\nThese levels are crucial for strike selection. The price is currently testing the 585 support level.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral baseline, moderate volatility, and the potential for IV expansion, an **Iron Condor** is the most appropriate strategy.\n\n*   **Strike Selection:**\n    *   **Call Side:** Sell the 600 call, buy the 605 call. (Slightly above intraday resistance)\n    *   **Put Side:** Sell the 585 put, buy the 580 put. (At intraday support)\n*   **Entry Timing:** Enter the spread when the price is near the 585 level, ideally after a small bounce.\n*   **Probability of Success Estimate:** 65% (based on the expectation of continued range-bound trading)\n*   **Risk/Reward Profile:** 1:2 (aim for a credit of at least 1/2 of the maximum risk)\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: 0.5%\ntimeframe: next_day\nconfidence: 75\nspecific_levels: [580, 585, 595, 600, 605]\nspread_recommendation: iron condor\nstrike_recommendation: Sell 585P, Buy 580P, Sell 600C, Buy 605C - Rationale: Captures range-bound trading, benefits from IV expansion.\ninvalidation: Breakout above 605 or below 580.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"iron_condor\": {\n            \"accuracy\": 50, \n            \"correct\": 0,\n            \"total\": 0\n        }\n   }\nvolatility_adjustment: no change\nkey_level_update: [580, 585, 595, 600, 605]\nupdated_confidence: 70\n```\n"
+    },
+    {
+      "ticker": "META",
+      "date": "2025-03-21",
+      "step": 3,
+      "analysis_type": "5d/15m_analysis",
+      "price": 596.239990234375,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.2,
+        "timeframe": "next_day",
+        "confidence": 75,
+        "specific_levels": [
+          585.0,
+          590.0,
+          595.0,
+          600.0
+        ],
+        "spread_recommendation": "iron condor",
+        "strike_recommendation": "Sell 597.50 Call, Sell 587.50 Put - capitalizing on limited movement and time decay.",
+        "invalidation": "A break above 600 or below 585 would invalidate this prediction."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## META Intraday Analysis - 2025-03-21\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe baseline trend remains neutral (60% confidence) as per the secret. Today\u2019s data doesn\u2019t significantly contradict this. The slight decrease in IV from yesterday (3.097 to 2.605) suggests a cooling off in option pricing, aligning with the neutral outlook. The 30-day ATR of 1.0% remains our volatility anchor. No key levels were previously identified, so this remains unchanged. The intraday range (580.95 - 597.54) is relatively contained, supporting the neutral assessment. The mixed daily/weekly trends suggest a lack of strong directional bias.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute chart shows a period of consolidation within the intraday range. The price action doesn't exhibit a clear trending pattern \u2013 no obvious head and shoulders, triangles, or flags. Volume (16.9M) is moderate, not indicating a strong conviction in either direction. The VWAP (591.54) sits slightly below the current price (596.24), suggesting short-term bullish pressure. The MACD at 0 indicates a lack of momentum. The high of 597.54 and low of 580.95 define the immediate intraday boundaries. There's a slight tendency for pullbacks towards the VWAP before resuming upward movement.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nThe implied volatility (2.605) is lower than the historical volatility (2.084), creating a slight volatility skew. This suggests options are relatively overpriced, favoring strategies that benefit from volatility contraction. The ATR% (0.521) indicates moderate intraday volatility relative to the price.  An ideal entry timing would be during a period of relative calm, near the VWAP, anticipating a continuation of the consolidation or a slight upward move. Premium expansion is less likely given the decreasing IV, but a small increase could occur if the price tests the intraday high.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, there are no established key levels. However, based on the intraday data, we can identify potential intraday support at 588-590 (around the VWAP) and resistance at 595-597 (near the intraday high). These are *intraday* levels and should not be confused with longer-term support/resistance. Price is currently above the intraday VWAP, indicating short-term bullish momentum.  The 590 level will be a critical zone to watch for potential support.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral outlook, lower IV relative to HV, and the potential for continued consolidation, an **iron condor** is the most appropriate strategy.\n\n* **Strike Selection:**\n    * **Call Side:** Sell a call at 597.50 (slightly above the intraday high)\n    * **Put Side:** Sell a put at 587.50 (slightly below the intraday VWAP and potential support)\n    * **Rationale:** This setup aims to profit from time decay and limited price movement. The strikes are positioned outside the current intraday range, maximizing the probability of the price staying within the spread.\n* **Entry Timing:** Enter the iron condor near the market close (3:50 PM EST) to take advantage of overnight time decay.\n* **Probability of Success Estimate:** 65% (based on the contained intraday range and neutral outlook).\n* **Risk/Reward Profile:** 1:2 (potential profit is twice the maximum risk).\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: 0.2%\ntimeframe: next_day\nconfidence: 75\nspecific_levels: [585, 590, 595, 600]\nspread_recommendation: iron condor\nstrike_recommendation: Sell 597.50 Call, Sell 587.50 Put - capitalizing on limited movement and time decay.\ninvalidation: A break above 600 or below 585 would invalidate this prediction.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"iron_condor\": {\n            \"accuracy\": 0.0, \n            \"correct\": 0,\n            \"total\": 1\n        }\n   }\nvolatility_adjustment: no change\nkey_level_update: [intraday support: 588-590, intraday resistance: 595-597]\nupdated_confidence: 70\n```\n"
+    },
+    {
+      "ticker": "META",
+      "date": "2025-03-24",
+      "step": 4,
+      "analysis_type": "5d/15m_analysis",
+      "price": 618.4099731445312,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.2,
+        "timeframe": "next_day",
+        "confidence": 70,
+        "specific_levels": [
+          616.0,
+          617.5,
+          620.0,
+          622.5
+        ],
+        "spread_recommendation": "iron condor",
+        "strike_recommendation": "Sell 622C/Buy 625C, Sell 616P/Buy 613P (Rationale: Captures consolidation around current price, benefits from IV contraction)",
+        "invalidation": "Price breaks above 622.50 or below 612.00 with significant volume."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## META Intraday Analysis - 2025-03-24\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe baseline trend remains neutral (60% confidence) as per the secret. Today\u2019s data doesn\u2019t contradict this. Implied Volatility (1.91%) is decreasing from the previous days (3.10% on 2025-03-20, 2.61% on 2025-03-21), suggesting a cooling off in option pricing. Historical Volatility (1.53%) remains below IV, indicating a premium is still present, but shrinking. The ATR of 2.37 is consistent with the volatility anchor of 1.0% when considered as a percentage of price (0.38%). No key levels were previously identified, so this remains unchanged. The neutral SPY trend reinforces the neutral outlook for META.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a range of 612.20 to 622.54, a relatively tight range for the day so far. Volume (13.6M) is moderate. The VWAP (617.36) is near the current price (618.41), suggesting a lack of strong directional bias. The MACD at 0 indicates neutral momentum. The RSI at 54.3 suggests the price isn't overbought or oversold. There's no clear, dominant pattern forming \u2013 it\u2019s a period of consolidation. No significant transactions are immediately apparent from the provided data.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility, as indicated by the ATR%, is 0.38%. The decreasing IV suggests a potential opportunity to sell premium. However, the IV is still above HV, meaning there's still some \"juice\" left in the options. A slight dip in IV could present a better entry point. Premium expansion is unlikely given the current trend, but a contraction is possible if the price continues to consolidate. Ideal entry timing would be on a slight pullback towards the VWAP or intraday support, coinciding with a further decrease in IV.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, no key levels are defined. Based on the intraday data, we can identify potential intraday support at 616.00-617.00 (around the VWAP) and intraday resistance at 620.00-621.00. These are not strong levels, but they represent areas where price has shown some hesitation. These levels are critical for strike selection.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral trend, decreasing IV, and moderate volume, an **iron condor** is the most appropriate strategy, despite its historical 0% win rate (acknowledging the small sample size). The goal is to profit from continued consolidation.\n\n*   **Strike Selection:**\n    *   **Call Side:** Sell a call at 622.00 (slightly above the intraday high) and buy a call at 625.00.\n    *   **Put Side:** Sell a put at 616.00 (slightly below the VWAP) and buy a put at 613.00.\n*   **Entry Timing:** Enter the trade if IV drops below 1.85 and the price is near the VWAP (617.36).\n*   **Probability of Success Estimate:** 65% (based on the expectation of continued consolidation).\n*   **Risk/Reward Profile:** Aim for a credit of $0.50 - $0.75 per share. Maximum risk is capped at the difference between the strike prices, less the premium received.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: -0.2%\ntimeframe: next_day\nconfidence: 70\nspecific_levels: [616.00, 617.50, 620.00, 622.50]\nspread_recommendation: iron condor\nstrike_recommendation: Sell 622C/Buy 625C, Sell 616P/Buy 613P (Rationale: Captures consolidation around current price, benefits from IV contraction)\ninvalidation: Price breaks above 622.50 or below 612.00 with significant volume.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"iron_condor\": {\n            \"accuracy\": 0.0, \n            \"correct\": 0,\n            \"total\": 2\n        }\n   }\nvolatility_adjustment: decrease\nkey_level_update: [616.00 (intraday support), 622.00 (intraday resistance)]\nupdated_confidence: 75\n```\n"
+    },
+    {
+      "ticker": "META",
+      "date": "2025-01-24",
+      "step": 7,
+      "analysis_type": "Summary",
+      "price": 0,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_day",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "full_analysis": "## META Credit Spread Trading Strategy: 2025-01-24 - 2025-01-24\n\n**Executive Summary:** Despite a 0% historical success rate across all strategies analyzed, the consistent neutral intraday and daily analysis, coupled with a 60% confidence baseline trend of neutrality and a low volatility anchor of 1.0%, suggests a strategy focused on premium collection through Iron Condors remains the most appropriate, albeit with extremely tight risk management. The lack of identified support/resistance levels necessitates a conservative approach, focusing on very near-the-money strikes.  The historical data is limited, demanding a highly adaptable strategy.\n\n**1. TREND SYNTHESIS AND PATTERN IDENTIFICATION:**\n\nThe analysis consistently points to a neutral trend across all three days (75%, 75%, 70% confidence). This aligns with the baseline neutral trend (60% confidence). No discernible technical patterns were identified due to the limited data. Volume profile assessment is impossible with only three days of data.  There are no divergences between intraday and daily analysis; they both consistently indicate neutrality. The lack of any directional conviction is the dominant signal.\n\n**2. KEY LEVEL CONSOLIDATION:**\n\nThe analysis explicitly states *no* core support or resistance levels were identified. This is a critical constraint.  Without defined levels, strike selection must be based on current price and implied volatility, aiming for maximum premium collection within a narrow range.  The most important price zone is the current trading range, which is undefined given the limited data.  Probability boundaries are equally undefined.\n\n**3. VOLATILITY PROFILE:**\n\nThe volatility anchor is exceptionally low at 1.0%, suggesting low expected price movement.  The relationship between Implied Volatility (IV) and Historical Volatility (HV) is unknown without further data, but the low anchor suggests IV is likely elevated relative to recent historical movement.  Ideal premium collection zones are near-the-money, capitalizing on the expectation of limited price movement. Risk management parameters must be extremely tight, with small position sizes and defined stop-loss levels.\n\n**4. OPTIMIZED SPREAD STRATEGY:**\n\nGiven the neutral trend, low volatility, and lack of defined levels, **Iron Condors** remain the most suitable strategy.  However, due to the 0% win rate, position sizing will be extremely conservative.\n\n* **Strike Selection:**  Assume META is currently trading at $500 (this is a placeholder \u2013 *actual current price must be used*).\n    * **Call Side:** Sell a call option with a strike price of $505 (slightly out-of-the-money). Buy a call option with a strike price of $510 (further out-of-the-money).\n    * **Put Side:** Sell a put option with a strike price of $495 (slightly out-of-the-money). Buy a put option with a strike price of $490 (further out-of-the-money).\n* **Rationale:** This strike selection aims to capture premium decay from a stock expected to remain within a narrow range. The small spread between strikes minimizes risk but also limits potential profit.\n* **Entry Timing:** Enter the trade immediately upon confirmation of the current price at $500.\n* **Position Sizing:**  Allocate only 1% of total capital to this trade.\n* **Risk Parameters:** Maximum loss is capped at the difference between the strike prices, less the premium received, multiplied by the number of shares represented by one option contract.\n* **Invalidation Criteria:**  A breach of either the $510 call strike or the $490 put strike invalidates the trade.  Close the entire position immediately upon breach.\n\n\n\n**5. MULTI-TIMEFRAME FORECAST:**\n\n**Note:** All forecasts are based on the assumption of a current price of $500. *Adjust all strike prices and levels based on the actual current price.*\n\n```\nFORECAST: NEXT DAY (1-2 Day Outlook)\ndirection: neutral\nmagnitude: 0.2%\nconfidence: 70\nspread_recommendation: Iron Condor\nstrike_selection: Sell 505C/Buy 510C & Sell 495P/Buy 490P (based on $500 current price)\nkey_levels: $490, $495, $505, $510\ninvalidation: Breach of $490 or $510\nrisk_reward: 1:1.5 (Potential profit of $50 per spread vs. potential loss of $100 per spread, assuming $5 premium collected)\n```\n\n```\nFORECAST: NEXT WEEK (3-5 Day Outlook)\ndirection: neutral\nmagnitude: 0.5%\nconfidence: 65\nspread_recommendation: Iron Condor\nstrike_selection: Sell 505C/Buy 510C & Sell 495P/Buy 490P (based on $500 current price) - *Re-evaluate and adjust strikes daily based on price movement.*\nkey_levels: $490, $495, $505, $510\ninvalidation: Breach of $490 or $510\nrisk_reward: 1:1.5 (Potential profit of $50 per spread vs. potential loss of $100 per spread, assuming $5 premium collected)\n```\n\n```\nFORECAST: NEXT MONTH (20-30 Day Outlook)\ndirection: neutral\nmagnitude: 1.0%\nconfidence: 60\nspread_recommendation: Iron Condor\nstrike_selection: Sell 505C/Buy 510C & Sell 495P/Buy 490P (based on $500 current price) - *Aggressively manage and roll strikes weekly to maintain a neutral position.*\nkey_levels: $490, $495, $505, $510\ninvalidation: Breach of $490 or $510\nrisk_reward: 1:1.5 (Potential profit of $50 per spread vs. potential loss of $100 per spread, assuming $5 premium collected)\n```\n\n**Technical Indicators:** Given the limited data, no technical indicators proved reliable.  Moving Averages and RSI should be monitored *going forward* to identify potential shifts in momentum.\n\n**Important Disclaimer:** This strategy is based on extremely limited historical data and a neutral outlook. The 0% win rate is a significant concern.  This is a high-risk strategy requiring diligent monitoring and strict adherence to the invalidation criteria.  Adjustments to strike prices and position sizing are crucial based on real-time market conditions.  The assumed current price of $500 is a placeholder and *must* be replaced with the actual current price.\n\n\n\n"
+    },
+    {
+      "ticker": "META",
+      "date": "2025-01-24",
+      "type": "summary",
+      "analysis_type": "summary",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_day",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "next_week_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_week",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "next_month_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_month",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "full_analysis": "## META Credit Spread Trading Strategy: 2025-01-24 - 2025-01-24 (3-Day Analysis)\n\n**Executive Summary:** Despite a 0% historical success rate across all strategies analyzed, the consistent neutral intraday and baseline trend, coupled with low volatility, suggest a strategy focused on premium collection with tight risk management. The lack of defined support/resistance levels necessitates a conservative approach. Given the data, Iron Condors remain the most logical, albeit low-probability, strategy. This strategy prioritizes small, consistent gains over large, speculative bets.\n\n**1. TREND SYNTHESIS AND PATTERN IDENTIFICATION:**\n\nThe analysis consistently points to a neutral trend across all timeframes (intraday, daily, baseline). This is reinforced by the 60% trend confidence. No reliable technical patterns were identified due to the limited data and neutral price action. Volume profile assessment is impossible without historical volume data. The intraday analysis consistently aligns with the baseline neutral trend, indicating a stable, range-bound market.\n\n**2. KEY LEVEL CONSOLIDATION:**\n\nThe analysis explicitly states *no* core support or resistance levels were identified. This is a critical limitation.  Without defined levels, strike selection relies heavily on the volatility anchor and a conservative approach to potential price movement.  We will assume a potential 2% price fluctuation as a reasonable boundary given the neutral outlook and low volatility.  This translates to a price zone of +/- 2% from the current price (which is not provided, so we will use a placeholder of $500 for calculations).\n\n**3. VOLATILITY PROFILE:**\n\nThe volatility anchor is set at 1.0%, indicating extremely low implied volatility. This suggests a potential for premium collection, but also limits the potential profit. The IV/HV relationship is unknown without historical volatility data.  Ideal premium collection zones will be narrow, focusing on strikes far out-of-the-money. Risk management parameters must be extremely tight, with small position sizes and strict stop-loss orders.\n\n**4. OPTIMIZED SPREAD STRATEGY:**\n\nGiven the neutral trend, low volatility, and lack of defined levels, **Iron Condors** are the most appropriate strategy. While the historical performance is 0%, it's the only strategy that benefits from a lack of directional movement.\n\n* **Strike Selection Rationale:** Strikes will be placed 5% out-of-the-money on both the call and put sides, providing a buffer against minor price fluctuations. This is based on the assumed 2% price fluctuation boundary and a conservative margin of safety.\n* **Entry Timing:** Enter the Iron Condor at the market open, aiming for maximum premium collection.\n* **Position Sizing:** 1 contract per $10,000 of capital allocated to this strategy. This limits risk exposure.\n* **Risk Parameters:** Maximum loss is capped at the difference between the strikes minus the net premium received.\n* **Invalidation Criteria:**  A breach of either the call or put strike price will invalidate the trade.  A 1% increase in implied volatility will also trigger an exit.\n\n\n\n**5. MULTI-TIMEFRAME FORECAST:**\n\n*(Assuming current price of META = $500)*\n\n```\nFORECAST: NEXT DAY (1-2 Day Outlook)\ndirection: neutral\nmagnitude: 0.2%\nconfidence: 70\nspread_recommendation: Iron Condor\nstrike_selection: Sell 490 Put, Buy 485 Put, Sell 510 Call, Buy 515 Call. (Premium target: $0.50 - $1.00 per contract)\nkey_levels: $490 (Put Strike), $510 (Call Strike)\ninvalidation: Price closes above $510 or below $490.\nrisk_reward: Risk = ($5 - Premium Received). Reward = Premium Received.  (Approx. 1:1, prioritizing small gains)\n```\n\n```\nFORECAST: NEXT WEEK (3-5 Day Outlook)\ndirection: neutral\nmagnitude: 0.5%\nconfidence: 65\nspread_recommendation: Iron Condor\nstrike_selection: Sell 485 Put, Buy 480 Put, Sell 515 Call, Buy 520 Call. (Premium target: $0.75 - $1.50 per contract)\nkey_levels: $485 (Put Strike), $515 (Call Strike)\ninvalidation: Price closes above $515 or below $485.\nrisk_reward: Risk = ($7 - Premium Received). Reward = Premium Received. (Approx. 1:1, prioritizing small gains)\n```\n\n```\nFORECAST: NEXT MONTH (20-30 Day Outlook)\ndirection: neutral\nmagnitude: 1.0%\nconfidence: 60\nspread_recommendation: Iron Condor\nstrike_selection: Sell 480 Put, Buy 475 Put, Sell 520 Call, Buy 525 Call. (Premium target: $1.00 - $2.00 per contract)\nkey_levels: $480 (Put Strike), $520 (Call Strike)\ninvalidation: Price closes above $520 or below $480.\nrisk_reward: Risk = ($10 - Premium Received). Reward = Premium Received. (Approx. 1:1, prioritizing small gains)\n```\n\n**Technical Indicators:**\n\nGiven the limited data, no specific technical indicators proved reliable. However, monitoring implied volatility (IV) using the VIX and META's own IV percentile would be crucial.\n\n**Important Considerations:**\n\n* **Data Limitations:** This strategy is based on a very limited 3-day analysis and lacks historical data.\n* **Neutral Bias:** The strategy is heavily biased towards a neutral market. Any significant directional move will likely result in a loss.\n* **Risk Management:** Strict risk management is paramount.  Small position sizes and tight stop-loss orders are essential.\n* **Dynamic Adjustment:**  This strategy should be dynamically adjusted based on changes in volatility, trend, and the identification of key support/resistance levels.\n\n\n\n**Disclaimer:** This analysis is for informational purposes only and should not be considered financial advice. Trading involves risk, and you could lose money. Always consult with a qualified financial advisor before making any investment decisions."
+    }
+  ],
+  "memory_context": {
+    "ticker": "META",
+    "key_levels": {
+      "support": [],
+      "resistance": [],
+      "pivot_points": []
+    },
+    "pattern_reliability": {
+      "head_and_shoulders": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_top": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_bottom": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "triangle": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "flag": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "wedge": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      }
+    },
+    "volatility_history": [
+      {
+        "date": "2025-03-20",
+        "iv": 3.097008283143541,
+        "hv": 2.4776066265148327,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-21",
+        "iv": 2.6053894529871053,
+        "hv": 2.084311562389684,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-24",
+        "iv": 1.9126853396238785,
+        "hv": 1.5301482716991028,
+        "adjustment": "no change"
+      },
+      0
+    ],
+    "spread_performance": {
+      "bull_put": {
+        "wins": 0,
+        "total": 0,
+        "win_rate": 0
+      },
+      "bear_call": {
+        "wins": 0,
+        "total": 0,
+        "win_rate": 0
+      },
+      "iron_condor": {
+        "wins": 1,
+        "total": 4,
+        "win_rate": 0.25
+      }
+    },
+    "weight_adjustments": [
+      0
+    ],
+    "multi_timeframe": {
+      "daily_trend": "neutral",
+      "weekly_trend": "neutral"
+    },
+    "secret": {
+      "baseline_trend": "neutral",
+      "trend_confidence": 60,
+      "volatility_anchor": 1.0,
+      "core_levels": {
+        "support": [],
+        "resistance": []
+      }
+    }
+  }
+}

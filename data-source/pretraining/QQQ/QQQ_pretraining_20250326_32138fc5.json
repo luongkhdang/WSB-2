@@ -1,0 +1,253 @@
+{
+  "ticker": "QQQ",
+  "start_date": "2025-01-24",
+  "end_date": "2025-01-24",
+  "processing_time": 147.6710500717163,
+  "analyses_count": 5,
+  "accuracy_rate": 0,
+  "total_predictions": 0,
+  "correct_predictions": 0,
+  "results": [
+    {
+      "ticker": "QQQ",
+      "date": "2025-03-20",
+      "step": 2,
+      "analysis_type": "5d/15m_analysis",
+      "price": 479.3500061035156,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.1,
+        "timeframe": "next_day",
+        "confidence": 75,
+        "specific_levels": [
+          475.0,
+          477.5,
+          482.5,
+          485.0
+        ],
+        "spread_recommendation": "bull put spread",
+        "strike_recommendation": "Short Put 477.50, Long Put 475.00 - Expect a credit of at least $0.20.",
+        "invalidation": "A break below 475.00 would invalidate this prediction."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## QQQ Intraday Analysis - 2025-03-20 (15-Minute Data)\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe baseline trend remains neutral (60% confidence) as per the secret. Today\u2019s data doesn\u2019t contradict this. The SPY is also neutral, reinforcing the broader market indecision. The 30-day ATR anchor of 1.0% provides a stable reference for volatility. The current ATR of 1.63% suggests intraday volatility is elevated compared to the 30-day average, but still within a reasonable range. No key levels were previously identified, so today\u2019s analysis will focus on establishing those. The mixed weekly/daily trends suggest a lack of strong directional conviction.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a range of 476.18 to 484.54, with a vwap of 480.08. This indicates a slight bias towards the upper end of the range during the observed period. Volume (34.97M) is moderate, suggesting participation but not a breakout. The MACD at 0 indicates a lack of strong momentum. There's no clear, dominant chart pattern forming \u2013 it\u2019s largely choppy sideways movement. The high volume suggests some institutional activity, but it hasn\u2019t translated into a sustained trend. No obvious reversals are apparent.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nImplied volatility (1.70%) is slightly higher than historical volatility (1.36%), indicating a premium for options. The ATR% of 0.34% confirms elevated intraday volatility. This suggests opportunities for credit spread strategies, but careful strike selection is crucial. Premium expansion is possible if the range widens, while contraction is likely if QQQ consolidates. Ideal entry timing would be near the upper or lower bounds of the intraday range, anticipating a reversion to the mean. Given the elevated IV, selling premium is favored.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, no key levels exist. Based on the intraday data, we can establish preliminary levels.\n* **Intraday Support:** 477.50 (around the midpoint of the range and previous consolidation)\n* **Intraday Resistance:** 482.50 (around the midpoint of the range and previous consolidation)\nThese are *intraday* levels and should be treated as such. They are not long-term levels.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral trend, elevated volatility, and the identified intraday levels, a **bull put spread** is the most appropriate strategy.\n\n* **Strike Selection:**\n    * **Short Put:** 477.50 (at intraday support)\n    * **Long Put:** 475.00 (out-of-the-money protection)\n* **Rationale:** This spread profits from QQQ staying above 477.50. The short put is placed at the identified intraday support, maximizing premium capture. The long put provides a buffer against unexpected downside movement.\n* **Entry Timing:** Enter the spread when QQQ is near 482.50 (intraday resistance), anticipating a pullback towards support.\n* **Probability of Success Estimate:** 65% (based on the neutral trend and the spread being positioned near intraday support).\n* **Risk/Reward Profile:**  Risk is limited to the difference between the strikes minus the net premium received. Reward is limited to the net premium received. Aim for a credit of at least $0.20 per share, resulting in a 1:2 risk/reward ratio.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: 0.1%\ntimeframe: next_day\nconfidence: 75\nspecific_levels: [475.00, 477.50, 482.50, 485.00]\nspread_recommendation: bull put spread\nstrike_recommendation: Short Put 477.50, Long Put 475.00 - Expect a credit of at least $0.20.\ninvalidation: A break below 475.00 would invalidate this prediction.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"pattern_type\": {\n            \"sideways_consolidation\": {\n                \"accuracy\": 60, \n                \"correct\": 1,\n                \"total\": 2\n            }\n   }\nvolatility_adjustment: no change\nkey_level_update: [Intraday Support: 477.50, Intraday Resistance: 482.50]\nupdated_confidence: 70\n```\n"
+    },
+    {
+      "ticker": "QQQ",
+      "date": "2025-03-21",
+      "step": 3,
+      "analysis_type": "5d/15m_analysis",
+      "price": 481.1400146484375,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.2,
+        "timeframe": "next_day",
+        "confidence": 75,
+        "specific_levels": [
+          477.0,
+          481.5,
+          475.0
+        ],
+        "spread_recommendation": "bull put spread",
+        "strike_recommendation": "Sell 475 put, Buy 470 put - capitalizing on current price and potential for consolidation.",
+        "invalidation": "A break below 477.00 with significant volume would invalidate this prediction."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## QQQ Intraday Analysis - 2025-03-21 (15-Minute Data)\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nToday\u2019s data largely confirms the neutral baseline trend established in the secret. The slight decrease in Implied Volatility (IV) from 1.70 yesterday to 1.52 today suggests a cooling off of option pricing, aligning with the 30-day ATR anchor of 1.0%. The neutral SPY trend reinforces this overall market sentiment. The lack of identified key levels remains consistent, indicating a period of consolidation. The mixed daily/weekly trends suggest a lack of strong directional bias, supporting the focus on range-bound strategies. The bull_put spread\u2019s 0% win rate is concerning, but with only one data point, it\u2019s statistically insignificant at this stage.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a wide range today (472.90 - 481.60), indicating significant intraday volatility despite the lower IV. The price action appears to be testing higher levels, but hasn\u2019t convincingly broken through. The volume of 38.2M is moderate, suggesting active participation but not a strong directional conviction. The VWAP at 477.39 is below the current price of 481.14, suggesting a potential for mean reversion. The MACD at 0 indicates a lack of strong momentum. There's a slight upward bias in the price action, but it's not definitive. No clear chart patterns (e.g., head and shoulders, triangles) are immediately apparent.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nThe intraday range (8.7 points) translates to approximately 1.81% volatility, higher than both the historical (1.22%) and implied (1.52%) volatility. This discrepancy suggests that the market is experiencing more volatility than currently priced into options. This is a favorable condition for selling premium. The IV decrease suggests a potential opportunity to enter a credit spread at relatively cheaper prices. Premium expansion is likely if the intraday volatility continues to exceed implied volatility. Ideal entry timing would be on a slight pullback towards the VWAP or a test of intraday support.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, no key levels are identified. However, based on the intraday data, we can establish preliminary levels. Intraday support forms around 477.00-478.00 (near VWAP) and intraday resistance around 481.00-481.50 (near the high). These are *intraday* levels and should not be confused with longer-term support/resistance. The price is currently testing the upper end of the range, making it a critical zone to watch for potential reversals.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral baseline trend, moderate intraday volatility, and the price testing resistance, a **bull put spread** is the most appropriate strategy.\n\n*   **Strike Selection:** Sell a put at 475.00 and buy a put at 470.00. This provides a buffer against a potential pullback while capitalizing on the current price level. The 475 strike is slightly above the intraday support, offering a reasonable probability of success. The 470 strike provides downside protection.\n*   **Entry Timing:** Enter the spread when the price pulls back slightly towards the 477.00-478.00 support level, or if we see a rejection at the 481.00-481.50 resistance.\n*   **Probability of Success Estimate:** 65-70% (based on the current price action and volatility levels).\n*   **Risk/Reward Profile:** Aim for a credit of $0.50 - $0.75. Maximum risk is $5.00 (difference between strikes). This yields a potential risk/reward ratio of 1:7 to 1:10.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: 0.2%\ntimeframe: next_day\nconfidence: 75\nspecific_levels: 477.00, 481.50, 475.00\nspread_recommendation: bull put spread\nstrike_recommendation: Sell 475 put, Buy 470 put - capitalizing on current price and potential for consolidation.\ninvalidation: A break below 477.00 with significant volume would invalidate this prediction.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"pattern_type\": {\n            \"accuracy\": 60, \n            \"correct\": 0,\n            \"total\": 1\n        }\n   }\nvolatility_adjustment: no change\nkey_level_update: [477.00-478.00 (intraday support), 481.00-481.50 (intraday resistance)]\nupdated_confidence: 75\n```\n"
+    },
+    {
+      "ticker": "QQQ",
+      "date": "2025-03-24",
+      "step": 4,
+      "analysis_type": "5d/15m_analysis",
+      "price": 490.4800109863281,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.2,
+        "timeframe": "next_day",
+        "confidence": 75,
+        "specific_levels": [
+          488.0,
+          491.5,
+          493.0
+        ],
+        "spread_recommendation": "iron condor",
+        "strike_recommendation": "492.50/495.00 call spread, 487.50/485.00 put spread (as detailed above)",
+        "invalidation": "Break above 493.00 or below 488.00 with significant volume."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## QQQ Intraday Analysis - 2025-03-24 (15-Minute Data)\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nToday\u2019s data continues the neutral baseline trend established in the secret. The decline in Implied Volatility (IV) from 1.70% on March 20th to 0.82% today suggests a cooling off in option pricing, aligning with the neutral market context. Historical Volatility (HV) remains lower than IV, indicating a premium is still present, but shrinking. The prior analysis indicated no key levels, and this remains true. The consistent neutral trend across daily and weekly timeframes reinforces the need for conservative strategies. The 0% win rate on bull put spreads is a strong negative signal, reinforcing the need to avoid this strategy.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a range of 487.12 to 491.48, a relatively tight range for the session so far. Volume (30.58M) is moderate. The VWAP (489.72) sits slightly below the current price (490.48), suggesting a slight bullish bias within the intraday session. The MACD at 0 indicates a lack of strong momentum. There's no clear, defined chart pattern forming yet \u2013 it's largely sideways movement. No significant volume spikes are observed, indicating no major institutional activity. The intraday low of 487.12 acted as temporary support, and the high of 491.48 as temporary resistance.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility, as indicated by the ATR of 0.81% (ATR% of 0.165%), is lower than the 30-day ATR anchor of 1.0%. This suggests a period of consolidation. The decreasing IV is favorable for selling options, but the historical performance of bull put spreads is a major deterrent. Credit spreads should be priced conservatively, reflecting the lower volatility environment. Ideal entry timing would be near the upper end of the intraday range (around 491.00-491.50) to maximize premium capture, but only if a clear rejection signal is observed. Premium contraction is more likely than expansion given the declining IV.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, there are no established key levels. However, based on the intraday data, we can identify potential intraday support at 488.50-489.00 (around the VWAP) and intraday resistance at 491.00-491.50. These are *intraday* levels only and should not be confused with longer-term support/resistance. Price is currently testing the upper end of the intraday range. Critical zones for strike selection will be based on these intraday levels, focusing on out-of-the-money strikes.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral market context, declining IV, and the abysmal performance of bull put spreads, an **iron condor** is the most appropriate strategy. It offers defined risk and profit potential in a sideways market.\n\n*   **Strike Selection:**\n    *   **Call Side:** Sell a 492.50 call, buy a 495.00 call. (Out-of-the-money, providing a buffer)\n    *   **Put Side:** Sell a 487.50 put, buy a 485.00 put. (Out-of-the-money, providing a buffer)\n*   **Entry Timing:** Enter the iron condor if price rejects the 491.50 resistance level with a bearish candlestick pattern (e.g., shooting star, bearish engulfing).\n*   **Probability of Success Estimate:** 65% (Based on the neutral market context and defined range)\n*   **Risk/Reward Profile:** 1:2 (Aim for a credit of $0.50 per share, with a maximum risk of $2.50 per share).\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: -0.2%\ntimeframe: next_day\nconfidence: 75\nspecific_levels: [488.00, 491.50, 493.00]\nspread_recommendation: iron condor\nstrike_recommendation: 492.50/495.00 call spread, 487.50/485.00 put spread (as detailed above)\ninvalidation: Break above 493.00 or below 488.00 with significant volume.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"iron_condor\": {\n            \"accuracy\": [0], \n            \"correct\": [0],\n            \"total\": [0]\n        }\n   }\nvolatility_adjustment: decrease\nkey_level_update: [intraday support: 488.50-489.00, intraday resistance: 491.00-491.50]\nupdated_confidence: 70\n```\n"
+    },
+    {
+      "ticker": "QQQ",
+      "date": "2025-01-24",
+      "step": 7,
+      "analysis_type": "Summary",
+      "price": 0,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_day",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "full_analysis": "## QQQ Credit Spread Trading Strategy: 2025-01-24 \u2013 2025-01-24\n\n**Executive Summary:** Despite a 0% historical success rate with the limited data provided, the consistent neutral intraday analysis, coupled with a 60% confidence baseline neutral trend, dictates a conservative, premium-collecting strategy focused on Iron Condors. The extremely low volatility anchor (1.0%) suggests opportunities for premium collection, but necessitates tight risk management. Given the lack of defined support/resistance levels, strike selection will be based on recent price action and implied volatility skew.\n\n**1. TREND SYNTHESIS AND PATTERN IDENTIFICATION:**\n\nThe analysis consistently points to a neutral trend across all three days (75% confidence each day). This aligns with the 60% baseline neutral trend. No reliable technical patterns were identified due to the limited data. Volume profile assessment is impossible without historical volume data. The consistent neutrality suggests a range-bound market, favoring strategies that profit from time decay and limited price movement.  There are no divergences between intraday and daily analysis.\n\n**2. KEY LEVEL CONSOLIDATION:**\n\nThe secret baseline explicitly states no core support or resistance levels are defined. This is a significant constraint.  Therefore, strike selection will be based on the current QQQ price (assumed to be around $475 as of today's date - this needs to be updated with real-time data) and recent price action. We will focus on establishing a range around the current price, using recent highs and lows as dynamic reference points.  For the purpose of this strategy, we will assume the recent range is $470 - $480.\n\n**3. VOLATILITY PROFILE:**\n\nThe volatility anchor of 1.0% is exceptionally low, indicating a period of low expected price movement. This favors strategies that benefit from time decay, like Iron Condors. Implied Volatility (IV) is likely higher than Historical Volatility (HV), presenting an opportunity to sell premium. Ideal premium collection zones will be determined by analyzing the IV skew \u2013 focusing on selling options further from the current price. Risk management will be paramount, with tight stop-loss orders and reduced position sizing.\n\n**4. OPTIMIZED SPREAD STRATEGY:**\n\nGiven the neutral trend, low volatility, and lack of defined support/resistance, the **Iron Condor** is the most appropriate strategy.\n\n* **Strike Selection:** (Assuming QQQ is trading at $475)\n    * **Call Spread:** Sell the $480 call, buy the $485 call.\n    * **Put Spread:** Sell the $470 put, buy the $465 put.\n    * **Rationale:** This strike selection aims to capitalize on the expectation of QQQ remaining within the $470-$480 range. The strikes are chosen to provide a reasonable premium while maintaining a buffer against unexpected price movements.\n* **Entry Timing:** Enter the Iron Condor when IV Rank is above 50% and IV Percentile is above 60%, indicating relatively high implied volatility compared to its historical range.\n* **Position Sizing:** Allocate no more than 5% of trading capital to this trade.\n* **Risk Parameters:** Maximum loss is capped at the difference between the strike prices of each spread, less the net premium received.\n* **Invalidation Criteria:** The trade is invalidated if QQQ closes above $485 or below $465.\n\n**5. MULTI-TIMEFRAME FORECAST:**\n\n**(Assuming QQQ is trading at $475 on 2025-01-24)**\n\n```\nFORECAST: NEXT DAY (1-2 Day Outlook)\ndirection: neutral\nmagnitude: 0.2%\nconfidence: 70\nspread_recommendation: Iron Condor\nstrike_selection: Sell $480C, Buy $485C, Sell $470P, Buy $465P (estimated premium $1.00/share)\nkey_levels: $470, $480\ninvalidation: Close above $482 or below $468\nrisk_reward: 1:2 (Max Loss: $4.00, Max Profit: $1.00)\n```\n\n```\nFORECAST: NEXT WEEK (3-5 Day Outlook)\ndirection: neutral\nmagnitude: 0.5%\nconfidence: 65\nspread_recommendation: Iron Condor\nstrike_selection: Sell $482.5C, Buy $487.5C, Sell $467.5P, Buy $462.5P (estimated premium $1.25/share)\nkey_levels: $465, $485\ninvalidation: Close above $487.5 or below $462.5\nrisk_reward: 1:2.5 (Max Loss: $5.00, Max Profit: $1.25)\n```\n\n```\nFORECAST: NEXT MONTH (20-30 Day Outlook)\ndirection: neutral\nmagnitude: 1.0%\nconfidence: 60\nspread_recommendation: Iron Condor\nstrike_selection: Sell $485C, Buy $490C, Sell $465P, Buy $460P (estimated premium $1.50/share)\nkey_levels: $460, $490\ninvalidation: Close above $490 or below $460\nrisk_reward: 1:3 (Max Loss: $6.00, Max Profit: $1.50)\n```\n\n**Technical Indicators:**\n\nGiven the limited data, no specific technical indicators have proven reliable. However, monitoring **Implied Volatility Rank (IV Rank)** and **Implied Volatility Percentile** will be crucial for identifying optimal entry points.  Additionally, tracking the **Average True Range (ATR)** can provide insights into potential price fluctuations.\n\n**Important Considerations:**\n\n* **Real-time Data:** This strategy is based on assumptions about the current QQQ price. It *must* be adjusted based on real-time market data.\n* **Commission Costs:** Factor in commission costs when calculating potential profit and loss.\n* **Early Assignment Risk:** Be aware of the risk of early assignment, particularly with American-style options.\n* **Dynamic Adjustment:** Continuously monitor the trade and be prepared to adjust strikes or close the position if market conditions change.\n\n\n\n**Disclaimer:** This analysis is for informational purposes only and should not be considered financial advice. Trading involves risk, and you could lose money. Always consult with a qualified financial advisor before making any investment decisions. The 0% historical success rate highlights the inherent risk and the need for careful risk management."
+    },
+    {
+      "ticker": "QQQ",
+      "date": "2025-01-24",
+      "type": "summary",
+      "analysis_type": "summary",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_day",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "next_week_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_week",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "next_month_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_month",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "full_analysis": "## QQQ Credit Spread Trading Strategy: 2025-01-24 - 2025-01-24 (3-Day Analysis)\n\n**Executive Summary:** Despite a 0% historical success rate across all tested strategies over the analyzed period, the consistent neutral intraday and daily analysis, coupled with a baseline neutral trend and low volatility anchor, suggests a range-bound market for QQQ. This dictates a strategy focused on premium collection with tight risk management. Given the lack of identified support/resistance levels, the strategy will prioritize Iron Condors with dynamically adjusted strikes based on price action. The extremely limited data necessitates a conservative approach.\n\n**1. TREND SYNTHESIS AND PATTERN IDENTIFICATION:**\n\nThe analysis consistently points to a neutral trend across all three days (75% confidence each day) and aligns with the baseline neutral trend (60% confidence). No discernible technical patterns emerged due to the limited data. Volume profile assessment is impossible with only three days of data. The intraday and daily analysis are in complete agreement, reinforcing the neutral outlook.  Reliable technical indicators cannot be determined with this limited dataset.\n\n**2. KEY LEVEL CONSOLIDATION:**\n\nThe analysis explicitly states no core support or resistance levels were identified. This absence necessitates a dynamic strike selection approach, reacting to price movement rather than anticipating bounces or breakouts.  The focus will be on establishing a range based on the current price and adjusting strikes accordingly.  Important price zones will be defined *after* the initial trade is established and price action provides more information.\n\n**3. VOLATILITY PROFILE:**\n\nVolatility is anchored at 1.0%, indicating a low volatility environment. Implied Volatility (IV) is likely higher than Historical Volatility (HV), presenting an opportunity for premium collection. Ideal premium collection zones will be determined by the width of the Iron Condor spreads and the target credit received. Risk management parameters will be extremely tight, limiting potential losses to a small percentage of capital per trade (maximum 2% risk per trade).\n\n**4. OPTIMIZED SPREAD STRATEGY:**\n\nGiven the neutral trend and low volatility, **Iron Condors** are the most appropriate strategy.  The goal is to profit from time decay and a lack of significant price movement.\n\n* **Strike Selection (Initial):** Assuming QQQ is currently trading at $470 (this is a placeholder \u2013 *actual current price must be used*), the initial strike selection will be:\n    * **Call Side:** Sell a call option with a strike price $5 above the current price ($475). Buy a call option with a strike price $10 above the current price ($480).\n    * **Put Side:** Sell a put option with a strike price $5 below the current price ($465). Buy a put option with a strike price $10 below the current price ($460).\n* **Entry Timing:** Enter the trade at the market open.\n* **Position Sizing:** Allocate no more than 2% of trading capital to this trade.\n* **Invalidation Criteria:**\n    * Price breaks above $480 (call side) or below $460 (put side).\n    * IV increases by more than 10% from the entry point.\n    * Time decay accelerates significantly, indicating a potential volatility spike.\n\n\n\n**5. MULTI-TIMEFRAME FORECAST:**\n\n**Important Note:** These forecasts are based on extremely limited data and should be treated with extreme caution.  They are designed to illustrate the strategy application, not to provide high-confidence predictions.  All strike prices are relative to a hypothetical current price of $470.\n\n```\nFORECAST: NEXT DAY (1-2 Day Outlook)\ndirection: neutral\nmagnitude: 0.2%\nconfidence: 65\nspread_recommendation: Iron Condor\nstrike_selection: Sell 475C/Buy 480C & Sell 465P/Buy 460P (based on $470 current price)\nkey_levels: 470 (current price), 475 (call strike), 465 (put strike)\ninvalidation: Price closes above 475 or below 465.\nrisk_reward: 1:2 (Potential credit of $1.00, maximum loss of $4.00 per share, assuming strikes are $1 apart)\n```\n\n```\nFORECAST: NEXT WEEK (3-5 Day Outlook)\ndirection: neutral\nmagnitude: 0.5%\nconfidence: 60\nspread_recommendation: Iron Condor (Adjusted)\nstrike_selection:  *Dynamically adjust strikes based on price action.* If QQQ remains near $470, maintain the same strikes. If QQQ moves above $475, widen the call side and potentially move the entire range higher. If QQQ moves below $465, widen the put side and potentially move the entire range lower.\nkey_levels: 470, 475, 465 (initial levels, adjust based on price action)\ninvalidation: Price breaks above 480 or below 460. Significant IV increase (>10%).\nrisk_reward: 1:2 (Potential credit of $1.50, maximum loss of $4.00 per share, assuming strikes are $1 apart)\n```\n\n```\nFORECAST: NEXT MONTH (20-30 Day Outlook)\ndirection: neutral\nmagnitude: 1.0%\nconfidence: 55\nspread_recommendation: Iron Condor (Continuously Adjusted)\nstrike_selection: *Continuously adjust strikes based on price action and time decay.*  Roll the entire spread higher or lower as needed to maintain a neutral position and collect premium.  Consider closing the trade if IV significantly decreases.\nkey_levels:  Dynamic \u2013 based on evolving price action.\ninvalidation:  Significant sustained price movement (>2% in either direction).  IV collapses.\nrisk_reward: 1:2 (Potential credit of $2.00, maximum loss of $4.00 per share, assuming strikes are $1 apart)\n```\n\n**Disclaimer:** This strategy is based on extremely limited data and carries significant risk.  The hypothetical risk/reward ratios are illustrative and may not be achievable in actual trading.  Continuous monitoring and dynamic adjustment are crucial for success.  The current price of QQQ *must* be used for accurate strike selection.  This is not financial advice.\n"
+    }
+  ],
+  "memory_context": {
+    "ticker": "QQQ",
+    "key_levels": {
+      "support": [],
+      "resistance": [],
+      "pivot_points": []
+    },
+    "pattern_reliability": {
+      "head_and_shoulders": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_top": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_bottom": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "triangle": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "flag": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "wedge": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      }
+    },
+    "volatility_history": [
+      {
+        "date": "2025-03-20",
+        "iv": 1.704194296687814,
+        "hv": 1.3633554373502512,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-21",
+        "iv": 1.5243451062989162,
+        "hv": 1.2194760850391329,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-24",
+        "iv": 0.8256768502034595,
+        "hv": 0.6605414801627676,
+        "adjustment": "no change"
+      },
+      0
+    ],
+    "spread_performance": {
+      "bull_put": {
+        "wins": 0,
+        "total": 2,
+        "win_rate": 0.0
+      },
+      "bear_call": {
+        "wins": 0,
+        "total": 0,
+        "win_rate": 0
+      },
+      "iron_condor": {
+        "wins": 1,
+        "total": 2,
+        "win_rate": 0.5
+      }
+    },
+    "weight_adjustments": [
+      0
+    ],
+    "multi_timeframe": {
+      "daily_trend": "neutral",
+      "weekly_trend": "neutral"
+    },
+    "secret": {
+      "baseline_trend": "neutral",
+      "trend_confidence": 60,
+      "volatility_anchor": 1.0,
+      "core_levels": {
+        "support": [],
+        "resistance": []
+      }
+    }
+  }
+}

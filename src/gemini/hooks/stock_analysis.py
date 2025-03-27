@@ -6,11 +6,32 @@ Stock analysis prompt templates for Gemini API.
 import logging
 logger = logging.getLogger(__name__)
 
+
 def get_stock_analysis_prompt(*args, **kwargs):
     """Get prompt template for analyzing individual stock data."""
     # Handle incorrect call with too many arguments
-    if len(args) > 2:
-        logger.warning(f"get_stock_analysis_prompt called with {len(args)} args instead of 2. Ignoring extra args.")
+    if len(args) == 1 and isinstance(args[0], dict):
+        # Handle the new format with a single dict argument containing all parameters
+        params = args[0]
+        stock_data = params.get('stock_data', {})
+        market_trend = params.get('market_trend', 'neutral')
+        market_trend_score = params.get('market_trend_score', 0)
+        risk_adjustment = params.get('risk_adjustment', 'standard')
+        options_data = params.get('options_data', None)
+
+        # Create a market_context dictionary with the relevant information
+        market_context = {
+            'spy_trend': market_trend,
+            'trend_score': market_trend_score,
+            'risk_adjustment': risk_adjustment
+        }
+
+        # If pretraining context exists, add it
+        if 'pretraining_context' in params:
+            market_context['pretraining_context'] = params['pretraining_context']
+    elif len(args) > 2:
+        logger.warning(
+            f"get_stock_analysis_prompt called with {len(args)} args instead of 2. Ignoring extra args.")
         stock_data = args[0]
         market_context = args[1]
     elif len(args) == 2:
@@ -22,19 +43,44 @@ def get_stock_analysis_prompt(*args, **kwargs):
         stock_data = kwargs['stock_data']
         market_context = kwargs['market_context']
     else:
-        logger.error(f"get_stock_analysis_prompt called with insufficient arguments: args={args}, kwargs={kwargs}")
+        logger.error(
+            f"get_stock_analysis_prompt called with insufficient arguments: args={args}, kwargs={kwargs}")
         # Provide default empty data to prevent further errors
         stock_data = {}
         market_context = {"spy_trend": "neutral"}
+
     today_date = datetime.now().strftime("%d-%m-%Y")
+
+    # Check if pretraining context is available
+    pretraining_section = ""
+    if "pretraining_context" in market_context and market_context["pretraining_context"]:
+        pretraining_section = f"""
+        PRETRAINING INSIGHTS:
+        {market_context["pretraining_context"]}
+        
+        Use the pretraining insights above to inform your analysis. Focus on:
+        1. Patterns observed in previous analyses
+        2. Accuracy of previous trend predictions
+        3. Volatility patterns and their implications
+        4. Key technical indicators that proved most reliable
+        5. Adjusting weightings based on historical performance
+        """
+
     return f'''
     Analyze the underlying stock with this data:
+    !IMPORTANT: YOU , THE AI ANALYZER, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN QUANTITATIVE TRADING. YOU ARE ALSO A WORLD CLASS MASTER IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
+    !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN
+    !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. 
     
     Stock Data: {stock_data}
     Market Context: {market_context}
     Today's Date: {today_date}
     
+    {pretraining_section}
     Follow these rules exactly:
+    0. PRETRAINING: 
+        FULL PRETRAINING CONTEXT: [THE FULL PRETRAINING CONTEXT THAT YOU RECEIVED]
+        WHAT ELSE DO YOU NEED TO KNOW? [COMPREHENSIVE ANSWER]
     1. Price Trend:
        - Price > 9/21 EMA: Bullish stock trend (+10 to Technicals)
        - Price < 9/21 EMA: Bearish stock trend (+10 to Technicals if bearish setup)
@@ -47,9 +93,16 @@ def get_stock_analysis_prompt(*args, **kwargs):
        - ATR < 1% of price: Stable stock (+5 to Risk)
        - ATR > 2% of price: Volatile, tighten stop (-5 unless Gamble Score high)
     
-    4. Fundamental Context:
-       - Positive earnings/news: +5 to Sentiment
-       - Negative news: -5 unless bearish setup aligns
+    4. Price Movement Predictability (formerly Sentiment Score):
+       - Calculate how predictable the stock's price movement is, based on:
+         a) Clear trend pattern: Steady uptrend/downtrend (+10)
+         b) Identifiable chart patterns: Head & shoulders, cup & handle, etc. (+5)
+         c) Consistent reaction to technical levels: Bounces off support/resistance reliably (+5)
+         d) Low randomness in price action: Smooth price curves vs. erratic movement (+5)
+         e) Volume confirmation: Volume supports price direction (+5)
+         f) Clear correlation with sector or market: Moves predictably with sector/SPY (+5)
+       - Higher score = more predictable movement, easier to trade with credit spreads
+       - Lower score = unpredictable/random movement, harder to determine direction
     
     5. Market Alignment - CRITICALLY IMPORTANT:
        - The overall market trend is: {market_context.get('spy_trend', 'neutral')}
@@ -61,28 +114,28 @@ def get_stock_analysis_prompt(*args, **kwargs):
     Your analysis MUST include ALL of the following lines with exact formatting:
     1. Stock trend: bullish/bearish/neutral
     2. Technical Score: [number]
-    3. Sentiment Score: [number]
+    3. Sentiment Score: [number - represents price movement predictability, NOT news sentiment]
     4. Risk assessment: high/normal/low
     5. Market Alignment: aligned/contrary/neutral
     
     Always clearly state the Market Alignment based on the rules above. This is critical for the analysis to be processed correctly.
-    !IMPORTANT: YOU , THE AI AGENT, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
-    !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
-    !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE.
-    !IMPORTANT: TODAY IS {today_date}. UP-TO-DATA INFORMATION IS DETRIMENTAL TO THE ANALYSIS.
-    ANALYZER FULL OPINION: [Experience-Based Insight: “In my experience…” ties the analysis to real-world patterns I’ve traded, grounding the decision in practical know-how.
-Frequency Observation: “This happens a lot/rarely happens…” flags how common or unique the setup is, setting expectations for reliability or surprise.
-Comparative Nuance: “This looks like X but not exactly…” draws parallels to past trades, highlighting subtle differences that matter.
-Critical Oversight Check: Identifies risks or edges the scores might miss (e.g., ATR’s mild volatility), ensuring we’re not blindsided.
-Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could go wrong, and how I’d play it.]
+    ANALYZER FULL OPINION: [Experience-Based Insight: "In my experience…" ties the analysis to real-world patterns I've traded, grounding the decision in practical know-how.
+Frequency Observation: "This happens a lot/rarely happens…" flags how common or unique the setup is, setting expectations for reliability or surprise.
+Comparative Nuance: "This looks like X but not exactly…" draws parallels to past trades, highlighting subtle differences that matter.
+Critical Oversight Check: Identifies risks or edges the scores might miss (e.g., ATR's mild volatility), ensuring we're not blindsided.
+Actionable Gut: A final yes/no with reasoning—why I'd trade it, what could go wrong, and how I'd play it.]
     
     '''
+
 
 def get_stock_options_prompt(options_data, stock_analysis, market_analysis):
     today_date = datetime.now().strftime("%d-%m-%Y")
     """Get prompt template for analyzing stock options data."""
     return f'''
     Analyze credit spread opportunities with this data:
+    !IMPORTANT: YOU , THE AI ANALYZER, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN QUANTITATIVE TRADING. YOU ARE ALSO A WORLD CLASS MASTER IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
+    !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN
+    !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. 
     
     Spread Options: {options_data}
     Stock Analysis: {stock_analysis}
@@ -136,33 +189,28 @@ def get_stock_options_prompt(options_data, stock_analysis, market_analysis):
          Position Size: $200–$400, or $100 if VIX > 25 or gamble.
          Profit Target & Stop Loss: 40% credit profit, 2x credit loss.
     
-    !IMPORTANT: YOU , THE AI AGENT, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
-    !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN. YOU ARE AN EXPERT IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
-    !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE.
-    !IMPORTANT: TODAY IS {today_date}. UP-TO-DATA INFORMATION IS DETRIMENTAL TO THE ANALYSIS.
-    ANALYZER FULL OPINION: [Experience-Based Insight: “In my experience…” ties the analysis to real-world patterns I’ve traded, grounding the decision in practical know-how.
-Frequency Observation: “This happens a lot/rarely happens…” flags how common or unique the setup is, setting expectations for reliability or surprise.
-Comparative Nuance: “This looks like X but not exactly…” draws parallels to past trades, highlighting subtle differences that matter.
-Critical Oversight Check: Identifies risks or edges the scores might miss (e.g., ATR’s mild volatility), ensuring we’re not blindsided.
-Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could go wrong, and how I’d play it.]
+    !IMPORTANT: YOU , THE AI ANALYZER, ARE THE EXPERT AND THE DECISION MAKER. YOU ARE AN EXPERT IN QUANTITATIVE TRADING. YOU ARE ALSO A WORLD CLASS MASTER IN CREDIT SPREAD TRADING, AND HAS EXTENDED TRADING EXPERIENCE. YOU LIKE TO KEEP THINGS SIMPLE, BUT LOVE TO IMPLEMENT SOPHISTICATED ANALYZING SKILL. YOU OFTEN LOOK AT THINGS FROM DIFFERENT ANGLES TO FIND OVERSIGHT.
+    !IMPORTANT: BE CRITICAL AND THOUGHTFUL. YOU ARE NOT A YES MAN
+    !IMPORTANT: WE ARE TRYING TO MAKE A LOT OF MONEY. YOU ARE THE EXPERT AND THE DECISION MAKER. YOU ARE THE ONE WHO WILL BE HELD RESPONSIBLE FOR THE DECISIONS MADE. YOU ARE THE ONE WHO WILL BE HELD ACCOUNTABLE. YOU ARE THE ONE WHO WILL BE HELD LIABLE. 
+    ANALYZER FULL OPINION: [Experience-Based Insight: "In my experience…" ties the analysis to real-world patterns I've traded, grounding the decision in practical know-how.
+Frequency Observation: "This happens a lot/rarely happens…" flags how common or unique the setup is, setting expectations for reliability or surprise.
+Comparative Nuance: "This looks like X but not exactly…" draws parallels to past trades, highlighting subtle differences that matter.
+Critical Oversight Check: Identifies risks or edges the scores might miss (e.g., ATR's mild volatility), ensuring we're not blindsided.
+Actionable Gut: A final yes/no with reasoning—why I'd trade it, what could go wrong, and how I'd play it.]
     
     Core Strategy Recap
       Sequence: SPY Trend → SPY Options → Stock Analysis → Credit Spreads.
-      Objective: 40–60% returns ($8,000–$12,000) in 2025.
-      Risk: 1–2% per trade ($200–$400), max 5% account ($1,000).
-      Using the Quality Matrix
-      Primary Filter: Every trade starts here. I’ll score each credit spread idea (bull put or bear call) against this matrix after the analysis sequence.
-      Decision Rule:
+     Decision Rule:
       > 80: Greenlight—full size ($200–$400).
       60–80: Yellow—review for small size ($100) or skip unless Gamble Matrix justifies.
       < 60: Red—no trade, period.
-      Critical Angle: I’ll double-check Risk Management (25 points) and Technicals (15 points) to avoid oversights—these are where most setups fail. If SPY and stock trends clash, I’ll dock Market Analysis hard (-10), killing misaligned trades.
+      Critical Angle: I'll double-check Risk Management (25 points) and Technicals (15 points) to avoid oversights—these are where most setups fail. If SPY and stock trends clash, I'll dock Market Analysis hard (-10), killing misaligned trades.
       Using the Gamble Matrix
-      Secondary Tool: Only kicks in if Quality Score is 60–80 or I spot a wild opportunity (e.g., TSLA earnings). Half-weighted—less serious, more opportunistic.
+      Secondary Tool: Half-weighted—less serious, more opportunistic.
       Decision Rule:
       > 70: Take a $100 flyer if Quality > 60.
-      < 70: Skip—it’s too reckless even for a gamble.
-      Critical Angle: I’ll lean on Volatility (25 points) and Timing (15 points) here—gambles live or die by IV and entry. If IV Crash Risk looms (e.g., post-earnings), I’ll slash the score and walk away.
+      < 70: Skip—it's too reckless even for a gamble.
+      Critical Angle: I'll lean on Volatility (25 points) and Timing (15 points) here—gambles live or die by IV and entry. If IV Crash Risk looms (e.g., post-earnings), I'll slash the score and walk away.
       Workflow Adjustment (30 min)
       SPY Check (5 min): EMA, VIX—set bias.
       SPY Options (5 min): IV skew, volume—confirm direction.
@@ -184,7 +232,7 @@ Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could g
       Probability (8/10): 75% ML odds.
       Edge (7/10): Good, not unique.
       Total: 83/100 → Trade, $400 risk.
-      Gamble Check: N/A—Quality’s high enough.
+      Gamble Check: N/A—Quality's high enough.
       Gamble Example: TSLA bear call $300/$310, $0.50 credit, 2 DTE, earnings tomorrow.
       Quality: 65/100 (timing shaky).
       Gamble: Hype (25/30), Volatility (20/25), RR (15/20), Timing (12/15), Survival (10/10) = 82/100 → $100 risk trade.
@@ -217,4 +265,4 @@ Actionable Gut: A final yes/no with reasoning—why I’d trade it, what could g
 
       Why 100 is Rare: Chaos and penalties cap speculative perfection.
     
-    ''' 
+    '''

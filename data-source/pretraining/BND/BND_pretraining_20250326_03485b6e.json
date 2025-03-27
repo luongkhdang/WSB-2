@@ -1,0 +1,252 @@
+{
+  "ticker": "BND",
+  "start_date": "2025-01-24",
+  "end_date": "2025-01-24",
+  "processing_time": 146.6449739933014,
+  "analyses_count": 5,
+  "accuracy_rate": 0,
+  "total_predictions": 0,
+  "correct_predictions": 0,
+  "results": [
+    {
+      "ticker": "BND",
+      "date": "2025-03-20",
+      "step": 2,
+      "analysis_type": "5d/15m_analysis",
+      "price": 73.38999938964844,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.1,
+        "timeframe": "next_day",
+        "confidence": 75,
+        "specific_levels": [
+          73.0,
+          73.5,
+          73.75
+        ],
+        "spread_recommendation": "bull put spread",
+        "strike_recommendation": "Sell 73.00 put, Buy 72.75 put - capitalizing on current implied volatility and potential for price consolidation.",
+        "invalidation": "Price breaks below 72.75 decisively, indicating a stronger bearish trend."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## BND Intraday Analysis - 2025-03-20 (15-Minute Data)\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nThe baseline trend remains neutral (60% confidence) as per the secret. The 30-day ATR anchor of 1.0% provides a stable volatility reference. Today\u2019s data doesn\u2019t contradict this. The neutral SPY trend and market trend score of 50 reinforce the overall neutral outlook. The lack of established key levels in memory context necessitates a focus on intraday formations for strike selection. The slightly lower historical volatility (0.189) compared to implied volatility (0.236) suggests a potential for mean reversion, but the difference isn\u2019t substantial enough to shift the neutral bias.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a relatively narrow range (73.35 - 73.66), indicating consolidation. The RSI at 30.96 suggests the instrument is approaching oversold territory, but the MACD at 0 doesn\u2019t confirm a strong reversal signal. Volume (3718556) is moderate, not indicating a strong directional move. The VWAP (73.45) is slightly above the current price (73.39), suggesting a potential for short-term upward pressure. There's a slight downward drift in price over the 26 bars, but it's not decisive. No clear chart patterns (e.g., head and shoulders, triangles) are discernible with this limited data.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility, as indicated by the ATR% (0.047%), is lower than the 30-day ATR, suggesting a period of relative calm. The implied volatility (0.236) is slightly elevated compared to historical volatility, indicating options are pricing in a premium. This premium is attractive for credit spread strategies.  An ideal entry timing would be a slight increase in volatility, potentially after a brief dip in price, to capture a higher premium. Premium contraction is likely if the price remains range-bound.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, there are no established key levels. Based on the intraday data, we can identify potential intraday support at 73.35 and resistance at 73.66. These are preliminary levels and require confirmation with further price action. The current price is hovering near the lower end of the intraday range, suggesting a potential for a bounce. Critical zones for strike selection will be around these intraday levels, with a focus on slightly out-of-the-money strikes.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral outlook, moderate volatility, and potential for a slight bounce, a **bull put spread** appears most suitable.\n\n* **Strike Selection:** Sell a put at 73.00 and buy a put at 72.75. This provides a small buffer against a further downside move while capitalizing on the current implied volatility. The 73.00 strike is slightly below the intraday low, offering a reasonable probability of expiring out-of-the-money. The 72.75 strike provides a limited downside protection.\n* **Entry Timing:** Enter the spread when the price bounces slightly from the 73.35 level, ideally with a small increase in implied volatility.\n* **Probability of Success Estimate:** 70% (based on the current range-bound trading and the out-of-the-money strike selection).\n* **Risk/Reward Profile:**  The maximum risk is the difference between the strikes minus the net premium received. The maximum reward is the net premium received. Aim for a risk/reward ratio of at least 1:2.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: 0.1%\ntimeframe: next_day\nconfidence: 75\nspecific_levels: [73.00, 73.50, 73.75]\nspread_recommendation: bull put spread\nstrike_recommendation: Sell 73.00 put, Buy 72.75 put - capitalizing on current implied volatility and potential for price consolidation.\ninvalidation: Price breaks below 72.75 decisively, indicating a stronger bearish trend.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"pattern_type\": {\n            \"consolidation\": {\n                \"accuracy\": 60, \n                \"correct\": 1,\n                \"total\": 2\n            }\n   }\nvolatility_adjustment: no change\nkey_level_update: [73.35 (intraday support), 73.66 (intraday resistance)]\nupdated_confidence: 70\n```\n"
+    },
+    {
+      "ticker": "BND",
+      "date": "2025-03-21",
+      "step": 3,
+      "analysis_type": "5d/15m_analysis",
+      "price": 73.32450103759766,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.1,
+        "timeframe": "next_day",
+        "confidence": 75,
+        "specific_levels": [
+          73.1,
+          73.4,
+          73.6
+        ],
+        "spread_recommendation": "bull put spread",
+        "strike_recommendation": "Sell 73.20 Put, Buy 72.90 Put - Targeting premium collection in a stable market.",
+        "invalidation": "Price breaks below 72.90 or above 73.60."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## BND Intraday Analysis - 2025-03-21 (15-Minute Data)\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nToday\u2019s data largely confirms the neutral baseline trend established in the secret. The price action remains within a tight range, mirroring the neutral daily and weekly trends. Implied Volatility (IV) is nearly unchanged from yesterday (0.2363 vs 0.2363), reinforcing the stability. The lack of identified key levels previously remains consistent. The neutral SPY trend further supports a cautious approach. No contradictions to the prior analysis are present. The relevance of the secret\u2019s volatility anchor (1.0% 30-day ATR) remains high, as the current ATR% (0.0473) is significantly below this, suggesting potential for expansion.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute chart shows a consolidation pattern within a narrow range (73.30 - 73.51). The volume (6764229) is moderate, not indicating strong directional conviction. The VWAP (73.3558) sits slightly above the current price (73.3245), suggesting a potential for short-term upward movement, but the difference is minimal. The RSI at 33.75 indicates near-term oversold conditions, but the MACD at 0 suggests no strong momentum. There are no clear, high-probability chart patterns forming. The intraday low of 73.30 appears to be a minor support level, tested once.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility, as measured by the ATR%, is low at 0.0473. This suggests that options are relatively cheap. The difference between Historical Volatility (0.1890) and Implied Volatility (0.2363) indicates a slight premium being priced into options, likely due to market participants anticipating a potential increase in volatility. This presents an opportunity to sell premium. Given the neutral outlook, strategies benefiting from stable or slightly increasing volatility are preferred. An increase in volatility would be beneficial for all recommended strategies, while a significant decrease could negatively impact profitability. Ideal entry timing would be near the VWAP or after a slight bounce from the intraday low, capitalizing on the potential for premium contraction.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, there are no established key levels. However, the intraday low of 73.30 is emerging as a potential support level. The intraday high of 73.51 is a potential resistance level. These are *intraday* levels only. Critical zones for strike selection should be based on these levels, with a buffer to account for potential intraday fluctuations. Given the narrow range, a strike selection buffer of 0.10-0.20 is appropriate.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nBased on the neutral outlook, low volatility, and moderate volume, a **bull put spread** is the most appropriate strategy.\n\n*   **Strike Selection:** Sell a put at 73.20 and buy a put at 72.90. This provides a buffer below the intraday low (73.30) and targets the oversold RSI. The 73.20 strike is slightly below the current price, offering a reasonable premium. The 72.90 strike provides downside protection.\n*   **Entry Timing:** Enter the spread after a slight bounce from the intraday low (73.30) or near the VWAP (73.3558).\n*   **Probability of Success Estimate:** 70% - The neutral outlook and the selection of an out-of-the-money put spread increase the probability of the spread expiring worthless.\n*   **Risk/Reward Profile:** The potential profit is limited to the net premium received, while the maximum loss is the difference between the strike prices minus the net premium received. A conservative estimate of the net premium is $0.05, resulting in a potential profit of $50 per contract and a maximum loss of $30 per contract. This yields a risk/reward ratio of 1:1.67.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: 0.1%\ntimeframe: next_day\nconfidence: 75\nspecific_levels: [73.10, 73.40, 73.60]\nspread_recommendation: bull put spread\nstrike_recommendation: Sell 73.20 Put, Buy 72.90 Put - Targeting premium collection in a stable market.\ninvalidation: Price breaks below 72.90 or above 73.60.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"bull_put\": {\n            \"accuracy\": 0.0, \n            \"correct\": 0,\n            \"total\": 1\n        }\n   }\nvolatility_adjustment: no change\nkey_level_update: [73.30 (intraday support), 73.51 (intraday resistance)]\nupdated_confidence: 75\n```\n"
+    },
+    {
+      "ticker": "BND",
+      "date": "2025-03-24",
+      "step": 4,
+      "analysis_type": "5d/15m_analysis",
+      "price": 72.9800033569336,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0.1,
+        "timeframe": "next_day",
+        "confidence": 70,
+        "specific_levels": [
+          72.9,
+          73.1,
+          73.3
+        ],
+        "spread_recommendation": "bull put spread",
+        "strike_recommendation": "Short Put 73.00, Long Put 72.75 - Expecting premium decay and a slight bounce.",
+        "invalidation": "Price breaks below 72.90 convincingly."
+      },
+      "prediction_accuracy": null,
+      "memory_updates": {
+        "reliability_update": {},
+        "volatility_adjustment": "no change",
+        "key_level_update": [],
+        "updated_confidence": 0
+      },
+      "full_analysis": "## BND Intraday Analysis - 2025-03-24\n\n**1. PRIOR CONTEXT INTEGRATION:**\n\nToday\u2019s data largely confirms the neutral baseline trend established in the secret. The SPY is also neutral, reinforcing this view. Implied Volatility (IV) has decreased slightly from the previous two days (0.236 to 0.207), suggesting a lessening of fear or expectation of large price movements. Historical Volatility (HV) remains lower than IV, indicating IV is still elevated relative to realized movement. The 60% confidence in the neutral trend remains valid. No key levels were previously identified, so there's no contradiction there. The slight decrease in IV suggests a potential for premium contraction in options.\n\n**2. INTRADAY PATTERN ANALYSIS:**\n\nThe 15-minute data shows a narrow trading range (72.98 - 73.22), indicating consolidation. The volume (5.58M) is moderate, not signaling a strong directional move. The VWAP (73.05) is slightly above the current price (72.98), suggesting a potential for short-term upward pressure. The RSI at 23.07 is approaching oversold territory, which could lead to a bounce. The MACD at 0 indicates no strong momentum. There's a lack of clear patterns; it's largely choppy, sideways action. No significant transactions are apparent from the limited data.\n\n**3. VOLATILITY AND OPTIONS FOCUS:**\n\nIntraday volatility, as measured by the ATR (0.030 or 4.13%), is relatively low. The decrease in IV from previous days is a positive sign for selling options. Credit spreads are more attractive when volatility is relatively high, but the current IV is still above HV, offering a slight edge. Ideal entry timing would be if the price bounces slightly from the current level, allowing for a better premium capture. We should anticipate potential premium contraction as IV continues to normalize.\n\n**4. KEY LEVEL INTERACTION:**\n\nCurrently, there are no established key levels. However, the intraday low of 72.98 is acting as immediate support. The intraday high of 73.22 is acting as immediate resistance. A break above 73.22 could signal a short-term bullish move, while a break below 72.98 could signal a short-term bearish move. These levels are critical for strike selection. We can define a new intraday support at 72.95 and resistance at 73.15.\n\n**5. CREDIT SPREAD OPPORTUNITY:**\n\nGiven the neutral trend, low volatility, and RSI approaching oversold territory, a **bull put spread** is the most appropriate strategy. The goal is to profit from time decay and a slight upward bounce.\n\n*   **Strike Selection:**\n    *   **Short Put:** 73.00 (slightly out-of-the-money, capitalizing on the potential bounce and IV decay)\n    *   **Long Put:** 72.75 (provides a buffer against a small downward move)\n*   **Entry Timing:** Enter the spread when the price bounces slightly above 73.00, ideally near the VWAP of 73.05.\n*   **Probability of Success:** 65% (based on the expectation of a slight upward move or sideways consolidation)\n*   **Risk/Reward Profile:** 1:2 (aim for a premium capture that is twice the maximum risk) - approximately $0.10 premium capture for $0.05 risk.\n\n**6. PREDICTION:**\n\n```\nPREDICTION OUTPUT:\ndirection: neutral\nmagnitude: 0.1%\ntimeframe: next_day\nconfidence: 70\nspecific_levels: [72.90, 73.10, 73.30]\nspread_recommendation: bull put spread\nstrike_recommendation: Short Put 73.00, Long Put 72.75 - Expecting premium decay and a slight bounce.\ninvalidation: Price breaks below 72.90 convincingly.\n```\n\n**7. MEMORY UPDATE:**\n\n```\nMEMORY UPDATE:\nreliability_update: {\n        \"pattern_type\": {\n            \"accuracy\": 65, \n            \"correct\": 1,\n            \"total\": 2\n        }\n   }\nvolatility_adjustment: decrease\nkey_level_update: [Intraday Support: 72.95, Intraday Resistance: 73.15]\nupdated_confidence: 75\n```\n"
+    },
+    {
+      "ticker": "BND",
+      "date": "2025-01-24",
+      "step": 7,
+      "analysis_type": "Summary",
+      "price": 0,
+      "trend": "neutral",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_day",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "full_analysis": "## BND Credit Spread Trading Strategy: 2025-01-24 \u2013 2025-01-24 (3-Day Analysis)\n\n**Executive Summary:** Despite a 0% historical success rate with tested strategies, the consistent neutral intraday analysis, coupled with a 60% confidence baseline neutral trend, dictates a conservative, premium-collecting strategy focused on defined-risk plays. Given the low volatility anchor of 1.0%, the focus will be on maximizing premium capture within tight ranges. The lack of identified support/resistance levels necessitates a range-bound approach.\n\n**1. TREND SYNTHESIS AND PATTERN IDENTIFICATION:**\n\nThe analysis consistently points to a neutral trend across all intraday periods (75%, 75%, 70% confidence). This aligns with the 60% confidence baseline neutral trend. No discernible technical patterns emerged within the limited 3-day dataset. Volume profile assessment is impossible with only three days of data. The consistent neutrality suggests a lack of strong directional momentum.  The absence of reliable indicators highlights the need for a range-bound strategy.\n\n**2. KEY LEVEL CONSOLIDATION:**\n\nThe analysis explicitly states *no* core support or resistance levels were identified. This is a critical constraint.  Therefore, the strategy will focus on establishing a trading range based on the current price and volatility, rather than reacting to pre-defined levels.  Strike selection will be based on probability cones derived from the volatility anchor.  The most important price zones are those within 1 standard deviation of the current price, as these represent the highest probability boundaries for short-term price movement.\n\n**3. VOLATILITY PROFILE:**\n\nThe volatility anchor is exceptionally low at 1.0%. This suggests a period of low expected price movement.  The goal is to capitalize on this by selling premium. Implied Volatility (IV) is likely higher than Historical Volatility (HV), indicating an overestimation of future price swings.  Ideal premium collection zones are those where IV is relatively high compared to the expected range of price movement. Risk management will be paramount, focusing on defined-risk spreads with limited potential loss.  Position sizing will be conservative to account for the 0% historical success rate.\n\n**4. OPTIMIZED SPREAD STRATEGY:**\n\nGiven the neutral trend, low volatility, and lack of defined levels, **Iron Condors** are the most appropriate strategy. They benefit from range-bound markets and offer defined risk.  \n\n* **Strike Selection Rationale:** Strikes will be placed 1 standard deviation away from the current BND price (using the 1.0% volatility anchor). This assumes a 95% probability of the price remaining within this range.\n* **Entry Timing:** Enter the Iron Condor at the market open.\n* **Position Sizing:** Allocate 5% of capital to this trade.\n* **Invalidation Criteria:**  A breach of either the call or put side of the Iron Condor by 0.5% of the BND price. This indicates a breakdown of the expected range.\n\n\n\n**5. MULTI-TIMEFRAME FORECAST:**\n\n*(Assuming BND is currently trading at $73.50)*\n\n```\nFORECAST: NEXT DAY (1-2 Day Outlook)\ndirection: neutral\nmagnitude: 0.1%\nconfidence: 70\nspread_recommendation: Iron Condor\nstrike_selection: Sell 73.00 Put, Buy 72.50 Put, Sell 74.00 Call, Buy 74.50 Call. (Based on 1.0% volatility anchor, approximately 1 standard deviation from $73.50)\nkey_levels: 72.50 (Put side), 74.50 (Call side)\ninvalidation: Breach of 72.50 or 74.50 by 0.5% (i.e., below 72.375 or above 74.725)\nrisk_reward:  Maximum Risk = ($1.00 - Premium Received).  Maximum Reward = Premium Received.  Assuming a premium of $0.10, Risk/Reward = 10:1 (conservative estimate).\n```\n\n```\nFORECAST: NEXT WEEK (3-5 Day Outlook)\ndirection: neutral\nmagnitude: 0.2%\nconfidence: 65\nspread_recommendation: Iron Condor\nstrike_selection: Sell 73.00 Put, Buy 72.50 Put, Sell 74.00 Call, Buy 74.50 Call. (Maintain strikes from Day 1 forecast, adjusting for potential price drift)\nkey_levels: 72.50 (Put side), 74.50 (Call side)\ninvalidation: Breach of 72.50 or 74.50 by 0.5% (i.e., below 72.375 or above 74.725)\nrisk_reward: Maximum Risk = ($1.00 - Premium Received). Maximum Reward = Premium Received. Assuming a premium of $0.15, Risk/Reward = 6.67:1 (conservative estimate).\n```\n\n```\nFORECAST: NEXT MONTH (20-30 Day Outlook)\ndirection: neutral\nmagnitude: 0.3%\nconfidence: 60\nspread_recommendation: Iron Condor\nstrike_selection: Sell 73.00 Put, Buy 72.50 Put, Sell 74.00 Call, Buy 74.50 Call. (Maintain strikes, adjusting for potential price drift. Monitor IV crush.)\nkey_levels: 72.50 (Put side), 74.50 (Call side)\ninvalidation: Breach of 72.50 or 74.50 by 0.5% (i.e., below 72.375 or above 74.725)\nrisk_reward: Maximum Risk = ($1.00 - Premium Received). Maximum Reward = Premium Received. Assuming a premium of $0.20, Risk/Reward = 5:1 (conservative estimate).\n```\n\n**6. TECHNICAL INDICATORS:**\n\nGiven the limited data, no technical indicators proved reliable. However, monitoring the 20-day Simple Moving Average (SMA) could provide a lagging indicator of potential trend shifts.  Future analysis should incorporate Bollinger Bands to dynamically adjust strike selection based on volatility.\n\n**Important Considerations:**\n\n* **Low Historical Success Rate:** The 0% win rate is a significant concern. This strategy is based on the *absence* of directional bias and low volatility, not on predictive power.\n* **Volatility Crush:** A decrease in IV could erode the value of the Iron Condor. Monitor IV closely and consider rolling the spread if IV declines significantly.\n* **Black Swan Events:**  The strategy offers limited protection against unexpected market shocks.\n* **Continuous Monitoring:** This strategy requires constant monitoring and adjustment based on changing market conditions.\n\n\n\n**Disclaimer:** This analysis is based on limited data and should not be considered financial advice. Trading involves risk, and you could lose money. Always consult with a qualified financial advisor before making any investment decisions."
+    },
+    {
+      "ticker": "BND",
+      "date": "2025-01-24",
+      "type": "summary",
+      "analysis_type": "summary",
+      "next_day_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_day",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "next_week_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_week",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "next_month_prediction": {
+        "direction": "neutral",
+        "magnitude": 0,
+        "timeframe": "next_month",
+        "confidence": 0,
+        "specific_levels": [],
+        "spread_recommendation": "",
+        "strike_recommendation": "",
+        "invalidation": ""
+      },
+      "full_analysis": "## BND Credit Spread Trading Strategy: 2025-01-24 - 2025-01-24 (3-Day Analysis)\n\n**Executive Summary:** Despite a 0% historical success rate with tested strategies, the consistent neutral intraday analysis, coupled with a 60% confidence baseline neutral trend, dictates a conservative, premium-selling strategy focused on defined-risk plays. Given the low volatility anchor of 1.0%, the focus will be on maximizing premium capture within tight ranges. The lack of identified support/resistance levels necessitates a range-bound approach.  The historical data is limited, so this strategy is highly adaptable and will be closely monitored. No reliable technical indicators were identified due to the limited data.\n\n**1. TREND SYNTHESIS AND PATTERN IDENTIFICATION:**\n\nThe analysis consistently points to a neutral trend across all intraday periods (75%, 75%, 70% confidence). This aligns with the 60% confidence baseline neutral trend. No discernible patterns emerged within the 3-day window. Volume profile assessment is impossible with only 3 days of data. The consistent neutrality suggests a lack of strong directional momentum. Divergences are non-existent given the uniform neutral signals.\n\n**2. KEY LEVEL CONSOLIDATION:**\n\nThe analysis *failed to identify* any core support or resistance levels. This is a critical limitation.  Therefore, the strategy will operate under the assumption of a defined, but currently unknown, trading range. Strike selection will initially be based on the current price and volatility anchor, with adjustments made as price action develops.  The most important price zones will be dynamically determined based on observed intraday highs and lows.\n\n**3. VOLATILITY PROFILE:**\n\nVolatility is anchored at a low 1.0%. This suggests a relatively calm market environment. The implied volatility (IV) is likely higher than historical volatility (HV), presenting an opportunity for premium collection. Ideal premium collection zones will be defined by strikes slightly out-of-the-money (OTM) on both sides of the current price. Risk management will prioritize limiting potential losses to the premium received, given the low volatility environment.  Maximum loss will be capped at the net debit of the spread.\n\n**4. OPTIMIZED SPREAD STRATEGY:**\n\nGiven the neutral trend, low volatility, and lack of defined levels, **Iron Condors** are the most appropriate strategy. They benefit from sideways price action and allow for premium capture in a range-bound market.  \n\n* **Strike Selection:**  Based on the current price of BND (assume $73.50 for illustrative purposes \u2013 *this needs to be updated with the actual current price*), we will initially construct an Iron Condor with strikes 1% OTM on both sides.\n    * **Short Call:** $74.24 (73.50 + 1%)\n    * **Long Call:** $74.74 (74.24 + $0.50)\n    * **Short Put:** $72.76 (73.50 - 1%)\n    * **Long Put:** $72.26 (72.76 - $0.50)\n* **Entry Timing:** Enter the Iron Condor at the market open.\n* **Position Sizing:** Allocate 5% of capital to this trade.\n* **Risk Parameters:** Maximum loss is capped at the net debit of the spread (estimated at $0.25 per share, or $125 per contract).\n* **Invalidation Criteria:**  A breach of either the short call or short put strike *plus* a 0.25% move in either direction. This indicates a breakdown of the range-bound assumption.\n\n\n\n**5. MULTI-TIMEFRAME FORECAST:**\n\n```\nFORECAST: NEXT DAY (1-2 Day Outlook)\ndirection: neutral\nmagnitude: 0.0% - 0.1%\nconfidence: 70\nspread_recommendation: Iron Condor\nstrike_selection: Short Call: $74.24, Long Call: $74.74, Short Put: $72.76, Long Put: $72.26 (based on $73.50 BND price)\nkey_levels: Monitor intraday high/low for range definition.\ninvalidation: Breach of $74.49 (74.24 + 0.25%) or $72.51 (72.76 - 0.25%)\nrisk_reward: 1:2 (Potential premium received: $0.25, Max Loss: $0.25.  Target profit: $0.50)\n```\n\n```\nFORECAST: NEXT WEEK (3-5 Day Outlook)\ndirection: neutral\nmagnitude: -0.2% - +0.2%\nconfidence: 60\nspread_recommendation: Iron Condor (adjust strikes based on price action)\nstrike_selection:  Re-evaluate strikes daily. If BND trades above $73.75, shift the entire condor up by $0.25. If BND trades below $73.25, shift the entire condor down by $0.25.\nkey_levels: Monitor daily high/low for range definition.\ninvalidation: Breach of adjusted short call/put strikes + 0.25% move.\nrisk_reward: 1:2 (Maintain target premium of $0.25 per share)\n```\n\n```\nFORECAST: NEXT MONTH (20-30 Day Outlook)\ndirection: neutral\nmagnitude: -0.5% - +0.5%\nconfidence: 55\nspread_recommendation: Iron Condor (monthly roll, adjusting strikes)\nstrike_selection:  Roll the Iron Condor weekly, adjusting strikes based on observed price action and volatility. Prioritize maintaining a delta-neutral position.\nkey_levels:  Establish support/resistance levels based on accumulated price action.\ninvalidation: Consistent breach of adjusted short call/put strikes + 0.5% move.\nrisk_reward: 1:2 (Maintain target premium of $0.25 per share per week)\n```\n\n**Important Considerations:**\n\n* **Dynamic Adjustment:** This strategy is highly dependent on continuous monitoring and adjustment. The lack of defined levels necessitates a flexible approach.\n* **Price Updates:** The strike prices are based on an assumed BND price of $73.50. *This must be updated with the actual current price before implementation.*\n* **Volatility Changes:** A significant increase in volatility will require a reassessment of the strategy.\n* **Limited Data:** The 3-day analysis provides a limited foundation.  Performance should be closely monitored, and the strategy refined as more data becomes available.\n* **Commission Costs:** Factor in commission costs when calculating risk/reward ratios.\n\n\n\n"
+    }
+  ],
+  "memory_context": {
+    "ticker": "BND",
+    "key_levels": {
+      "support": [],
+      "resistance": [],
+      "pivot_points": []
+    },
+    "pattern_reliability": {
+      "head_and_shoulders": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_top": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "double_bottom": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "triangle": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "flag": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      },
+      "wedge": {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0
+      }
+    },
+    "volatility_history": [
+      {
+        "date": "2025-03-20",
+        "iv": 0.2363280763375528,
+        "hv": 0.18906246107004224,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-21",
+        "iv": 0.23627923256141434,
+        "hv": 0.18902338604913146,
+        "adjustment": "no change"
+      },
+      {
+        "date": "2025-03-24",
+        "iv": 0.20656998329862755,
+        "hv": 0.16525598663890204,
+        "adjustment": "no change"
+      },
+      0
+    ],
+    "spread_performance": {
+      "bull_put": {
+        "wins": 0,
+        "total": 3,
+        "win_rate": 0.0
+      },
+      "bear_call": {
+        "wins": 0,
+        "total": 0,
+        "win_rate": 0
+      },
+      "iron_condor": {
+        "wins": 1,
+        "total": 1,
+        "win_rate": 1.0
+      }
+    },
+    "weight_adjustments": [
+      0
+    ],
+    "multi_timeframe": {
+      "daily_trend": "neutral",
+      "weekly_trend": "neutral"
+    },
+    "secret": {
+      "baseline_trend": "neutral",
+      "trend_confidence": 60,
+      "volatility_anchor": 1.0,
+      "core_levels": {
+        "support": [],
+        "resistance": []
+      }
+    }
+  }
+}

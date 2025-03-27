@@ -1,0 +1,26 @@
+PRETRAINING INSIGHTS:
+
+2. 2025-03-20 (reflection_daily) - Accuracy: high
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Accurate within 0.5%.
+   Learning: In highly stable market conditions (low VIX, neutral SPY), prioritizing strategies that profit from minimal movement or avoiding directional trades altogether is crucial.
+
+4. 2025-03-20 (reflection_intraday) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Overestimated by 0.00-0.5%.
+   Learning: I need to incorporate a higher probability assessment for scenarios of extremely low volatility, especially when the broader market is neutral.
+
+6. 2025-03-21 (reflection_intraday) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Accurate within 0.5%.
+   Learning: I need to more strongly prioritize stable VIX and neutral market conditions as indicators of potentially zero price movement.
+
+
+CONCLUSIONS FROM PRETRAINING:
+- Overall prediction accuracy: 4.0/10
+- Key insights:
+  * In highly stable market conditions (low VIX, neutral SPY), prioritizing strategies that profit from minimal movement or avoiding directional trades altogether is crucial.
+  * I need to incorporate a higher probability assessment for scenarios of extremely low volatility, especially when the broader market is neutral.
+  * I need to more strongly prioritize stable VIX and neutral market conditions as indicators of potentially zero price movement.
+
+CREDIT SPREAD STRATEGY IMPLICATIONS:
+1. In situations with a neutral SPY trend, stable VIX, and a market trend score indicating low conviction, avoid initiating 7-15 DTE credit spreads. Focus on strategies that benefit from sideways price action or consider remaining flat.
+2. In extremely neutral market conditions (stable VIX, neutral SPY), avoid credit spread strategies unless strikes are placed extremely close to the current price, prioritizing theta decay over directional profit. Consider alternative strategies like iron condors with very narrow wings.
+3. In situations with stable VIX and neutral SPY trends, avoid opening 7-15 DTE credit spreads. If a trade is necessary, utilize extremely wide strikes to minimize risk, acknowledging the limited profit potential.

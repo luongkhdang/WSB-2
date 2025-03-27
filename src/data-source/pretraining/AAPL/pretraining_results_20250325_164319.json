@@ -1,0 +1,218 @@
+[
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "low",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% movement (50% confidence); 7-day: 1-2% movement (40% confidence); 14-day: 2-3% movement (30% confidence)",
+    "options_implications": "**",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "movement",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "1-2",
+        "direction": "movement",
+        "confidence": 40
+      },
+      "14_day": {
+        "magnitude": "2-3",
+        "direction": "movement",
+        "confidence": 30
+      }
+    },
+    "summary": "## AAPL Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 0\n\n*   Price vs EMAs: Price is not above or below EMAs (0)\n*   RSI: RSI is at 50, neutral (0)\n*   MACD: MACD is at 0, neutral (0)\n*   Volume: Volume is below average, suggesting weakening momentum (0)\n*   Support/Resistance: Not near support or resistance (0)\n\n**3.",
+    "date": "2025-03-19",
+    "price": 212.69000244140625,
+    "atr_percent": 0.0,
+    "analysis_type": "daily_1mo",
+    "full_analysis": "## AAPL Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 0\n\n*   Price vs EMAs: Price is not above or below EMAs (0)\n*   RSI: RSI is at 50, neutral (0)\n*   MACD: MACD is at 0, neutral (0)\n*   Volume: Volume is below average, suggesting weakening momentum (0)\n*   Support/Resistance: Not near support or resistance (0)\n\n**3. Sentiment Score:** 0 \n\n*   No fundamental data provided, assuming neutral sentiment.\n\n**4. Risk assessment:** normal\n\n*   ATR is 0.00, which is 0% of the price. This indicates a stable stock, but the lack of ATR data prevents a definitive risk assessment. We will assume normal risk.\n\n**5. Market Alignment:** neutral\n\n*   The SPY trend is neutral, and AAPL's trend is also neutral.\n\n**6. Movement Prediction:** 1-day: 0-0.5% movement (50% confidence); 7-day: 1-2% movement (40% confidence); 14-day: 2-3% movement (30% confidence)\n\n**7. Options Implications:**\n\nGiven the neutral forecast and low volatility (ATR = 0), credit spreads with 7-15 DTE are potentially viable. Ideal strike distances would be relatively tight, perhaps 1-2% out-of-the-money (OTM) for both calls and puts. The goal would be to capitalize on time decay, but the low volatility suggests limited premium collection. A conservative approach is warranted, and position sizing should be small due to the uncertainty. The lack of ATR data makes it difficult to assess the risk/reward accurately.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "accuracy": "moderate",
+    "key_learning": "I need to incorporate a wider range of potential movement, even with stable market conditions, and increase the weighting of potential upside when the SPY is neutral.",
+    "weight_adjustment": "Increase the weight of potential upside movement when the SPY trend is neutral. Decrease reliance on solely short-term indicators when volatility is low.",
+    "quantified_error": "Predicted 0-0.5% movement, actual was 0.66% upside - Underestimated by 0.16-0.66%.",
+    "credit_spread_strategy_refinement": "When the SPY is neutral and volatility is low, widen the strike selection for 7-15 DTE credit spreads to account for the possibility of a larger-than-expected move, prioritizing premium capture over a higher probability of max profit.",
+    "accuracy_score": 5,
+    "error_magnitude": 0.16,
+    "date": "2025-03-20",
+    "analysis_type": "reflection_daily",
+    "full_reflection": "## Pretraining Reflection - 2025-03-19/20 Analysis\n\nThis reflection analyzes the accuracy of my previous prediction for the period of 2025-03-19, given the actual outcome on 2025-03-20.\n\n**1. Trend Prediction Accuracy Assessment:**\n\nMy 1-day prediction was for 0-0.5% movement. The actual movement was 0.66% bullish. This means I *underestimated* the bullish movement. The error margin is 0.16% - 0.66%. My confidence was 50%, which feels appropriate in retrospect, as the movement was near the upper bound of my prediction. The 7-day and 14-day predictions are still open, but the initial bullish move suggests the lower end of those ranges (1-2% and 2-3% respectively) are more likely than the upper ends. I did not specifically focus on any technical indicators that proved particularly reliable *in this instance* \u2013 the move was relatively small and could have gone either way.\n\n**2. Volatility Assessment:**\n\nI predicted a stable volatility environment, and the actual outcome confirms this with a 0.00% change in ATR. This was a correct prediction. The VIX remaining stable at 20.0 and the market trend score of 10 (indicating moderate bullishness) likely contributed to this stability. I didn\u2019t miss any significant factors regarding volatility; the market was generally calm.\n\n**3. Technical Analysis Review:**\n\nWithout a detailed record of the specific indicators used in the prior analysis (which is a limitation of this reflection process), it\u2019s difficult to pinpoint which were most helpful or misleading. However, given the small move, it suggests that short-term indicators like RSI or MACD likely didn\u2019t provide strong signals. Support/resistance levels weren\u2019t explicitly mentioned in the previous analysis, and their impact isn\u2019t readily apparent from the price movement. Price action around EMAs wasn\u2019t a focus of the previous analysis, so correlation cannot be assessed. A more detailed logging of indicator values and their influence on the prediction is needed.\n\n**4. Market Alignment Impact:**\n\nThe SPY trend was neutral, and the stock exhibited a slight bullish move. This suggests the stock wasn\u2019t strongly influenced by the broader market. The neutral SPY trend likely allowed for independent price action. The fact that the stock moved *despite* a neutral SPY suggests internal factors (company-specific news, sector-specific momentum \u2013 though sector rotation was unknown) played a larger role than broad market sentiment. This highlights the importance of considering stock-specific factors even when the SPY is stable.\n\n**5. Options Implications:**\n\nMy analysis likely would *not* have correctly positioned credit spreads for optimal profit. A prediction of 0-0.5% movement would have led to strike selection too close to the current price, potentially resulting in assignment or minimal premium capture. Given the 0.66% move, a strike selection of slightly out-of-the-money calls (e.g., $214.50) and puts (e.g., $213.50) would have been optimal for a 7-15 DTE credit spread. This movement would have moderately affected a 7-15 DTE credit spread strategy. A spread sold too close to the money would have faced risk of assignment, while a wider spread would have captured more premium but with lower probability of max profit.\n\n\n\n1. Prediction Accuracy: moderate\n2. Quantified Error: Predicted 0-0.5% movement, actual was 0.66% upside - Underestimated by 0.16-0.66%.\n3. Key Learning: I need to incorporate a wider range of potential movement, even with stable market conditions, and increase the weighting of potential upside when the SPY is neutral.\n4. Weight Adjustment: Increase the weight of potential upside movement when the SPY trend is neutral. Decrease reliance on solely short-term indicators when volatility is low.\n5. Credit Spread Strategy Refinement: When the SPY is neutral and volatility is low, widen the strike selection for 7-15 DTE credit spreads to account for the possibility of a larger-than-expected move, prioritizing premium capture over a higher probability of max profit.\n"
+  },
+  {
+    "trend": "bullish",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "normal",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% upside (50% confidence); 7-day: 1-2% rangebound (50% confidence); 14-day: 2-4% rangebound (40% confidence)",
+    "options_implications": "** Given the neutral outlook and moderate volume, credit spreads with 7-15 DTE are viable. Ideal strike distances would be 2-3% OTM (Out-of-the-Money) calls or puts, aiming for a small premium capture. The rangebound forecast suggests a higher probability of the price staying within a defined range, making credit spreads attractive. However, the relatively low confidence levels warrant smaller position sizes.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "upside",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "1-2",
+        "direction": "rangebound",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "2-4",
+        "direction": "rangebound",
+        "confidence": 40
+      }
+    },
+    "summary": "## AAPL Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 10\n\n**3.",
+    "date": "2025-03-19",
+    "price": 215.3000030517578,
+    "atr_percent": 0.0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## AAPL Analysis - 2025-03-19\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 10\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% upside (50% confidence); 7-day: 1-2% rangebound (50% confidence); 14-day: 2-4% rangebound (40% confidence)\n\n**7. Options Implications:** Given the neutral outlook and moderate volume, credit spreads with 7-15 DTE are viable. Ideal strike distances would be 2-3% OTM (Out-of-the-Money) calls or puts, aiming for a small premium capture. The rangebound forecast suggests a higher probability of the price staying within a defined range, making credit spreads attractive. However, the relatively low confidence levels warrant smaller position sizes.\n \n\n**Analysis:**\n\nThe stock is currently trading near both support and resistance levels, indicating a period of consolidation. The RSI is at 50, suggesting a neutral momentum. The MACD is currently at 0, providing no clear signal. The higher-than-average volume suggests some interest, but without a clear directional bias.\n\n* **Price Trend Analysis:** The EMAs are currently unavailable (0.0), making it impossible to assess the price relative to these indicators. The RSI of 50 is neutral. The MACD is also neutral. The high volume supports potential movement, but the direction is unclear.\n* **Support/Resistance Analysis:** The price is near both support (214.96) and resistance (216.75), creating a potential rangebound scenario. Being near support is a slight bullish signal (+5 to Technicals).\n* **Volatility Assessment:** The ATR is unavailable (0.0), but the ATR% is 1.50%, indicating moderate volatility. This suggests a neutral risk profile.\n* **Fundamental Context:** No fundamental data is provided, so the sentiment score remains at 0.\n* **Market Alignment:** The SPY trend is neutral, and AAPL's trend is also neutral, resulting in a \"neutral\" alignment.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "accuracy": "low",
+    "key_learning": "I need to improve my ability to identify subtle bearish signals and assess the potential for directional moves even in stable volatility environments.",
+    "weight_adjustment": "Increase the weight given to momentum indicators and bearish pattern recognition. Decrease reliance on solely neutral market conditions as a predictor of stock stability.",
+    "quantified_error": "Predicted 0-0.5% upside, actual was -0.53% downside - Underestimated the downside by 1.03%.",
+    "credit_spread_strategy_refinement": "In neutral market conditions, prioritize credit spreads with a slightly bearish bias (selling puts) or tighter strike widths to reduce risk exposure to unexpected directional moves. Consider reducing DTE to 7 days to minimize exposure to longer-term trends.",
+    "accuracy_score": 2,
+    "error_magnitude": 1.03,
+    "date": "2025-03-20",
+    "analysis_type": "reflection_intraday",
+    "full_reflection": "## Pretraining Reflection - 2025-03-19/20 Analysis\n\nThis reflection analyzes the accuracy of my previous prediction for the period of 2025-03-19, given the actual outcome on 2025-03-20. The prediction was for a slight upside or rangebound movement, while the actual outcome was a bearish move.\n\n**1. Trend Prediction Accuracy Assessment:**\n\nMy 1-day prediction of 0-0.5% upside was significantly inaccurate. The actual movement was -0.53%, representing a 0.53% downside. The error margin is therefore 0.53% - 0% = 0.53% (underestimation of the downside). The 7-day and 14-day predictions are now invalidated as the initial day moved contrary to the forecast. I did not explicitly rely on any single technical indicator over others; the prediction was a general assessment based on the neutral market context and relatively stable VIX.\n\n**2. Volatility Assessment:**\n\nI predicted a rangebound movement, implying stable volatility. The actual volatility, as measured by ATR%, remained unchanged at 0.00%. This aspect of the prediction was accurate. However, the *direction* of price movement was missed, despite the stable volatility. This suggests that while volatility wasn't the issue, the *momentum* was misread. I may have underestimated the potential for a directional move even within a stable volatility environment.\n\n**3. Technical Analysis Review:**\n\nWithout access to the specific technical indicators used in the prior analysis (which is a limitation of this reflection process), it's difficult to pinpoint specific misleading signals. However, the failure to anticipate the bearish move suggests a potential weakness in identifying subtle bearish patterns or a misinterpretation of existing ones. Support/resistance levels were not explicitly mentioned in the previous analysis, so their performance cannot be assessed. The correlation of price action around EMAs is also unknown without the original analysis details.\n\n**4. Market Alignment Impact:**\n\nThe broader market (SPY) was reported as 'neutral' with a trend score of 10. This suggests a lack of strong directional bias in the overall market. The stock's bearish movement, despite the neutral SPY, indicates that stock-specific factors or sector-specific headwinds were more influential than the broader market sentiment. The fact that the SPY was neutral suggests the stock's movement wasn't *directly* driven by overall market risk-off sentiment.\n\n**5. Options Implications:**\n\nGiven the bearish movement, my analysis would *not* have correctly positioned credit spreads. A credit spread strategy anticipating a slight upside or rangebound movement would have been vulnerable to this decline. Optimal strike selection, in hindsight, would have involved selling puts slightly below the current price (around $213.50-$214.00) or selling call spreads with a lower upper strike. A 7-15 DTE credit spread strategy would have likely experienced losses, particularly if the short call strike was above $215 or the short put strike was below $214. The movement highlights the risk of selling naked options or credit spreads in a potentially trending market, even with stable volatility.\n\n\n\n1. Prediction Accuracy: low\n2. Quantified Error: Predicted 0-0.5% upside, actual was -0.53% downside - Underestimated the downside by 1.03%.\n3. Key Learning: I need to improve my ability to identify subtle bearish signals and assess the potential for directional moves even in stable volatility environments.\n4. Weight Adjustment: Increase the weight given to momentum indicators and bearish pattern recognition. Decrease reliance on solely neutral market conditions as a predictor of stock stability.\n5. Credit Spread Strategy Refinement: In neutral market conditions, prioritize credit spreads with a slightly bearish bias (selling puts) or tighter strike widths to reduce risk exposure to unexpected directional moves. Consider reducing DTE to 7 days to minimize exposure to longer-term trends.\n"
+  },
+  {
+    "trend": "bullish",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "low",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% upside (50% confidence); 7-day: 0.5-1.5% rangebound (50% confidence); 14-day: 1-3% rangebound (40% confidence)",
+    "options_implications": "** Given the neutral forecast and relatively stable market conditions (VIX at 20), credit spreads with 7-15 DTE are viable. Ideal strike distances would be 2-3% out-of-the-money (OTM) on both the call and put sides. The limited expected movement suggests focusing on smaller premium collection, prioritizing high probability of profit over maximizing potential return. A slightly bullish bias could favor selling put spreads, but the overall neutral outlook warrants caution and careful strike selection.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "upside",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "0.5-1.5",
+        "direction": "rangebound",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "1-3",
+        "direction": "rangebound",
+        "confidence": 40
+      }
+    },
+    "summary": "## AAPL Analysis - 2025-03-20\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 15\n\n**3.",
+    "date": "2025-03-20",
+    "price": 214.14999389648438,
+    "atr_percent": 0.0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## AAPL Analysis - 2025-03-20\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 15\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% upside (50% confidence); 7-day: 0.5-1.5% rangebound (50% confidence); 14-day: 1-3% rangebound (40% confidence)\n\n**7. Options Implications:** Given the neutral forecast and relatively stable market conditions (VIX at 20), credit spreads with 7-15 DTE are viable. Ideal strike distances would be 2-3% out-of-the-money (OTM) on both the call and put sides. The limited expected movement suggests focusing on smaller premium collection, prioritizing high probability of profit over maximizing potential return. A slightly bullish bias could favor selling put spreads, but the overall neutral outlook warrants caution and careful strike selection.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "accuracy": "low",
+    "key_learning": "I need to prioritize identifying potential catalysts for significant price movements, even in a seemingly neutral market environment.",
+    "weight_adjustment": "Increase the weight given to bullish momentum indicators and stock-specific news/catalysts; decrease the weight given to a neutral SPY trend as a predictor of limited movement.",
+    "quantified_error": "Predicted 0-0.5% upside, actual was 1.97% upside - Underestimated by 1.47-1.97%.",
+    "credit_spread_strategy_refinement": "In situations with even moderate bullish signals, favor wider call spread strike selections to capture larger potential upside, even if it increases the risk of early assignment. Prioritize identifying potential catalysts before establishing credit spreads.",
+    "accuracy_score": 2,
+    "error_magnitude": 1.47,
+    "date": "2025-03-21",
+    "analysis_type": "reflection_intraday",
+    "full_reflection": "## Pretraining Reflection - 2025-03-20 Analysis\n\nThis reflection analyzes the accuracy of my prediction for the period ending 2025-03-21, given the actual outcome of a 1.97% price increase and stable volatility.\n\n**1. Trend Prediction Accuracy Assessment:**\n\nMy 1-day prediction was significantly inaccurate. I predicted 0-0.5% upside, while the actual increase was 1.97%. The error margin is substantial \u2013 I underestimated the upside by 1.47-1.97%. My 7-day and 14-day predictions are now invalidated as the initial day\u2019s direction was completely missed. I relied heavily on the neutral SPY trend and a market trend score of 10, interpreting this as a lack of strong directional impetus. This proved incorrect. I did not adequately account for the potential for independent bullish movement in the stock.\n\n**2. Volatility Assessment:**\n\nI correctly predicted steady volatility (0.00% change in ATR). However, this was more a result of luck than skill. The VIX remained stable, and my risk adjustment was set to \u2018standard\u2019, leading to the expectation of continued stability. I didn\u2019t actively identify any catalysts for volatility expansion, and therefore correctly predicted its absence, but without a strong rationale.\n\n**3. Technical Analysis Review:**\n\nI did not explicitly detail the technical indicators used in the previous analysis, which is a critical oversight. However, based on the outcome, it\u2019s likely I placed too much emphasis on short-term rangebound patterns and not enough on the underlying bullish momentum. Support/resistance levels (not specified in the previous analysis) were likely breached, contributing to the larger-than-expected move. Price action around EMAs (also unspecified) was clearly bullish, but I failed to recognize the strength of this signal. The lack of detailed technical indicator documentation hinders a more precise review.\n\n**4. Market Alignment Impact:**\n\nThe neutral SPY trend was a misleading factor. While the broader market wasn\u2019t driving the move, it didn\u2019t prevent the stock from exhibiting strong bullish behavior. The stock\u2019s movement was largely independent of the SPY, suggesting stock-specific factors were at play. I underestimated the possibility of a stock outperforming a neutral market.\n\n**5. Options Implications:**\n\nMy analysis would *not* have correctly positioned credit spreads for this movement. A call spread would have been the appropriate strategy, but my prediction of limited upside would have led to strike selection too close to the current price, resulting in early assignment risk or limited profit potential. Optimal strike selection would have involved a lower strike closer to the current price ($214-215) and a higher strike significantly above ($220+), capitalizing on the larger-than-expected move. A 7-15 DTE credit spread strategy would have likely been a losing trade given the bullish momentum and my conservative upside prediction.\n\n\n\n1. Prediction Accuracy: **low**\n2. Quantified Error: Predicted 0-0.5% upside, actual was 1.97% upside - Underestimated by 1.47-1.97%.\n3. Key Learning: I need to prioritize identifying potential catalysts for significant price movements, even in a seemingly neutral market environment.\n4. Weight Adjustment: Increase the weight given to bullish momentum indicators and stock-specific news/catalysts; decrease the weight given to a neutral SPY trend as a predictor of limited movement.\n5. Credit Spread Strategy Refinement: In situations with even moderate bullish signals, favor wider call spread strike selections to capture larger potential upside, even if it increases the risk of early assignment. Prioritize identifying potential catalysts before establishing credit spreads.\n"
+  },
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "low",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% rangebound (50% confidence); 7-day: 0.5-1.5% rangebound (50% confidence); 14-day: 1-3% rangebound (40% confidence)",
+    "options_implications": "** Given the neutral forecast and relatively stable market conditions (VIX at 20), credit spreads with 7-15 DTE appear reasonable. Ideal strike distances would be approximately 2-3% out-of-the-money (OTM) on both the call and put sides, aiming for a credit of 0.10-0.25 per share. The high volume suggests potential for price movement, but the lack of strong directional indicators warrants a conservative approach. A slightly wider strike distance could be considered to increase the probability of profit, but at the cost of reduced premium received.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "rangebound",
+        "confidence": 50
+      },
+      "7_day": {
+        "magnitude": "0.5-1.5",
+        "direction": "rangebound",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "1-3",
+        "direction": "rangebound",
+        "confidence": 40
+      }
+    },
+    "summary": "## AAPL Analysis - 2025-03-21\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 15\n\n**3.",
+    "date": "2025-03-21",
+    "price": 218.36000061035156,
+    "atr_percent": 0.0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## AAPL Analysis - 2025-03-21\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 15\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% rangebound (50% confidence); 7-day: 0.5-1.5% rangebound (50% confidence); 14-day: 1-3% rangebound (40% confidence)\n\n**7. Options Implications:** Given the neutral forecast and relatively stable market conditions (VIX at 20), credit spreads with 7-15 DTE appear reasonable. Ideal strike distances would be approximately 2-3% out-of-the-money (OTM) on both the call and put sides, aiming for a credit of 0.10-0.25 per share. The high volume suggests potential for price movement, but the lack of strong directional indicators warrants a conservative approach. A slightly wider strike distance could be considered to increase the probability of profit, but at the cost of reduced premium received.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  },
+  {
+    "trend": "neutral",
+    "technical_score": 0,
+    "sentiment_score": 0,
+    "risk_assessment": "low",
+    "market_alignment": "neutral",
+    "movement_prediction": "** 1-day: 0-0.5% rangebound (55% confidence); 7-day: 0.5-1.5% rangebound (50% confidence); 14-day: 1-2% rangebound (45% confidence)",
+    "options_implications": "** Given the neutral forecast and relatively low expected movement, credit spreads with 7-15 DTE are appropriate. Ideal strike distances would be 1-2% out-of-the-money (OTM) on both the call and put sides, aiming for a credit capture of 0.10-0.20 per share. The stable VIX (20.0) suggests relatively normal pricing for options, but the higher volume today (4.6x average) suggests increased investor activity and potential for wider bid-ask spreads. A slightly wider spread width should be considered when placing the trade.",
+    "structured_movement_prediction": {
+      "1_day": {
+        "magnitude": "0-0.5",
+        "direction": "rangebound",
+        "confidence": 55
+      },
+      "7_day": {
+        "magnitude": "0.5-1.5",
+        "direction": "rangebound",
+        "confidence": 50
+      },
+      "14_day": {
+        "magnitude": "1-2",
+        "direction": "rangebound",
+        "confidence": 45
+      }
+    },
+    "summary": "## AAPL Analysis - 2025-03-24\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 20\n\n**3.",
+    "date": "2025-03-24",
+    "price": 220.42999267578125,
+    "atr_percent": 0.0,
+    "analysis_type": "intraday_15m",
+    "full_analysis": "## AAPL Analysis - 2025-03-24\n\n**1. Stock trend:** neutral\n\n**2. Technical Score:** 20\n\n**3. Sentiment Score:** 0\n\n**4. Risk assessment:** normal\n\n**5. Market Alignment:** neutral\n\n**6. Movement Prediction:** 1-day: 0-0.5% rangebound (55% confidence); 7-day: 0.5-1.5% rangebound (50% confidence); 14-day: 1-2% rangebound (45% confidence)\n\n**7. Options Implications:** Given the neutral forecast and relatively low expected movement, credit spreads with 7-15 DTE are appropriate. Ideal strike distances would be 1-2% out-of-the-money (OTM) on both the call and put sides, aiming for a credit capture of 0.10-0.20 per share. The stable VIX (20.0) suggests relatively normal pricing for options, but the higher volume today (4.6x average) suggests increased investor activity and potential for wider bid-ask spreads. A slightly wider spread width should be considered when placing the trade.\n",
+    "next_day_prediction": {
+      "trend": "neutral",
+      "volatility": "steady"
+    }
+  }
+]

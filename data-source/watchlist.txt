@@ -1,0 +1,21 @@
+# WSB Trading - Credit Spread Watchlist
+# Last updated: 2025-03-25
+# Stocks and key indices for analysis
+
+# KEY INDICES (Always included)
+SPY
+QQQ
+IWM
+VTV
+VGLT
+DIA
+BND
+
+
+# CONSTANT BIG PLAYERS (Always included)
+NVDA
+TSLA
+META
+
+# STOCKS FOR CREDIT SPREADS
+

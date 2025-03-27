@@ -1,0 +1,25 @@
+{
+  "date": "2025-03-24",
+  "spy_trend": "neutral",
+  "market_trend": "neutral",
+  "market_trend_score": 50,
+  "vix_assessment": "VIX is at moderate levels indicating balanced market sentiment",
+  "risk_adjustment": "standard",
+  "sector_rotation": "No specific sector rotation data available for this date",
+  "market_indices": {
+    "SPY": {
+      "trend": "neutral",
+      "change": 0.0
+    },
+    "QQQ": {
+      "trend": "neutral",
+      "change": 0.0
+    },
+    "IWM": {
+      "trend": "neutral",
+      "change": 0.0
+    }
+  },
+  "data_source": "default",
+  "note": "This is a generated default context as no historical data was found or could be fetched"
+}

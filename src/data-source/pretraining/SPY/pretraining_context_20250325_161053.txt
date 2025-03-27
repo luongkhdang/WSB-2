@@ -1,0 +1,26 @@
+PRETRAINING INSIGHTS:
+
+2. 2025-03-20 (reflection_daily) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% rangebound, actual was 0.00% change - Overestimated potential movement by 0-0.5%.
+   Learning: I need to prioritize market context (SPY trend, VIX stability) and assign a higher probability to continued stagnation when these factors indicate indecision.
+
+4. 2025-03-20 (reflection_intraday) - Accuracy: low
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Overestimated by 0-0.5%.
+   Learning: I will prioritize a "no movement" scenario when the VIX is stable and the broader market trend is neutral, recognizing that sometimes the most accurate prediction is for continued stability.
+
+6. 2025-03-21 (reflection_intraday) - Accuracy: high
+   Error Assessment: Predicted 0-0.5% movement, actual was 0.00% - Accurate to within 0.5%.
+   Learning: I need to incorporate a probability assessment for *complete* stagnation, especially when the broader market shows neutral trends and volatility is stable.
+
+
+CONCLUSIONS FROM PRETRAINING:
+- Overall prediction accuracy: 4.0/10
+- Key insights:
+  * I need to prioritize market context (SPY trend, VIX stability) and assign a higher probability to continued stagnation when these factors indicate indecision.
+  * I will prioritize a "no movement" scenario when the VIX is stable and the broader market trend is neutral, recognizing that sometimes the most accurate prediction is for continued stability.
+  * I need to incorporate a probability assessment for *complete* stagnation, especially when the broader market shows neutral trends and volatility is stable.
+
+CREDIT SPREAD STRATEGY IMPLICATIONS:
+1. In strongly neutral market conditions (SPY flat, VIX stable), avoid selling credit spreads. If a trade is necessary, select strikes extremely far OTM to minimize potential losses from time decay and lack of directional movement.
+2. In situations with stable VIX and neutral market trends, avoid credit spreads unless extremely wide strikes can be sold to capitalize on time decay with minimal risk of assignment. Consider strategies like iron condors with very wide wingspans.
+3. In situations with a neutral SPY trend, stable VIX, and low market trend score, avoid initiating 7-15 DTE credit spread strategies unless extremely wide strikes are used to account for the possibility of zero movement. Focus on strategies that profit from time decay in stable markets, rather than directional movement.
